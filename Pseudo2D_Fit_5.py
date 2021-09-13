@@ -7,6 +7,7 @@ from scipy.optimize import minimize
 from Multiplets import *
 from Interfaces import *
 from Utils_nmrData import *
+from Fitting import *
 ################################################################
 # Test for missing librairies 
 ################################################################
@@ -42,103 +43,11 @@ matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 from tqdm import tqdm
-from random import randint
 
 # https://stackoverflow.com/questions/58367251/how-can-i-store-the-data-of-my-tkinter-entries-into-a-dataframe-to-later-export
 
-
-
-
-
-def Peak_Picking_1D(
-    x_data          =   'x_data', 
-    y_data          =   'y_data', 
-    threshold       =   'threshold',
-    ):
-    try: 
-        peak_table = ng.peakpick.pick(
-            y_data, 
-            pthres=threshold, 
-            algorithm='downward',
-            )
-
-        # Find peak locations in ppm
-        peak_locations_ppm = []
-        for i in range(len(peak_table['X_AXIS'])):
-            pts = int(peak_table['X_AXIS'][i])
-            peak_locations_ppm.append( x_data[pts])
-        
-        # Find the peak amplitudes
-        peak_amplitudes = y_data[peak_table['X_AXIS'].astype('int')]
-
-        results = pd.DataFrame(columns=['ppm_H_AXIS','Peak_Amp'],index=np.arange(1,len(peak_table)+1))
-        results.loc[:,'ppm_H_AXIS'] = peak_locations_ppm
-        results.loc[:,'Peak_Amp'] = peak_amplitudes
-
-        results = results.sort_values(by='ppm_H_AXIS', ascending=True)
-    except:
-        main = Tk()
-        main.title("Error")
-        
-        str_var = StringVar()
-        #Message Function
-        label = Message( main, textvariable=str_var, 
-            relief=RAISED,width=400,foreground='red')
-        def_font = tk.font.nametofont("TkDefaultFont")
-        def_font.config(size=12)
-        str_var.set("No signal were found \n Lower the threshold") 
-        label.pack()
-        main.mainloop()
-        exit()
-
-    return results
-
-
-    
-def Peak_Initialisation(
-    Peak_Type='Peak_Type',
-    Peak_Picking_Results = 'Peak_Picking_Results'):
-    Peak_Picking_Results = Peak_Picking_Results.apply(pd.to_numeric)
-    if Peak_Type == 'Singlet':
-        Init_Val= [
-        Peak_Picking_Results.ppm_H_AXIS.values[0], 
-        0.5,
-        Peak_Picking_Results.Peak_Amp.values[0], 
-        0.002
-        ]
-
-    if Peak_Type =='Doublet':
-        x0 = np.mean(Peak_Picking_Results.loc[:,'ppm_H_AXIS'])
-        J1 = 2*(np.abs(Peak_Picking_Results.loc[2,'ppm_H_AXIS'])-np.abs(x0))
-        Amp = np.mean(Peak_Picking_Results.loc[:,'Peak_Amp'])
-
-        Init_Val= [
-                x0, 
-                0.5,
-                Amp, 
-                0.002,
-                J1
-                ]
-
-    if Peak_Type =='DoubletofDoublet':
-
-        x0_init = np.mean(Peak_Picking_Results.loc[:,'ppm_H_AXIS'])
-        J_small = Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').diff(axis=0).ppm_H_AXIS.iloc[1]
-
-        J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'ppm_H_AXIS').ppm_H_AXIS)-np.mean(Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').ppm_H_AXIS))
-        Amp_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Amp'])
-        Init_Val= [
-                x0_init, 
-                0.5,
-                Amp_init, 
-                0.002,
-                J_small,
-                J_large
-                ]
-
-    return Init_Val
 
 def Peak_Fitting(
     Peak_Type   = 'Peak_Type',
@@ -291,137 +200,6 @@ def Plot_All_Spectrum(
             pdf.savefig(fig)
             plt.close(fig)
 
-def saveinfo(r,dic):
-    Res.Peak_Amp = dic['Intensity']
-    Res.ppm_H_AXIS = dic['Peak_Position']
-    Res.Cluster = [i.get() for i in dic["Cluster"]]
-    Res.Selection = [i.get() for i in dic["Selection"]]
-    r.destroy()
-    plt.close()
-
-def save_nt(r, dic, new_threshold):
-    for n in dic['th']:
-        nt = n.get()
-    new_threshold.nt.loc[1] = nt
-    r.destroy()
-    plt.close()
-    return new_threshold
-
-def Exit(r):
-    r.destroy()
-    plt.close()
-    
-def opennewwindow(PeakPicking_Threshold, pp_results,figure,pts_Color,Res,new_threshold):
-    newwindow = tk.Tk()
-    newwindow.title('Peak Picking Visualisation and Validation')
-    graph = FigureCanvasTkAgg(figure, master=newwindow)
-    canvas = graph.get_tk_widget()
-    canvas.grid(row=0, column=0,columnspan = 8,rowspan=1)
-
-    pp_names = ['ppm_H_AXIS','Peak_Amp']
-    data_cols_names = ['1H ppm','Peak Intensity','Selection','Cluster']
-    # Multiplicity_Choice = ('Singlet','Doublet')
-
-    for c in range(len(data_cols_names)):
-        tk.Label(newwindow, text=str(data_cols_names[c]), ).grid(column=c+1, row=2)
-
-    dic = {
-        'Cluster': [],
-        'Selection': [],
-        'Intensity':[],
-        'Peak_Position':[]
-    }
-    dic_par = {
-        'th':[]
-    }
-    npeaks = len(pp_results)
-    for i in range(npeaks):
-        tk.Label(newwindow, text="Peak "+str(i+1),fg=pts_Color[i]).grid(column=0, row=i+3)
-        en = tk.Entry(newwindow,justify = "center")
-
-        # Button for peak selection
-        check_resultat = tk.IntVar()
-        checkbutton1=Checkbutton(newwindow, var=check_resultat,onvalue=0,offvalue=1)
-        checkbutton1.grid(row=i+3,column=len(data_cols_names)-1)
-        checkbutton1.var=check_resultat
-        dic['Selection'].append(check_resultat)
-        print(check_resultat.get())
-
-        # # Menu to choose mutliplicity
-        # v = tk.StringVar()
-        # v.set('Multiplicity')
-        # dic['Multiplicity'].append(v)
-        # OptionMenu1 = OptionMenu(newwindow, v, *Multiplicity_Choice)
-        # OptionMenu1.grid(row=i+3,column=len(data_cols_names)-1)
-
-        # Clustering
-        en_cluster = tk.Entry(newwindow,justify = "center")
-        en_cluster.insert(0, 0)
-        dic['Cluster'].append(en_cluster)
-        en_cluster.grid(column=len(data_cols_names),row=i+3,ipadx=5)
-
-        for c in range(len(pp_names)):
-            col = pp_names[c]
-            en_c = tk.Entry(newwindow,justify = "center")
-            data = pp_results.iloc[i].loc[col]
-            if col == 'ppm_H_AXIS':
-                dic['Peak_Position'].append(data)
-            if col == 'Peak_Amp':
-                dic['Intensity'].append(data)
-            en_c.insert(0, round(data,3))
-            en_c.grid(column=c+1,row=i+3,sticky=tk.N+tk.S+tk.E+tk.W)
-    
-    disp = Entry(newwindow, readonlybackground="white")
-    tk.Label(newwindow, text="Threshold", fg='#f00').grid(column=0, row=1)
-    disp.insert(0, PeakPicking_Threshold)
-    disp.grid(column=1, row=1)
-    dic_par['th'].append(disp)
-
-    tk.Button(newwindow, text="Refresh & Close", fg = "orange", command=lambda: save_nt(newwindow, dic_par, new_threshold)).grid()  
-    tk.Button(newwindow, text="Save & Close", fg = "blue", command=lambda: saveinfo(newwindow, dic)).grid() 
-    tk.Button(newwindow, text="Exit", fg = "black", command=lambda: Exit(newwindow)).grid() 
-
-    newwindow.mainloop()
-
-Res = pd.DataFrame(columns=['ppm_H_AXIS','Peak_Amp','Selection','Cluster'])
-
-def main_window(x_Spec,y_Spec,PeakPicking_Threshold,PeakPicking_data):
-
-    n_peak = len(PeakPicking_data)
-    if n_peak >=10:
-        PeakPicking_data = PeakPicking_data.sort_values(by='Peak_Amp', ascending=False).head(10)
-        PeakPicking_data = PeakPicking_data.sort_values(by='ppm_H_AXIS', ascending=True)
-        n_peak = len(PeakPicking_data)
-
-    #Res = pd.DataFrame(columns=['ppm_H_AXIS','Peak_Amp','Check','Cluster'],index=np.arange(1,n_peak+1))
-    new_threshold = pd.DataFrame(columns=['nt'],index=[1])
-
-    # Create a list of colors
-    colors = []
-    for i in range(n_peak):
-        colors.append('#%06X' % randint(0, 0xFFFFFF))
-
-    #Plot Spectrum with peak picking
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(x_Spec, y_Spec, '-',color='teal')
-    for i in range(n_peak):
-        ax.plot(PeakPicking_data.ppm_H_AXIS.iloc[i],PeakPicking_data.Peak_Amp.iloc[i],c=colors[i],ls='none',marker='o')
-    ax.axhline(PeakPicking_Threshold,c='r')
-    ax.invert_xaxis()
-    ax.set_xlabel(r'$^1H$ $(ppm)$')
-
-    opennewwindow(
-        PeakPicking_Threshold,
-        PeakPicking_data, 
-        fig,
-        colors,
-        Res,
-        new_threshold
-        )
-
-    return new_threshold, Res
-
 
 ## Test for singlet
 # test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/home-local/charlier/nmrData/Neil', '8NC2021_ColiCE-NAD', '204', '1','36', '8.4', '8.2', '0.1e4']
@@ -565,33 +343,6 @@ for n in cluster_list:
     d_id[n] = [len(ini_params),len(ini_params)+len(Init_Val)]
     ini_params.extend(Init_Val)
 
-
-def simulate_data(
-    x_fit_,
-    peakpicking_data,
-    fit_par, 
-    ):
-    sim_intensity = np.zeros(len(x_fit_))
-    cluster_list =  peakpicking_data.Cluster.unique()
-    print(fit_par)
-    for n in cluster_list:
-        _cluster_ = peakpicking_data.loc[peakpicking_data.Cluster==n]
-        _multiplet_type_ = d_clustering[len(_cluster_)]
-        _multiplet_type_function = d_mapping[_multiplet_type_]["f_function"]
-        params = fit_par[d_id[n][0]:d_id[n][1]] 
-        y = _multiplet_type_function(x_fit_, *params)
-        sim_intensity += y
-    return sim_intensity  
-
-def fit_objective(
-    fit_par,
-    x_fit_,
-    peakpicking_data,
-    y_Spec,
-    ):
-    sim_intensity = simulate_data(x_fit_,peakpicking_data,fit_par)
-    rmsd = np.sqrt(np.mean((sim_intensity - y_Spec)**2))
-    return rmsd
 
 res_fit = minimize(
     fit_objective,

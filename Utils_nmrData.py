@@ -5,6 +5,8 @@ from tkinter import *
 from tkinter import messagebox 
 import tkinter.font as tkFont
 import tkinter as tk
+import matplotlib.pyplot as plt
+import pandas as pd
 
 def find_nearest(array, value):
     array = np.asarray(array)
@@ -67,26 +69,25 @@ def Peak_Picking_1D(
     y_data          =   'y_data', 
     threshold       =   'threshold',
     ):
+    
     try: 
         peak_table = ng.peakpick.pick(
             y_data, 
             pthres=threshold, 
             algorithm='downward',
             )
-
         # Find peak locations in ppm
         peak_locations_ppm = []
         for i in range(len(peak_table['X_AXIS'])):
             pts = int(peak_table['X_AXIS'][i])
-            peak_locations_ppm.append( x_data[pts])
-        
+            peak_locations_ppm.append(x_data[pts])
+
         # Find the peak amplitudes
         peak_amplitudes = y_data[peak_table['X_AXIS'].astype('int')]
 
         results = pd.DataFrame(columns=['ppm_H_AXIS','Peak_Amp'],index=np.arange(1,len(peak_table)+1))
         results.loc[:,'ppm_H_AXIS'] = peak_locations_ppm
         results.loc[:,'Peak_Amp'] = peak_amplitudes
-
         results = results.sort_values(by='ppm_H_AXIS', ascending=True)
     except:
         main = Tk()
