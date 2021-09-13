@@ -1,13 +1,12 @@
-import os, sys, importlib
-from tkinter import * #required.
-from tkinter import messagebox #for messagebox.
-import tkinter.font as tkFont
-import tkinter as tk
 from scipy.optimize import curve_fit
 from matplotlib.backends.backend_pdf import PdfPages
-from c_py_mod.make_plot_grid import *
+#from c_py_mod.make_plot_grid import *
 from scipy.optimize import minimize
 
+
+from Multiplets import *
+from Interfaces import *
+from Utils_nmrData import *
 ################################################################
 # Test for missing librairies 
 ################################################################
@@ -38,8 +37,6 @@ from scipy.optimize import minimize
 #     exit()
 ################################################################
 
-import numpy as np
-import nmrglue as ng
 import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
@@ -49,71 +46,11 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tqdm import tqdm
 from random import randint
 
-class MyOptionMenu(tk.OptionMenu):
-    def __init__(self, master, status, *options):
-        self.var = tk.StringVar(master)
-        self.var.set(status)
-        tk.OptionMenu.__init__(self, master, self.var, *options)
-        self.config(font=('calibri',(10)),bg='white',width=12)
-        self['menu'].config(font=('calibri',(10)),bg='white')
-
 # https://stackoverflow.com/questions/58367251/how-can-i-store-the-data-of-my-tkinter-entries-into-a-dataframe-to-later-export
 
-def find_nearest(array, value):
-    array = np.asarray(array)
-    idx = (np.abs(array - value)).argmin()
-    return idx, array[idx]
 
-def Read_Raw_NMR_Data_Bruker(
-        path_nmr_data   =   'path_nmr_data',
-        expno_data      =   'expno_data',
-        procno_data     =   'procno_data',
-        ):
-    path = os.path.join(path_nmr_data,str(expno_data),'pdata',str(procno_data))
-    dic, data = ng.bruker.read_pdata(
-        path,
-        read_procs=True,
-        read_acqus=False,
-        scale_data = False,
-        all_components=False
-        )
-    n_dim = len(data.shape) 
-    if n_dim == 1:       
-        udic = ng.bruker.guess_udic(dic,data)
-        uc_F1 = ng.fileiobase.uc_from_udic(udic, 0)
-        ppm_scale_F1 = uc_F1.ppm_scale()
-        output = [data,dic,ppm_scale_F1]
-    if n_dim == 2:
-        udic = ng.bruker.guess_udic(dic,data)
-        uc_F2 = ng.fileiobase.uc_from_udic(udic, 1)
-        ppm_scale_F2 = uc_F2.ppm_scale()
-        # Clean data for data stopped before the end!
-        data = data[~np.all(data == 0, axis=1)]
 
-        output = (data,dic,ppm_scale_F2)
-    return output
 
-def Extract_Data(
-    data = 'data',
-    x_ppm = 'x_ppm',
-    x_lim = 'x_lim'
-    ):
-    n_dim = len(data.shape) 
-    if n_dim == 1:     
-        idx_x0_F1, x0_F1 = find_nearest(x_ppm,x_lim[0])
-        idx_x1_F1, x1_F1 = find_nearest(x_ppm,x_lim[1])
-        data_ext = data[idx_x0_F1:idx_x1_F1]
-        x_ppm_ext = x_ppm[idx_x0_F1:idx_x1_F1]
-        output = [data_ext, x_ppm_ext]
-    if n_dim == 2:
-
-        idx_x0_F2, x0_F2 = find_nearest(x_ppm,x_lim[0])
-        idx_x1_F2, x1_F2 = find_nearest(x_ppm,x_lim[1])
-        data_ext = data[:,idx_x0_F2:idx_x1_F2]
-        x_ppm_ext = x_ppm[idx_x0_F2:idx_x1_F2]
-        output = [data_ext, x_ppm_ext]
-
-    return output
 
 def Peak_Picking_1D(
     x_data          =   'x_data', 
@@ -158,60 +95,8 @@ def Peak_Picking_1D(
 
     return results
 
-def Fit_Functions(
-    Peak_Type   =   'Peak_Type',
-    params      =   'Params'):
 
-    if Peak_Type is Singlet: 
-        [x, x0, a, h_s, lw] = params  
-        f_fit = a * h_s  / ( 1 + (( x - x0 )/lw)**2) + (1-a)*h_s*np.exp(-(x-x0)**2/(2*lw**2)) 
-    if Peak_Type is Doublet:
-        [x, x0, a, h_s, lw, J1]  = params
-        S1 = a * h_s  / ( 1 + (( x - x0 - (J1/2))/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 - (J1/2))**2/(2*lw**2))
-        S2 = a * h_s  / ( 1 + (( x - x0 + (J1/2))/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 + (J1/2))**2/(2*lw**2))
-        f_fit = S1 + S2 
     
-def Singlet( x, x0, a, h_s, lw ):
-    #Lorentzian + Gaussian    
-    S1 = a * h_s  / ( 1 + (( x - x0 )/lw)**2) + (1-a)*h_s*np.exp(-(x-x0)**2/(2*lw**2))    
-    Signal = S1
-    return Signal
-
-def Doublet( x, x0, a, h_s, lw, J1 ):
-    #Lorentzian + Gaussian
-    S1 = a * h_s  / ( 1 + (( x - x0 - (J1/2))/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 - (J1/2))**2/(2*lw**2))
-    S2 = a * h_s  / ( 1 + (( x - x0 + (J1/2))/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 + (J1/2))**2/(2*lw**2))
-    Signal = S1 + S2
-    return Signal
-
-def DoubletOfDoublet( x, x0, a, h_s, lw, J1, J2):
-    #Lorentzian + Gaussian
-    S1 = a * h_s  / ( 1 + (( x - x0 - ((J1+J2)/2))/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 - ((J1+J2)/2))**2/(2*lw**2))
-    S2 = a * h_s  / ( 1 + (( x - x0 - ((J1-J2)/2))/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 - ((J1-J2)/2))**2/(2*lw**2))
-    S3 = a * h_s  / ( 1 + (( x - x0 + ((J1+J2)/2))/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 + ((J1+J2)/2))**2/(2*lw**2))
-    S4 = a * h_s  / ( 1 + (( x - x0 + ((J1-J2)/2))/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 + ((J1-J2)/2))**2/(2*lw**2))
-    Signal = S1+S2+S3+S4
-    return Signal
-
-# x_p = np.arange(-400,400,0.1)
-# y1 = DoubletOfDoublet(x_p, 0, 0.5, 1e4, 2, 20,100)
-# y2 = Singlet(x_p, 0, 0.5, 1e5, 2)
-# s = y1 + y2
-# plt.plot(
-#     x_p,
-#     s
-# )
-# plt.show()
-# exit()
-
-d_mapping = {
-    "Singlet":{"f_function":Singlet,"n_peaks" : 1, "params":['x0','a','Amp','lw']},
-    "Doublet":{"f_function":Doublet,"n_peaks" : 2,"params":['x0','a','Amp','lw','J1']},
-    "DoubletofDoublet":{"f_function":DoubletOfDoublet,"n_peaks" : 4,"params":['x0','a','Amp','lw','J1','J2']}
-
-    }
-d_clustering = {d_mapping[k]["n_peaks"]:k for k in d_mapping.keys()}
-
 def Peak_Initialisation(
     Peak_Type='Peak_Type',
     Peak_Picking_Results = 'Peak_Picking_Results'):
@@ -547,7 +432,7 @@ def main_window(x_Spec,y_Spec,PeakPicking_Threshold,PeakPicking_data):
 # test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/home-local/charlier/nmrData/Neil', '8NC2021_ColiCE-Glc1-2-13C', '6', '1','17', '8.48', '8.470', '0.1e4']
 
 # ################### Test Pierre Data
-test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '210618', '1D','54', '1','1', '2.1', '1.7', '0.1e4']
+test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '210618', '1D','52', '1','1', '2.1', '1.7', '0.1e4']
 
 ################### Test Plastic
 # test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '9CC_900', '1D_Stack',['504','511'], '1','1', '8.5', '7.5', '0.1e4']
@@ -563,7 +448,7 @@ topspin_dic = {
     'Selected_window':[float(test[7]),float(test[8])]    
     }
 
-PeakPicking_Threshold = 5e5
+PeakPicking_Threshold = 3e5
 
 Analysis_Type = topspin_dic['Data_Type']
 
@@ -660,8 +545,7 @@ while check_for_nt == False:
     check_for_nt = new_th.isnull().values.any()
     if check_for_nt == True:
         break  
-print(pp_res_Sel)
-exit()
+
 ################################################################
 # Initial 1D Peak Fitting 
 ################################################################
@@ -681,8 +565,7 @@ for n in cluster_list:
     d_id[n] = [len(ini_params),len(ini_params)+len(Init_Val)]
     ini_params.extend(Init_Val)
 
-print(ini_params)
-exit()
+
 def simulate_data(
     x_fit_,
     peakpicking_data,
@@ -718,12 +601,12 @@ res_fit = minimize(
         (0,np.inf),
         (0,np.inf),
         (0,np.inf),
-        # (0,np.inf),
-        # (0,np.inf),
-        # (0,np.inf),
-        # (0,np.inf),
-        # (0,np.inf),
-        # (0,np.inf),
+        (0,np.inf),
+        (0,np.inf),
+        (0,np.inf),
+        (0,np.inf),
+        (0,np.inf),
+        (0,np.inf),
     ],
     method='L-BFGS-B',
     options={'ftol': 1e-6},#,'maxiter':0},
