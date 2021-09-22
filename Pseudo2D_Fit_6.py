@@ -47,31 +47,6 @@ from tqdm import tqdm
 # https://stackoverflow.com/questions/58367251/how-can-i-store-the-data-of-my-tkinter-entries-into-a-dataframe-to-later-export
 
 
-def Peak_Fitting(
-    Peak_Type   = 'Peak_Type',
-    x_data      = 'x_data',
-    y_data      = 'y_data',
-    Peak_Picking_Results = 'Peak_Picking_Results',
-    Initial_Values = 'Initial_Values'
-    ):
-
-    if Peak_Picking_Results is not None:
-        Init_Val = Peak_Initialisation(Peak_Type,Peak_Picking_Results)
-
-    if Initial_Values is None:
-        Init = Init_Val
-    else:
-        Init = Initial_Values
-    # print(isinstance(Peak_Type, str))
-
-    popt,pcov = curve_fit(
-        d_mapping[Peak_Type]["f_function"], 
-        x_data, 
-        y_data, 
-        p0=Init
-        )
-    return popt,pcov
-
 def Pseudo2D_PeakFitting(   
     Intensities =   'Intensities',
     x_Spec      =   'x_Spec',    
@@ -325,49 +300,30 @@ cluster_list =  pp_res_Sel.Cluster.unique()
 ################################################################
 # Initial 1D Peak Fitting 
 ################################################################
-
-
-test = Fitting_Function(
+Initial_Fit_ = Fitting_Function(
     x_Spec_init_,
     pp_res_Sel,
     y_Spec_init_)
-
-sim = simulate_data(
-    x_Spec_init_,
-    pp_res_Sel,
-    test.x.tolist()
-)
-plt.plot(x_Spec_init_,y_Spec_init_,'o')
-plt.plot(x_Spec_init_,sim)
-plt.show()
-
-exit()
-# for n in range(pp_res_Sel.Cluster.value.unique())
-
-Peak_Type_0_ = d_clustering[len(Cluster_0_)]
-
-popt_init, pcov_init = Peak_Fitting(
-    Peak_Type = Peak_Type_0_,
-    x_data = x_Spec,
-    y_data = y_Spec,
-    Peak_Picking_Results = pp_res_Sel,
-    Initial_Values = None
-)
-
 ################################################################
 # Initial 1D Peak Picking Visualisation 
 ################################################################
 #plot the spectrum and peak locations on a PPM scale
+# Simulate the data to plot
+
+sim = simulate_data(
+    x_Spec_init_,
+    pp_res_Sel,
+    Initial_Fit_.x.tolist())
+
 plt.close()
 fig = plt.figure()
 ax = fig.add_subplot(111)
-ax.plot(x_Spec, y_Spec, 'k-')
-ax.plot(Peak_Picking.ppm_H_AXIS,Peak_Picking.Peak_Amp, 'ro')
-ax.plot(x_Spec, d_mapping[Peak_Type_0_]["f_function"](x_Spec, *popt_init), 'r-', label='fit')
+ax.plot(x_Spec_init_,y_Spec_init_,'o')
+ax.plot(x_Spec_init_,sim, 'r-', label='fit')
 ax.invert_xaxis()
 ax.set_xlabel(r'$^1H$ $(ppm)$')
 plt.show()
-
+exit()
 ################################################################
 # Fit of Pseudo 2D 
 ################################################################

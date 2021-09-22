@@ -1,5 +1,8 @@
 import numpy as np
 import pandas as pd
+from scipy.optimize import minimize
+
+from Multiplets import *
 
 # Set Initial Values for fitting
 Line_Width = 0.002
@@ -51,6 +54,23 @@ def Peak_Initialisation(
 
     return Init_Val
 
+def Initial_Values(
+    peakpicking_data
+    ):
+    ini_params = []
+    cluster_list =  peakpicking_data.Cluster.unique()
+    d_id = {k:[] for k in cluster_list}
+
+    for n in cluster_list:
+        _cluster_ = peakpicking_data.loc[peakpicking_data.Cluster==n]
+        _multiplet_type_ = d_clustering[len(_cluster_)]
+        _multiplet_type_function = d_mapping[_multiplet_type_]["f_function"]
+        Init_Val = Peak_Initialisation(_multiplet_type_,Peak_Picking_Results=_cluster_)
+
+        d_id[n] = [len(ini_params),len(ini_params)+len(Init_Val)]
+        ini_params.extend(Init_Val)
+
+    return d_id, ini_params
 
 def simulate_data(
     x_fit_,
@@ -60,6 +80,7 @@ def simulate_data(
 
     sim_intensity = np.zeros(len(x_fit_))
     cluster_list =  peakpicking_data.Cluster.unique()
+    d_id = Initial_Values(peakpicking_data)[0]
     for n in cluster_list:
         _cluster_ = peakpicking_data.loc[peakpicking_data.Cluster==n]
         _multiplet_type_ = d_clustering[len(_cluster_)]
@@ -69,13 +90,27 @@ def simulate_data(
         sim_intensity += y
     return sim_intensity  
 
-
 def fit_objective(
     fit_par,
     x_fit_,
     peakpicking_data,
-    y_Spec,
+    y_fit_,
     ):
+
     sim_intensity = simulate_data(x_fit_,peakpicking_data,fit_par)
-    rmsd = np.sqrt(np.mean((sim_intensity - y_Spec)**2))
+    rmsd = np.sqrt(np.mean((sim_intensity - y_fit_)**2))
     return rmsd
+
+def Fitting_Function(x_fit_,peakpicking_data,y_fit_):
+    init_=Initial_Values(peakpicking_data)[1]
+    bounds_fit_ = [ (1e-6,np.inf) for i in range(len(init_))]
+
+    res_fit = minimize(
+                fit_objective,
+                x0=init_,                
+                bounds=bounds_fit_,
+                method='L-BFGS-B',
+                options={'ftol': 1e-6},#,'maxiter':0},
+                args=(x_fit_,peakpicking_data,y_fit_),
+    )
+    return res_fit
