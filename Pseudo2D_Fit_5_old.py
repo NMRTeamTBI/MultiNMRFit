@@ -350,6 +350,8 @@ def Plot_All_Spectrum(
     n_spec_page = n_col*n_row
     n_spec = len(Fit_results)
 
+    print(Fit_results)
+    exit()
     speclist = Fit_results.Spec
     with PdfPages(str(pdf_path)+str(pdf_name)+'.pdf') as pdf:
         for page in range(int(np.ceil(float(n_spec/n_spec_page)))):

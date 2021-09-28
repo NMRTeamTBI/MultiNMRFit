@@ -7,7 +7,7 @@ from random import randint
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
+import time
 
 class MyOptionMenu(tk.OptionMenu):
     def __init__(self, master, status, *options):
@@ -25,9 +25,12 @@ def saveinfo(r,dic):
     Res.Peak_Amp = dic['Intensity']
     Res.ppm_H_AXIS = dic['Peak_Position']
     Res.Cluster = [i.get() for i in dic["Cluster"]]
-    Res.Selection = [i.get() for i in dic["Selection"]]
+    Res.Selection = [True if i.get() != '' else False for i in dic["Cluster"]]
     r.destroy()
     plt.close()
+    for i in range(10,0,-1):
+        time.sleep(1)
+        print(i)
 
 def save_nt(r, dic, new_threshold):
     for n in dic['th']:
@@ -35,6 +38,8 @@ def save_nt(r, dic, new_threshold):
     new_threshold.nt.loc[1] = nt
     r.destroy()
     plt.close()
+
+
     return new_threshold
 
 def Exit(r):
@@ -49,7 +54,7 @@ def opennewwindow(PeakPicking_Threshold, pp_results,figure,pts_Color,Res,new_thr
     canvas.grid(row=0, column=0,columnspan = 8,rowspan=1)
 
     pp_names = ['ppm_H_AXIS','Peak_Amp']
-    data_cols_names = ['1H ppm','Peak Intensity','Selection','Cluster']
+    data_cols_names = ['1H ppm','Peak Intensity','Cluster']
     # Multiplicity_Choice = ('Singlet','Doublet')
 
     for c in range(len(data_cols_names)):
@@ -70,12 +75,12 @@ def opennewwindow(PeakPicking_Threshold, pp_results,figure,pts_Color,Res,new_thr
         en = tk.Entry(newwindow,justify = "center")
 
         # Button for peak selection
-        check_resultat = tk.IntVar()
-        checkbutton1=Checkbutton(newwindow, var=check_resultat,onvalue=0,offvalue=1)
-        checkbutton1.grid(row=i+3,column=len(data_cols_names)-1)
-        checkbutton1.var=check_resultat
-        dic['Selection'].append(check_resultat)
-        print(check_resultat.get())
+        #check_resultat = tk.IntVar()
+        #checkbutton1=Checkbutton(newwindow, var=check_resultat,onvalue=0,offvalue=1)
+        #checkbutton1.grid(row=i+3,column=len(data_cols_names)-1)
+        #checkbutton1.var=check_resultat
+        #dic['Selection'].append(check_resultat)
+        #print(check_resultat.get())
 
         # # Menu to choose mutliplicity
         # v = tk.StringVar()
@@ -86,7 +91,7 @@ def opennewwindow(PeakPicking_Threshold, pp_results,figure,pts_Color,Res,new_thr
 
         # Clustering
         en_cluster = tk.Entry(newwindow,justify = "center")
-        en_cluster.insert(0, 0)
+        en_cluster.insert(0, '')
         dic['Cluster'].append(en_cluster)
         en_cluster.grid(column=len(data_cols_names),row=i+3,ipadx=5)
 

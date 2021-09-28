@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
+import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 from Multiplets import *
 
@@ -18,14 +20,14 @@ def Peak_Initialisation(
     if Peak_Type == 'Singlet':
         Init_Val= [
         Peak_Picking_Results.ppm_H_AXIS.values[0], 
-        0.5,
-        Peak_Picking_Results.Peak_Amp.values[0], 
+        Ratio_Lorentzian_Gaussian,
+        Peak_Picking_Results.Peak_Amp.values[0]/1e8, 
         Line_Width
         ]
 
     if Peak_Type =='Doublet':
-        x0 = np.mean(Peak_Picking_Results.loc[:,'ppm_H_AXIS'])
-        J1 = 2*(np.abs(Peak_Picking_Results.loc[2,'ppm_H_AXIS'])-np.abs(x0))
+        x0 = np.mean(Peak_Picking_Results.ppm_H_AXIS)
+        J1 = 2*(np.abs(Peak_Picking_Results.ppm_H_AXIS.max())-np.abs(x0))
         Amp = np.mean(Peak_Picking_Results.loc[:,'Peak_Amp'])
 
         Init_Val= [
@@ -35,7 +37,6 @@ def Peak_Initialisation(
                 Line_Width,
                 J1
                 ]
-
     if Peak_Type =='DoubletofDoublet':
 
         x0_init = np.mean(Peak_Picking_Results.loc[:,'ppm_H_AXIS'])
@@ -51,7 +52,6 @@ def Peak_Initialisation(
                 J_small,
                 J_large
                 ]
-
     return Init_Val
 
 def Initial_Values(
@@ -77,7 +77,6 @@ def simulate_data(
     peakpicking_data,
     fit_par, 
     ):
-
     sim_intensity = np.zeros(len(x_fit_))
     cluster_list =  peakpicking_data.Cluster.unique()
     d_id = Initial_Values(peakpicking_data)[0]
@@ -88,6 +87,7 @@ def simulate_data(
         params = fit_par[d_id[n][0]:d_id[n][1]] 
         y = _multiplet_type_function(x_fit_, *params)
         sim_intensity += y
+
     return sim_intensity  
 
 def fit_objective(
@@ -96,14 +96,23 @@ def fit_objective(
     peakpicking_data,
     y_fit_,
     ):
-
     sim_intensity = simulate_data(x_fit_,peakpicking_data,fit_par)
     rmsd = np.sqrt(np.mean((sim_intensity - y_fit_)**2))
     return rmsd
 
-def Fitting_Function(x_fit_,peakpicking_data,y_fit_):
-    init_=Initial_Values(peakpicking_data)[1]
+def Fitting_Function(
+    x_fit_,
+    peakpicking_data,
+    y_fit_,
+    Initial_Val=None):
+
+    if Initial_Val is not None:        
+        init_ = Initial_Val
+    else:
+        init_=Initial_Values(peakpicking_data)[1]
+        
     bounds_fit_ = [ (1e-6,np.inf) for i in range(len(init_))]
+    # bounds_fit_ = [(1e-6,12),(1e-6,1),(1e-6,np.inf),(1e-6,1)]
 
     res_fit = minimize(
                 fit_objective,
@@ -114,3 +123,64 @@ def Fitting_Function(x_fit_,peakpicking_data,y_fit_):
                 args=(x_fit_,peakpicking_data,y_fit_),
     )
     return res_fit
+
+def Pseudo2D_PeakFitting(   
+    Intensities =   'Intensities'           ,
+    x_Spec      =   'x_Spec'                ,    
+    ref_spec    =   'ref_spec'              ,
+    peak_picking_data = 'peak_picking_data'
+    ): 
+
+    n_spec = Intensities.shape[0]
+    ref_spec = int(ref_spec)-1
+    spec_sup = np.arange(ref_spec+1,n_spec,1)
+    spec_inf = np.arange(0,ref_spec,1)
+
+    y_Spec_init_ = Intensities[ref_spec,:]
+
+    #Fitting of the reference 1D spectrum -- This function can be used for 1D spectrum alone
+    Initial_Fit_ = Fitting_Function(
+        x_Spec,
+        peak_picking_data,
+        y_Spec_init_)
+ 
+    Fit_results = pd.DataFrame(
+        index=np.arange(0,n_spec,1),
+        columns=np.arange(0,len(Initial_Fit_.x.tolist()),1)
+            )
+
+    Fit_results.loc[ref_spec,:] = Initial_Fit_.x.tolist()
+
+    # for s in tqdm(spec_sup):
+    for s in spec_sup:
+        y_Spec = Intensities[s-1,:]
+        Initial_Fit_Values = list(Fit_results.loc[s-1].iloc[:].values)
+        try:
+            _1D_Fit_ = Fitting_Function(
+                        x_Spec,
+                        peak_picking_data,
+                        y_Spec,
+                        Initial_Fit_Values)                   
+            
+            # for n in range(len(Col_Names)-1):
+            Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
+        except:
+            print('Error'+str(s))
+
+    for s in spec_inf[::-1]:
+    # for s in tqdm(spec_inf[::-1]):
+        # print(s,s+1)
+        y_Spec = Intensities[s,:]   
+        Initial_Fit_Values = list(Fit_results.loc[s+1].iloc[:].values) 
+        try:
+            _1D_Fit_ = Fitting_Function(
+                        x_Spec,
+                        peak_picking_data,
+                        y_Spec,
+                        Initial_Fit_Values) 
+
+            Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
+        except:
+            print('Error'+str(s))
+
+    return Fit_results
