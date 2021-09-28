@@ -1,4 +1,3 @@
-from matplotlib.backends.backend_pdf import PdfPages
 
 
 from Multiplets import *
@@ -35,79 +34,15 @@ from Fitting import *
 #     exit()
 ################################################################
 
-import matplotlib
-matplotlib.use("TkAgg")
-import matplotlib.pyplot as plt
-import pandas as pd
-from matplotlib.figure import Figure
 
-from tqdm import tqdm
 
 # https://stackoverflow.com/questions/58367251/how-can-i-store-the-data-of-my-tkinter-entries-into-a-dataframe-to-later-export
 
-def Plot_All_Spectrum(
-    pdf_path = 'pdf_path',
-    pdf_name = 'pdf_name',
-    Fit_results = 'Fit_results', 
-    Int_Pseudo_2D_Data = 'Int_Pseudo_2D_Data',
-    x_ppm = 'x_ppm',
-    Peak_Picking_data = 'Peak_Picking_data'
-    ):
 
-    Fit_results.to_csv(str(pdf_path)+str(pdf_name)+'.txt', index=True)  
-
-    x_fit = np.linspace(np.min(x_ppm),np.max(x_ppm),2048)
-    speclist = Fit_results.index.values.tolist() 
-    with PdfPages(str(pdf_path)+str(pdf_name)+'.pdf') as pdf:           
-        for r in speclist:
-            fig, (ax) = plt.subplots(1, 1)
-            fig.set_size_inches([11.7,8.3])
-            Norm = np.max(Int_Pseudo_2D_Data[r,:])
-            ax.plot(
-                x_ppm,
-                Int_Pseudo_2D_Data[r,:],#/Norm,
-                color='b',
-                ls='None',
-                marker='o',
-                markersize=0.5
-                )    
-            ax.invert_xaxis()
-            # ax[r].set_xlabel('PPM')
-            #ax.set_ylim(top=1.1,bottom=-0.1)
-            res = Fit_results.loc[r].iloc[:].values.tolist()
-
-            sim = simulate_data(
-                x_fit,
-                Peak_Picking_data,
-                res
-                )
-
-            ax.plot(
-                x_fit, 
-                sim,#/Norm, 
-                'r-', 
-                lw=0.6,
-                label='fit')
-            ax.text(0.05,0.9,r+1,transform=ax.transAxes)  
- 
-            ax.set_ylabel('Intensity')
-            ax.set_xlabel(r'$^1H$ $(ppm)$')
-
-
-            plt.subplots_adjust(
-                left = 0.1,
-                #bottom = 0.04,
-                right = 0.96,
-                top = 0.96,
-                wspace = 0.3,
-                hspace = 0.3,
-            )
-            pdf.savefig(fig)
-            plt.close(fig)
 
 
 ## Test for singlet
-test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8NC2021_ColiCE-NAD', 'Pseudo2D', '204', '1','48', '8.35', '8.3', '0.1e4']
+# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8NC2021_ColiCE-NAD', 'Pseudo2D', '204', '1','48', '8.35', '8.3', '0.1e4']
 ### Test for Doublet
 # test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8NC2021_ColiCE-NAD', 'Pseudo2D','204', '1','36', '0.15', '-0.15', '0.1e4']
 
@@ -121,6 +56,12 @@ test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4
 # test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '9CC_900', '1D_Stack',['504','511'], '1','1', '8.5', '7.5', '0.1e4']
 # test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '9CC_900', '1D','511', '1','1', '8.5', '7.5', '20e6']
 
+## BHET
+# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '11', '1','300', '2', '-1', '0.1e4']
+# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '12', '1','300', '7.9', '7.87', '0.1e4']
+# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '12', '2','1', '8.2', '8.16', '0.1e4']
+test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '12', '1','1', '8.15', '7.9', '0.1e4']
+
 topspin_dic = {
     'Path': str(test[1]),
     'Data_Folder': test[2], 
@@ -131,7 +72,7 @@ topspin_dic = {
     'Selected_window':[float(test[7]),float(test[8])]    
     }
 
-PeakPicking_Threshold = 8e6
+PeakPicking_Threshold = 4e6
 
 Analysis_Type = topspin_dic['Data_Type']
 
@@ -166,6 +107,7 @@ if Analysis_Type is 'Pseudo2D':
             expno_data      =   topspin_dic['Pseudo2D_ExpNo'],
             procno_data     =   topspin_dic['2D_ProcNo']
     )
+
     _dic_ = dic_2D
     _x_ppm_ = x_ppm_2D
     _data_ = data_2D
@@ -229,6 +171,7 @@ while check_for_nt == False:
     if check_for_nt == True:
         break  
 cluster_list =  pp_res_Sel.Cluster.unique()
+
 ################################################################
 # Initial 1D Peak Fitting 
 ################################################################
@@ -244,11 +187,11 @@ if topspin_dic['Data_Type'] == '1D':
             pp_res_Sel,
             _1D_Fit_.x.tolist())
 
-
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.plot(_Ext_x_ppm_,y_Spec_init_,'o')
     ax.plot(_Ext_x_ppm_,sim, 'r-', label='fit')
+
     ax.invert_xaxis()
     ax.set_xlabel(r'$^1H$ $(ppm)$')
     plt.show()
@@ -268,8 +211,8 @@ if topspin_dic['Data_Type'] == 'Pseudo2D':
 # Plot of the fit 
 ################################################################
 Plot_All_Spectrum(
-    pdf_path = './',
-    pdf_name = 'test0',
+    pdf_path = '../',
+    pdf_name = 'test_NHET_Exp12_MHET',
     Fit_results= Fit_results,
     Int_Pseudo_2D_Data = _Ext_data_,
     x_ppm = _Ext_x_ppm_,

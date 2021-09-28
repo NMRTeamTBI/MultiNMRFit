@@ -6,8 +6,16 @@ import pandas as pd
 from random import randint
 import matplotlib.pyplot as plt
 import pandas as pd
+from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import time
+from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib
+matplotlib.use("TkAgg")
+import numpy as np
+from tqdm import tqdm
+
+from Fitting import *
+
 
 class MyOptionMenu(tk.OptionMenu):
     def __init__(self, master, status, *options):
@@ -28,9 +36,6 @@ def saveinfo(r,dic):
     Res.Selection = [True if i.get() != '' else False for i in dic["Cluster"]]
     r.destroy()
     plt.close()
-    for i in range(10,0,-1):
-        time.sleep(1)
-        print(i)
 
 def save_nt(r, dic, new_threshold):
     for n in dic['th']:
@@ -156,3 +161,62 @@ def main_window(x_Spec,y_Spec,PeakPicking_Threshold,PeakPicking_data):
         )
 
     return new_threshold, Res
+
+def Plot_All_Spectrum(
+    pdf_path = 'pdf_path',
+    pdf_name = 'pdf_name',
+    Fit_results = 'Fit_results', 
+    Int_Pseudo_2D_Data = 'Int_Pseudo_2D_Data',
+    x_ppm = 'x_ppm',
+    Peak_Picking_data = 'Peak_Picking_data'
+    ):
+
+    Fit_results.to_csv(str(pdf_path)+str(pdf_name)+'.txt', index=True)  
+
+    x_fit = np.linspace(np.min(x_ppm),np.max(x_ppm),2048)
+    speclist = Fit_results.index.values.tolist() 
+    with PdfPages(str(pdf_path)+str(pdf_name)+'.pdf') as pdf:           
+        for r in tqdm(speclist):
+            fig, (ax) = plt.subplots(1, 1)
+            fig.set_size_inches([11.7,8.3])
+            Norm = np.max(Int_Pseudo_2D_Data[r,:])
+            ax.plot(
+                x_ppm,
+                Int_Pseudo_2D_Data[r,:],#/Norm,
+                color='b',
+                ls='None',
+                marker='o',
+                markersize=0.5
+                )    
+            ax.invert_xaxis()
+            # ax[r].set_xlabel('PPM')
+            #ax.set_ylim(top=1.1,bottom=-0.1)
+            res = Fit_results.loc[r].iloc[:].values.tolist()
+
+            sim = simulate_data(
+                x_fit,
+                Peak_Picking_data,
+                res
+                )
+
+            ax.plot(
+                x_fit, 
+                sim,#/Norm, 
+                'r-', 
+                lw=0.6,
+                label='fit')
+            ax.text(0.05,0.9,"Spectra : " +str(r+1),transform=ax.transAxes,fontsize=20)  
+            ax.set_ylabel('Intensity')
+            ax.set_xlabel(r'$^1H$ $(ppm)$')
+
+
+            plt.subplots_adjust(
+                left = 0.1,
+                #bottom = 0.04,
+                right = 0.96,
+                top = 0.96,
+                wspace = 0.3,
+                hspace = 0.3,
+            )
+            pdf.savefig(fig)
+            plt.close(fig)

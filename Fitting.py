@@ -7,7 +7,7 @@ from tqdm import tqdm
 from Multiplets import *
 
 # Set Initial Values for fitting
-Line_Width = 0.002
+Line_Width = 0.001
 Ratio_Lorentzian_Gaussian = 0.5
 
 def Peak_Initialisation(
@@ -21,7 +21,7 @@ def Peak_Initialisation(
         Init_Val= [
         Peak_Picking_Results.ppm_H_AXIS.values[0], 
         Ratio_Lorentzian_Gaussian,
-        Peak_Picking_Results.Peak_Amp.values[0]/1e8, 
+        Peak_Picking_Results.Peak_Amp.values[0]/1e7, 
         Line_Width
         ]
 
@@ -40,8 +40,7 @@ def Peak_Initialisation(
     if Peak_Type =='DoubletofDoublet':
 
         x0_init = np.mean(Peak_Picking_Results.loc[:,'ppm_H_AXIS'])
-        J_small = Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').diff(axis=0).ppm_H_AXIS.iloc[1]
-
+        J_small = Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').ppm_H_AXIS.diff().iloc[1]
         J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'ppm_H_AXIS').ppm_H_AXIS)-np.mean(Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').ppm_H_AXIS))
         Amp_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Amp'])
         Init_Val= [
@@ -60,13 +59,13 @@ def Initial_Values(
     ini_params = []
     cluster_list =  peakpicking_data.Cluster.unique()
     d_id = {k:[] for k in cluster_list}
-
+ 
     for n in cluster_list:
         _cluster_ = peakpicking_data.loc[peakpicking_data.Cluster==n]
         _multiplet_type_ = d_clustering[len(_cluster_)]
         _multiplet_type_function = d_mapping[_multiplet_type_]["f_function"]
-        Init_Val = Peak_Initialisation(_multiplet_type_,Peak_Picking_Results=_cluster_)
 
+        Init_Val = Peak_Initialisation(_multiplet_type_,Peak_Picking_Results=_cluster_)
         d_id[n] = [len(ini_params),len(ini_params)+len(Init_Val)]
         ini_params.extend(Init_Val)
 
@@ -110,7 +109,7 @@ def Fitting_Function(
         init_ = Initial_Val
     else:
         init_=Initial_Values(peakpicking_data)[1]
-        
+    print(init_)  
     bounds_fit_ = [ (1e-6,np.inf) for i in range(len(init_))]
     # bounds_fit_ = [(1e-6,12),(1e-6,1),(1e-6,np.inf),(1e-6,1)]
 
@@ -151,8 +150,8 @@ def Pseudo2D_PeakFitting(
 
     Fit_results.loc[ref_spec,:] = Initial_Fit_.x.tolist()
 
-    # for s in tqdm(spec_sup):
-    for s in spec_sup:
+    for s in tqdm(spec_sup):
+    # for s in spec_sup:
         y_Spec = Intensities[s-1,:]
         Initial_Fit_Values = list(Fit_results.loc[s-1].iloc[:].values)
         try:
@@ -167,8 +166,8 @@ def Pseudo2D_PeakFitting(
         except:
             print('Error'+str(s))
 
-    for s in spec_inf[::-1]:
-    # for s in tqdm(spec_inf[::-1]):
+    # for s in spec_inf[::-1]:
+    for s in tqdm(spec_inf[::-1]):
         # print(s,s+1)
         y_Spec = Intensities[s,:]   
         Initial_Fit_Values = list(Fit_results.loc[s+1].iloc[:].values) 
