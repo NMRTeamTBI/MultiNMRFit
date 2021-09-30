@@ -4,7 +4,7 @@ import numpy as np
 
 def Singlet( x, x0, a, h_s, lw ):
     #Lorentzian + Gaussian    
-    S1 = a * h_s * 1e7 / ( 1 + (( x - x0 )/lw)**2) + (1-a)*h_s*np.exp(-(x-x0)**2/(2*lw**2))    
+    S1 = a * h_s * 1e8 / ( 1 + (( x - x0 )/lw)**2) + (1-a)*h_s* 1e8*np.exp(-(x-x0)**2/(2*lw**2))    
     Signal = S1
     return Signal
 
@@ -25,9 +25,9 @@ def DoubletOfDoublet( x, x0, a, h_s, lw, J1, J2):
     return Signal
 
 d_mapping = {
-    "Singlet":{"f_function":Singlet,"n_peaks" : 1, "params":['x0','a','Amp','lw']},
-    "Doublet":{"f_function":Doublet,"n_peaks" : 2,"params":['x0','a','Amp','lw','J1']},
-    "DoubletofDoublet":{"f_function":DoubletOfDoublet,"n_peaks" : 4,"params":['x0','a','Amp','lw','J1','J2']}
+    "Singlet":{"f_function":Singlet,"n_peaks" : 1, "params":['x0','a','Amp','lw']}#,
+    # "Doublet":{"f_function":Doublet,"n_peaks" : 2,"params":['x0','a','Amp','lw','J1']},
+    # "DoubletofDoublet":{"f_function":DoubletOfDoublet,"n_peaks" : 4,"params":['x0','a','Amp','lw','J1','J2']}
 
     }
 d_clustering = {d_mapping[k]["n_peaks"]:k for k in d_mapping.keys()}

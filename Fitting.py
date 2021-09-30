@@ -21,7 +21,7 @@ def Peak_Initialisation(
         Init_Val= [
         Peak_Picking_Results.ppm_H_AXIS.values[0], 
         Ratio_Lorentzian_Gaussian,
-        Peak_Picking_Results.Peak_Amp.values[0]/1e7, 
+        Peak_Picking_Results.Peak_Amp.values[0]/1e8, 
         Line_Width
         ]
 
@@ -110,8 +110,8 @@ def Fitting_Function(
     else:
         init_=Initial_Values(peakpicking_data)[1]
     print(init_)  
-    bounds_fit_ = [ (1e-6,np.inf) for i in range(len(init_))]
-    # bounds_fit_ = [(1e-6,12),(1e-6,1),(1e-6,np.inf),(1e-6,1)]
+    # bounds_fit_ = [ (1e-6,np.inf) for i in range(len(init_))]
+    bounds_fit_ = [(1e-6,12),(1e-6,1),(1e-6,np.inf),(1e-6,1)]
 
     res_fit = minimize(
                 fit_objective,

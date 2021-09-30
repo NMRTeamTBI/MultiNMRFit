@@ -59,8 +59,8 @@ from Fitting import *
 ## BHET
 # test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '11', '1','300', '2', '-1', '0.1e4']
 # test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '12', '1','300', '7.9', '7.87', '0.1e4']
-# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '12', '2','1', '8.2', '8.16', '0.1e4']
-test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '12', '1','1', '8.15', '7.9', '0.1e4']
+test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '12', '2','1', '8.2', '8.16', '0.1e4']
+# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '12', '1','1', '8.15', '7.9', '0.1e4']
 
 topspin_dic = {
     'Path': str(test[1]),
@@ -212,7 +212,7 @@ if topspin_dic['Data_Type'] == 'Pseudo2D':
 ################################################################
 Plot_All_Spectrum(
     pdf_path = '../',
-    pdf_name = 'test_NHET_Exp12_MHET',
+    pdf_name = 'test_NHET_Exp12_test',
     Fit_results= Fit_results,
     Int_Pseudo_2D_Data = _Ext_data_,
     x_ppm = _Ext_x_ppm_,
