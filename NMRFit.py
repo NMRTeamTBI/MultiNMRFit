@@ -196,3 +196,6 @@ Plot_All_Spectrum(
     #Peak_Type= d_mapping[Peak_Type_0_]["f_function"]
 )
 
+print('Full Analysis is done')
+print('#--------#')  
+print('##########')

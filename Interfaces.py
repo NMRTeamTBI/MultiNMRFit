@@ -162,6 +162,13 @@ def main_window(x_Spec,y_Spec,PeakPicking_Threshold,PeakPicking_data):
 
     return new_threshold, Res
 
+def getList(dict):
+    list = []
+    for key in dict.keys():
+        list.append(key)
+          
+    return list
+
 def Plot_All_Spectrum(
     pdf_path = 'pdf_path',
     pdf_name = 'pdf_name',
@@ -171,18 +178,35 @@ def Plot_All_Spectrum(
     Peak_Picking_data = 'Peak_Picking_data'
     ):
 
-    Fit_results.to_csv(os.path.join(pdf_path,pdf_name+'.txt'), index=True)  
-
+    print('Plot in pdf file')  
     x_fit = np.linspace(np.min(x_ppm),np.max(x_ppm),2048)
+    d_id = Initial_Values(Peak_Picking_data, x_fit)[0]
+    cluster_list = getList(d_id)
+    new_index = np.arange(1,len(Fit_results)+1)
+    Fit_results = Fit_results.apply(pd.to_numeric)
+    Fit_results_text= Fit_results.round(6)
+    Fit_results_text = Fit_results_text.set_index(new_index)
+
+    for i in cluster_list:        
+        col = range(d_id[i][0],d_id[i][1])
+        _multiplet_type_ = d_parameters[len(col)]
+        _multiplet_params_ = d_mapping[_multiplet_type_]['params']
+        mutliplet_results = Fit_results_text[Fit_results_text.columns & col]
+        mutliplet_results.columns = _multiplet_params_
+        mutliplet_results.to_csv(
+            os.path.join(pdf_path,pdf_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt'), 
+            index=True, 
+            sep = '\t'
+            )  
+        
     speclist = Fit_results.index.values.tolist() 
     with PdfPages(os.path.join(pdf_path,pdf_name+'.pdf')) as pdf:           
         for r in tqdm(speclist):
             fig, (ax) = plt.subplots(1, 1)
             fig.set_size_inches([11.7,8.3])
-            Norm = np.max(Int_Pseudo_2D_Data[r,:])
             ax.plot(
                 x_ppm,
-                Int_Pseudo_2D_Data[r,:],#/Norm,
+                Int_Pseudo_2D_Data[r,:],
                 color='b',
                 ls='None',
                 marker='o',
@@ -197,7 +221,7 @@ def Plot_All_Spectrum(
                 x_fit,
                 Peak_Picking_data,
                 res,
-                Initial_Values(Peak_Picking_data, x_fit)[0]
+                d_id
                 )
 
             ax.plot(
@@ -221,3 +245,4 @@ def Plot_All_Spectrum(
             )
             pdf.savefig(fig)
             plt.close(fig)
+    print('#--------#')

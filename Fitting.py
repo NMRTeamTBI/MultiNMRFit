@@ -180,7 +180,7 @@ def Pseudo2D_PeakFitting(
         except:
             print('Error'+str(s))
     print('#--------#')
-    print('Descending Spectrum Fitting : from: '+str(np.min(id_spec_inf))+' to '+str(ref_spec))
+    print('Descending Spectrum Fitting : from: '+str(np.min(id_spec_inf))+' to '+str(np.max(id_spec_inf)))
     for s in tqdm(id_spec_inf[::-1]):
         # print(s,s+1)
         y_Spec = Intensities[s,:]   
