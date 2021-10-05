@@ -1,9 +1,9 @@
-
-
-from Multiplets import *
+﻿from Multiplets import *
 from Interfaces import *
 from Utils_nmrData import *
 from Fitting import *
+
+import sys
 ################################################################
 # Test for missing librairies 
 ################################################################
@@ -34,66 +34,40 @@ from Fitting import *
 #     exit()
 ################################################################
 
+# python ~/Documents/Research/Code/git/NMRFit/Pseudo2D_Fit_6.py Inputs_Spec_Fitting.txt
 
+config_file = sys.argv[1]
 
-# https://stackoverflow.com/questions/58367251/how-can-i-store-the-data-of-my-tkinter-entries-into-a-dataframe-to-later-export
+User_Inputs = pd.read_csv(config_file,sep='\s+', header=1,names=['Var','User_Value']).set_index('Var')
+Inputs_dic = {
+    'Data_Path'         :   User_Inputs.User_Value.Data_Path, 
+    'Data_Folder'       :   User_Inputs.User_Value.Data_Folder, 
+    'Data_Type'         :   User_Inputs.User_Value.Analysis_Type,
+    'ExpNo'             :   int(User_Inputs.User_Value.Exp_Number) if len(User_Inputs.User_Value.Exp_Number) == 1 else int(User_Inputs.User_Value.Exp_Number), 
+    'ProcNo'            :   int(User_Inputs.User_Value.ProcNo_Number), 
+    'Ref_ProcNo'        :   int(User_Inputs.User_Value.Ref_Spectrum), 
+    'Selected_window'   :   [float(i) for i in User_Inputs.User_Value.Specral_Region.split(',')],  
+    'Scaling'           :   float(User_Inputs.User_Value.Scaling),       
+    'Threshold'         :   float(User_Inputs.User_Value.Threshold),       
+    'pdf_Path'          :   User_Inputs.User_Value.pdf_path,
+    'pdf_Name'          :   User_Inputs.User_Value.pdf_name
 
-
-
-
-## Test for singlet
-# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8NC2021_ColiCE-NAD', 'Pseudo2D', '204', '1','48', '8.35', '8.3', '0.1e4']
-### Test for Doublet
-# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8NC2021_ColiCE-NAD', 'Pseudo2D','204', '1','36', '0.15', '-0.15', '0.1e4']
-
-# ## Test for singlet
-# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/home-local/charlier/nmrData/Neil', '8NC2021_ColiCE-Glc1-2-13C', '6', '1','17', '8.48', '8.470', '0.1e4']
-
-# ################### Test Pierre Data
-# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '210618', '1D','52', '1','1', '2.1', '1.7', '0.1e4']
-
-################### Test Plastic
-# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '9CC_900', '1D_Stack',['504','511'], '1','1', '8.5', '7.5', '0.1e4']
-# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '9CC_900', '1D','511', '1','1', '8.5', '7.5', '20e6']
-
-## BHET
-# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '11', '1','300', '2', '-1', '0.1e4']
-# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '12', '1','300', '7.9', '7.87', '0.1e4']
-test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '12', '2','1', '8.2', '8.16', '0.1e4']
-# test = ['/opt/topspin4.0.8/exp/stan/nmr/py/user/Pseudo2D_Fit.py', '/opt/topspin4.0.8/data/', '8Carbios_BHET_100921', 'Pseudo2D', '12', '1','1', '8.15', '7.9', '0.1e4']
-
-topspin_dic = {
-    'Path': str(test[1]),
-    'Data_Folder': test[2], 
-    'Data_Type': test[3],
-    'Pseudo2D_ExpNo': int(test[4]) if len(test[4]) == 1 else test[4], 
-    '2D_ProcNo': test[5], 
-    '1D_ProcNo': test[6], 
-    'Selected_window':[float(test[7]),float(test[8])]    
     }
 
-PeakPicking_Threshold = 4e6
 
-Analysis_Type = topspin_dic['Data_Type']
 
-# topspin_dic = {
-#     'Path': str(sys.argv[1]),
-#     'Data_Folder': sys.argv[2], 
-#     'Pseudo2D_ExpNo': int(sys.argv[3]), 
-#     '1D_ProcNo': sys.argv[4], 
-#     'Selected_window':[float(sys.argv[5]),float(sys.argv[6])]    
-#     }
+Analysis_Type = Inputs_dic['Data_Type']
 
 ################################################################
 # Loading Raw Data 
 ################################################################
-if Analysis_Type is '1D_Stack':
+if Analysis_Type == '1D_Stack':
     Raw_Data = []
-    for n in topspin_dic['Pseudo2D_ExpNo']:
+    for n in Inputs_dic['ExpNo']:
         [data_1D, dic_1D, x_ppm_1D] = Read_Raw_NMR_Data_Bruker(
-                path_nmr_data   =   os.path.join(topspin_dic['Path'],topspin_dic['Data_Folder']),
+                path_nmr_data   =   os.path.join(Inputs_dic['Data_Path'],Inputs_dic['Data_Folder']),
                 expno_data      =   int(n),
-                procno_data     =   topspin_dic['2D_ProcNo']
+                procno_data     =   Inputs_dic['ProcNo']
         )       
         Raw_Data.append(data_1D)  
 
@@ -101,22 +75,22 @@ if Analysis_Type is '1D_Stack':
     _x_ppm_ = x_ppm_1D
     _data_ = np.array(Raw_Data)
 
-if Analysis_Type is 'Pseudo2D':
+elif Analysis_Type == 'Pseudo2D':
     [data_2D, dic_2D, x_ppm_2D] = Read_Raw_NMR_Data_Bruker(
-            path_nmr_data   =   os.path.join(topspin_dic['Path'],topspin_dic['Data_Folder']),
-            expno_data      =   topspin_dic['Pseudo2D_ExpNo'],
-            procno_data     =   topspin_dic['2D_ProcNo']
+            path_nmr_data   =   os.path.join(Inputs_dic['Data_Path'],Inputs_dic['Data_Folder']),
+            expno_data      =   Inputs_dic['ExpNo'],
+            procno_data     =   Inputs_dic['ProcNo']
     )
 
     _dic_ = dic_2D
     _x_ppm_ = x_ppm_2D
     _data_ = data_2D
 
-if Analysis_Type is '1D':
+elif Analysis_Type == '1D':
     [data_1D, dic_1D, x_ppm_1D] = Read_Raw_NMR_Data_Bruker(
-            path_nmr_data   =   os.path.join(topspin_dic['Path'],topspin_dic['Data_Folder']),
-            expno_data      =   topspin_dic['Pseudo2D_ExpNo'],
-            procno_data     =   topspin_dic['2D_ProcNo']
+            path_nmr_data   =   os.path.join(Inputs_dic['Data_Path'],Inputs_dic['Data_Folder']),
+            expno_data      =   Inputs_dic['ExpNo'],
+            procno_data     =   Inputs_dic['ProcNo']
     )
     _dic_ = dic_1D
     _x_ppm_ = x_ppm_1D
@@ -128,30 +102,32 @@ if Analysis_Type is '1D':
 [_Ext_data_, _Ext_x_ppm_] = Extract_Data(
     data     = _data_,
     x_ppm    = _x_ppm_,
-    x_lim    = [topspin_dic['Selected_window'][0],topspin_dic['Selected_window'][1]]
+    x_lim    = [Inputs_dic['Selected_window'][0],Inputs_dic['Selected_window'][1]]
 )
 
 # ################################################################
 # # Extract 1D Data for intitial fitting 
 # ################################################################
-if topspin_dic['Data_Type'] == 'Pseudo2D':
-    y_Spec_init_ = _Ext_data_[int(topspin_dic['1D_ProcNo'])-1,:]
-if topspin_dic['Data_Type'] == '1D_Stack':
-    y_Spec_init_ = _Ext_data_[1,:]
-if topspin_dic['Data_Type'] == '1D':
+if Inputs_dic['Data_Type'] == 'Pseudo2D':
+    y_Spec_init_ = _Ext_data_[int(Inputs_dic['Ref_ProcNo'])-1,:]
+if Inputs_dic['Data_Type'] == '1D_Stack':
+    y_Spec_init_ = _Ext_data_[int(Inputs_dic['Ref_ProcNo'])-1,:]
+if Inputs_dic['Data_Type'] == '1D':
     y_Spec_init_ = _Ext_data_
+
+
 ################################################################
 # Initial 1D Peak Picking 
 ################################################################
 Peak_Picking = Peak_Picking_1D(
     x_data          =   _Ext_x_ppm_, 
     y_data          =   y_Spec_init_, 
-    threshold       =   PeakPicking_Threshold,
+    threshold       =   Inputs_dic['Threshold'],
 )
 # ################################################################
 # # Manual Check of Peak Picking
 # ################################################################
-new_th, pp_res_Sel = main_window(_Ext_x_ppm_,y_Spec_init_,PeakPicking_Threshold,Peak_Picking)
+new_th, pp_res_Sel = main_window(_Ext_x_ppm_,y_Spec_init_,Inputs_dic['Threshold'],Peak_Picking)
 # ################################################################
 # # Manual Check of Peak Picking 7 new Peak picking if user asks for it
 # ################################################################
@@ -176,7 +152,7 @@ cluster_list =  pp_res_Sel.Cluster.unique()
 # Initial 1D Peak Fitting 
 ################################################################
 
-if topspin_dic['Data_Type'] == '1D':
+if Inputs_dic['Data_Type'] == '1D':
     _1D_Fit_ = Fitting_Function(
             _Ext_x_ppm_,
             pp_res_Sel,
@@ -198,12 +174,13 @@ if topspin_dic['Data_Type'] == '1D':
     plt.close()
     exit()
 
-if topspin_dic['Data_Type'] == 'Pseudo2D':
+if Inputs_dic['Data_Type'] == 'Pseudo2D':
     Fit_results = Pseudo2D_PeakFitting(
                 Intensities  =   _Ext_data_,
                 x_Spec       =   _Ext_x_ppm_,
-                ref_spec     =   topspin_dic['1D_ProcNo'],
+                ref_spec     =   Inputs_dic['Ref_ProcNo'],
                 peak_picking_data = pp_res_Sel
+               # scaling = Inputs_dic['Scaling']
         )
 # with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
 #     print(Fit_results)
@@ -211,12 +188,13 @@ if topspin_dic['Data_Type'] == 'Pseudo2D':
 # Plot of the fit 
 ################################################################
 Plot_All_Spectrum(
-    pdf_path = '../',
-    pdf_name = 'test_NHET_Exp12_test',
+    pdf_path = Inputs_dic['pdf_Path'],
+    pdf_name = Inputs_dic['pdf_Name'],
     Fit_results= Fit_results,
     Int_Pseudo_2D_Data = _Ext_data_,
     x_ppm = _Ext_x_ppm_,
     Peak_Picking_data= pp_res_Sel
+    #scaling = Inputs_dic['Scaling']
     #Peak_Type= d_mapping[Peak_Type_0_]["f_function"]
 )
 

@@ -1,4 +1,4 @@
-from tkinter import * 
+﻿from tkinter import * 
 from tkinter import messagebox 
 import tkinter.font as tkFont
 import tkinter as tk
@@ -13,7 +13,7 @@ import matplotlib
 matplotlib.use("TkAgg")
 import numpy as np
 from tqdm import tqdm
-
+import os 
 from Fitting import *
 
 
@@ -171,11 +171,11 @@ def Plot_All_Spectrum(
     Peak_Picking_data = 'Peak_Picking_data'
     ):
 
-    Fit_results.to_csv(str(pdf_path)+str(pdf_name)+'.txt', index=True)  
+    Fit_results.to_csv(os.path.join(pdf_path,pdf_name+'.txt'), index=True)  
 
     x_fit = np.linspace(np.min(x_ppm),np.max(x_ppm),2048)
     speclist = Fit_results.index.values.tolist() 
-    with PdfPages(str(pdf_path)+str(pdf_name)+'.pdf') as pdf:           
+    with PdfPages(os.path.join(pdf_path,pdf_name+'.pdf')) as pdf:           
         for r in tqdm(speclist):
             fig, (ax) = plt.subplots(1, 1)
             fig.set_size_inches([11.7,8.3])
@@ -196,7 +196,8 @@ def Plot_All_Spectrum(
             sim = simulate_data(
                 x_fit,
                 Peak_Picking_data,
-                res
+                res,
+                Initial_Values(Peak_Picking_data, x_fit)[0]
                 )
 
             ax.plot(

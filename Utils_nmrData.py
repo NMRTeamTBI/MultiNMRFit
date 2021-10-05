@@ -23,7 +23,7 @@ def Read_Raw_NMR_Data_Bruker(
         path,
         read_procs=True,
         read_acqus=False,
-        scale_data = False,
+        scale_data = True,
         all_components=False
         )
     n_dim = len(data.shape) 
