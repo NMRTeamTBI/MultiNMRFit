@@ -11,6 +11,7 @@ Line_Width = 0.001
 Ratio_Lorentzian_Gaussian = 0.5
 Initial_offset = 0
 max_offset = 1.e8
+
 def Peak_Initialisation(
     Peak_Type='Peak_Type',
     Peak_Picking_Results = 'Peak_Picking_Results'
@@ -59,6 +60,7 @@ def update_resolution(constraints, x_fit_):
     delta = (x_fit_[1]-x_fit_[0])*2
     constraints[3] = (delta, constraints[3][1])
     return constraints
+
 def Initial_Values(
     peakpicking_data,
     x_fit_
@@ -148,19 +150,21 @@ def Pseudo2D_PeakFitting(
     y_Spec_init_ = Intensities[id_spec_ref,:]
 
     #Fitting of the reference 1D spectrum -- This function can be used for 1D spectrum alone
+    print('Reference Spectrum Fitting : reference spectrum: '+str(ref_spec))
     Initial_Fit_ = Fitting_Function(
         x_Spec,
         peak_picking_data,
         y_Spec_init_)
- 
+    print('Reference Spectrum Fitting -- Complete')
+    print('#--------#')
     Fit_results = pd.DataFrame(
         index=np.arange(0,n_spec,1),
         columns=np.arange(0,len(Initial_Fit_.x.tolist()),1)
             )
 
     Fit_results.loc[id_spec_ref,:] = Initial_Fit_.x.tolist()
+    print('Ascending Spectrum Fitting : from: '+str(ref_spec)+' to '+str(np.max(id_spec_sup)))
     for s in tqdm(id_spec_sup):
-    # for s in spec_sup:
         y_Spec = Intensities[s,:]
         Initial_Fit_Values = list(Fit_results.loc[s-1].iloc[:].values)
         try:
@@ -175,8 +179,8 @@ def Pseudo2D_PeakFitting(
 
         except:
             print('Error'+str(s))
-
-    # for s in spec_inf[::-1]:
+    print('#--------#')
+    print('Descending Spectrum Fitting : from: '+str(np.min(id_spec_inf))+' to '+str(ref_spec))
     for s in tqdm(id_spec_inf[::-1]):
         # print(s,s+1)
         y_Spec = Intensities[s,:]   
@@ -191,5 +195,5 @@ def Pseudo2D_PeakFitting(
             Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
         except:
             print('Error'+str(s))
-
+    print('#--------#')
     return Fit_results
