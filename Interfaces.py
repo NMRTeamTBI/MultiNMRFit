@@ -1,7 +1,12 @@
 ﻿from tkinter import * 
 from tkinter import messagebox 
+from tkinter import filedialog
 import tkinter.font as tkFont
 import tkinter as tk
+from PIL import Image, ImageTk
+from tkinter import ttk
+from tkinter import filedialog as fd
+
 import pandas as pd
 from random import randint
 import matplotlib.pyplot as plt
@@ -50,6 +55,7 @@ def save_nt(r, dic, new_threshold):
 def Exit(r):
     r.destroy()
     plt.close()
+    exit()
 
 def opennewwindow(PeakPicking_Threshold, pp_results,figure,pts_Color,Res,new_threshold):
     newwindow = tk.Tk()
@@ -61,7 +67,7 @@ def opennewwindow(PeakPicking_Threshold, pp_results,figure,pts_Color,Res,new_thr
     pp_names = ['ppm_H_AXIS','Peak_Amp']
     data_cols_names = ['1H ppm','Peak Intensity','Cluster']
     # Multiplicity_Choice = ('Singlet','Doublet')
-
+    
     for c in range(len(data_cols_names)):
         tk.Label(newwindow, text=str(data_cols_names[c]), ).grid(column=c+1, row=2)
 
@@ -246,3 +252,250 @@ def Plot_All_Spectrum(
             pdf.savefig(fig)
             plt.close(fig)
     print('#--------#')
+
+
+def browse_button():
+    filename = filedialog.askdirectory()
+    print(filename)
+    return filename
+    
+def save_config_file(wdw,dic):
+    d_p = dic['Data_Path'].get()
+    d_f = dic['Data_Folder'].get()
+    d_exp = dic['Data_ExpNo'].get()
+    d_proc = dic['Data_ProcNo'].get()
+    o_pdf = dic['pdf_name'].get()
+    ref_spec = dic['ref_spec'].get()
+    a_type = dic['analysis_type'].get()
+    s_l = dic['spec_lim'].get()
+    wdw.destroy()
+    print(d_p,d_f,d_exp,d_proc,o_pdf,ref_spec,a_type,s_l)
+    return 
+
+def start_gui():
+
+    dic_User_Input = {
+    'Data_Path': [],
+    'Data_Folder': [],
+    'Data_ExpNo': [],
+    'Data_ProcNo': [],
+    'pdf_name': [],
+    'ref_spec': [],
+    'analysis_type': [],
+    'spec_lim': [],
+    'pp_threshold': []
+    }
+
+
+    gui_int = tk.Tk()
+    gui_int.title("NMRFit Interface")
+    gui_int.geometry("700x600")
+    gui_int.configure(bg='#FFFFFF')
+
+    # Set bottom picture
+    img_network = Image.open('./Image/Reseaux_image.png')
+    img_network_ = ImageTk.PhotoImage(img_network.resize((700, 160))) 
+    img_network_label = Label(gui_int, image = img_network_)
+    img_network_label.place(x = 00, y = 440)
+
+    # Import Logo
+    img_logo = Image.open('./Image/logo_small.png')
+    img_logo_ = ImageTk.PhotoImage(img_logo.resize((300, 100))) 
+    img_logo_logo = Label(gui_int,image=img_logo_)
+    img_logo_logo.place(x = 200, y = 0)
+
+    ## ----- Inputs Section ----- ##
+    varInput = StringVar()
+    InputLabel = Label(gui_int, textvariable=varInput,font=("Helvetica", 18, 'bold'),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varInput.set("Inputs")
+    InputLabel.place(x=60, y=120)
+
+    # Input Path - Label
+    varInputPath = StringVar()
+    InputPathLabel = Label(gui_int, textvariable=varInputPath,font=("Helvetica", 14),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varInputPath.set("Data path")
+    InputPathLabel.place(x=10, y=160)
+
+    # Input Path - Entry
+    varInputPathUser = StringVar()
+    inputDataPathEntry = Entry(gui_int,textvariable=varInputPathUser)
+    inputDataPathEntry.place(x=10, y=180,width = 210)
+    dic_User_Input['Data_Path'] = inputDataPathEntry
+
+    # Input Data Folder - Label
+    varInputFolder = StringVar()
+    InputDataLabel = Label(gui_int, textvariable=varInputFolder,font=("Helvetica", 14),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varInputFolder.set("Data folder")
+    InputDataLabel.place(x=10, y=220)
+
+    # Input Data Folder - Entry
+    varInputFolderUser = StringVar()
+    inputDataFolderEntry = Entry(gui_int,textvariable=varInputFolderUser)
+    inputDataFolderEntry.place(x=10, y=240,width = 210)
+    dic_User_Input['Data_Folder'] = inputDataFolderEntry
+
+    # Input Experiment Number(s) - Label
+    varInputExpNo = StringVar()
+    InputExpNoLabel = Label(gui_int, textvariable=varInputExpNo,font=("Helvetica", 14),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varInputExpNo.set("Data ExpNo(s)")
+    InputExpNoLabel.place(x=10, y=280)
+
+    # Input Experiment Number(s) - Entry
+    varInputExpNoUser = StringVar()
+    inpuExpNoUser = Entry(gui_int,textvariable=varInputExpNoUser)
+    inpuExpNoUser.place(x=10, y=300,width = 210)
+    dic_User_Input['Data_ExpNo'] = inpuExpNoUser
+
+    # Input Processing Number - Label
+    varInputProcNo = StringVar()
+    InputDataLabel = Label(gui_int, textvariable=varInputProcNo,font=("Helvetica", 14),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varInputProcNo.set("Data ProcNo")
+    InputDataLabel.place(x=10, y=340)
+
+    # Input Processing Number - Entry
+    varInputProcNoUser = StringVar()
+    inpuProcNoUser = Entry(gui_int,textvariable=varInputProcNoUser)
+    inpuProcNoUser.place(x=10, y=360,width = 210)
+    dic_User_Input['Data_ProcNo'] = inpuProcNoUser
+
+    ## ----- Analysis Section ----- ##
+    varAnslysis = StringVar()
+    InputDataLabel = Label(gui_int, textvariable=varAnslysis,font=("Helvetica", 18, 'bold'),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varAnslysis.set("Analysis")
+    InputDataLabel.place(x=320, y=120)
+
+    # Type of Analysis - Label
+    varAnslysisType = StringVar()
+    AnalysisTypeLabel = Label(gui_int, textvariable=varAnslysisType,font=("Helvetica", 14),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varAnslysisType.set("Analysis Type")
+    AnalysisTypeLabel.place(x=250, y=160)
+
+    # Type of Analysis - Menu
+    listofchoices = ['1D','Pseudo2D','1D_Stack']
+    analysisEntered = tk.StringVar('')
+    analysisoptions = ttk.Combobox(
+        textvariable=analysisEntered, 
+        values=listofchoices, 
+        state="readonly")
+    analysisoptions.place(x=250, y=180,width = 210)
+    dic_User_Input['analysis_type'] = analysisoptions
+
+    # Reference Spectrum - Label
+    varRefSpectrum = StringVar()
+    RefSpectrumLabel = Label(gui_int, textvariable=varRefSpectrum,anchor="e",font=("Helvetica", 14),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varRefSpectrum.set("Reference Spectrum")
+    RefSpectrumLabel.place(x=250, y=220)
+
+    # Reference Spectrum - Entry
+    varRefSpectrumUser = StringVar()
+    varRefSpectrumEntry = Entry(gui_int,textvariable=varRefSpectrumUser)
+    varRefSpectrumEntry.place(x=250, y=240,width = 210)
+    dic_User_Input['ref_spec'] = varRefSpectrumEntry
+
+    # Spectral Region - Label
+    varPPM = StringVar()
+    PPMLabel = Label(gui_int, textvariable=varPPM,anchor="e",font=("Helvetica", 14),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varPPM.set("Spectral Limits")
+    PPMLabel.place(x=250, y=280)
+
+    # Spectral Region - Entry
+    varPPMUser = StringVar()
+    PPMEntry = Entry(gui_int,textvariable=varPPMUser)
+    PPMEntry.place(x=250, y=300,width = 210)
+    dic_User_Input['spec_lim'] = varPPMUser
+
+    # Threshold - Label
+    varthreshold = StringVar()
+    varthresholdLabel = Label(gui_int, textvariable=varthreshold,anchor="e",font=("Helvetica", 14),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varthreshold.set("Threshold")
+    varthresholdLabel.place(x=250, y=340)
+
+    # Threshold - Entry
+    varhresholdUser = StringVar()
+    hresholdEntry = Entry(gui_int,textvariable=varhresholdUser)
+    hresholdEntry.place(x=250, y=360,width = 210)
+    dic_User_Input['pp_threshold'] = varhresholdUser
+
+    ## ----- Output Section ----- ##
+    varOutput = StringVar()
+    OutputLabel = Label(gui_int, textvariable=varOutput,font=("Helvetica", 18, 'bold'),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varOutput.set("Outputs")
+    OutputLabel.place(x=550, y=120)
+
+    # Output Path - Label
+    varOutputPath = StringVar()
+    OutputPathLabel = Label(gui_int, textvariable=varOutputPath,font=("Helvetica", 14),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varOutputPath.set("Output Path")
+    OutputPathLabel.place(x=480, y=160)
+
+    # Output Path - Entry
+    varOutputPathUser = StringVar()
+    OutputDataEntry = Entry(gui_int,textvariable=varOutputPathUser)
+    OutputDataEntry.place(x=480, y=180,width = 210)
+
+    # Output Folder - Label
+    varOutputFolder = StringVar()
+    OutputFolderLabel = Label(gui_int, textvariable=varOutputFolder,font=("Helvetica", 14),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varOutputFolder.set("Output Folder")
+    OutputFolderLabel.place(x=480, y=220)
+
+    # Output Folder - Entry
+    varOutputFolderUser = StringVar()
+    OutputFolderaEntry = Entry(gui_int,textvariable=varOutputFolderUser)
+    OutputFolderaEntry.place(x=480, y=240,width = 210) 
+
+    # PDF name - Label
+    varOutputFileName = StringVar()
+    OutputFileNameLabel = Label(gui_int, textvariable=varOutputFileName,font=("Helvetica", 14),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    varOutputFileName.set("File Name (PDF)")
+    OutputFileNameLabel.place(x=480, y=280)
+
+    # PDF name - Entry
+    varOutputFileNameUser = StringVar()
+    OutputFileNameEntry = Entry(gui_int,textvariable=varOutputFileNameUser)
+    OutputFileNameEntry.place(x=480, y=300,width = 210)
+    dic_User_Input['pdf_name'] = OutputFileNameEntry
+
+
+    def load_config_file(wdw):
+        config_file = fd.askopenfilename()
+        # if os.path.isfile(config_file) is True:
+        config = pd.read_csv(config_file,sep='\s+', header=1,names=['Var','User_Value']).set_index('Var')
+        varRefSpectrumUser.set(config.User_Value.Ref_Spectrum)
+        analysisEntered.set(config.User_Value.Analysis_Type)
+        varhresholdUser.set(config.User_Value.Threshold)
+        varPPMUser.set(config.User_Value.Specral_Region)
+        varInputPathUser.set(config.User_Value.Data_Path)
+        varInputFolderUser.set(config.User_Value.Data_Folder)
+        varInputExpNoUser.set(config.User_Value.Exp_Number)
+        varInputProcNoUser.set(config.User_Value.ProcNo_Number)
+        varOutputPathUser.set(config.User_Value.pdf_path)
+        varOutputFolderUser.set(config.User_Value.pdf_folder)
+        varOutputFileNameUser.set(config.User_Value.pdf_name)
+
+
+    ## ----- General Buttons ----- ##
+    RunButton = Button(
+        gui_int,
+        text=" Run ", 
+        fg='#FFFFFF',
+        font=("Helvetica", 20),
+        highlightbackground = "#8B0000",
+        command=lambda:save_config_file(gui_int,dic_User_Input)
+    )
+    RunButton.place(x=500, y=400,width=100,height=30)
+
+    LoadButton = Button(
+        gui_int,
+        text=" Load ", 
+        fg='#FFFFFF',
+        font=("Helvetica", 20),
+        highlightbackground = "#8B0000",
+        command=lambda:load_config_file(gui_int)
+        )
+    LoadButton.place(x=300, y=400,width=100,height=30)
+    #start gui interface
+    gui_int.mainloop() 
+
+
+

@@ -36,6 +36,8 @@ import sys
 
 # python ~/Documents/Research/Code/git/NMRFit/Pseudo2D_Fit_6.py Inputs_Spec_Fitting.txt
 
+start_gui()
+
 config_file = sys.argv[1]
 
 User_Inputs = pd.read_csv(config_file,sep='\s+', header=1,names=['Var','User_Value']).set_index('Var')
