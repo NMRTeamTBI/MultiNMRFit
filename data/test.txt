@@ -1,0 +1,15 @@
+# Test 
+##
+Python_Path     Default  
+Data_Path       C:/Bruker/TopSpin4.0.7/data/
+Data_Folder     210921_Projet_EAD3_Caroline_09-2021_280k
+Analysis_Type   1D_Stack
+Exp_Number      3,4,5,6,7,8,9,10,11,12
+ProcNo_Number   1
+Ref_Spectrum    4
+Specral_Region  0.1,-0.1
+Scaling		1e5
+Threshold	2e5
+pdf_path	C:/Users/millard/Documents/GIT/fit_cyril/NMRFit/NMRFit/data
+pdf_folder	Test_Lindsay
+pdf_name	test_TSP	

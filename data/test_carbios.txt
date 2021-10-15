@@ -1,0 +1,15 @@
+# Test 
+##
+Python_Path     Default  
+Data_Path       C:/Bruker/TopSpin4.0.7/data/
+Data_Folder     8Carbios_BHET_100921
+Analysis_Type   Pseudo2D
+Exp_Number      12
+ProcNo_Number   2
+Ref_Spectrum    10
+Specral_Region  8.23,8.1
+Scaling		1e5
+Threshold	1e4
+pdf_path	C:/Users/millard/Documents/GIT/fit_cyril/NMRFit/NMRFit/data
+pdf_folder	Analysis_1D_Plastic
+pdf_name	test_Plastic	
