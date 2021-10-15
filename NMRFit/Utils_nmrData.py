@@ -55,11 +55,23 @@ def Extract_Data(
         x_ppm_ext = x_ppm[idx_x0_F1:idx_x1_F1]
         output = [data_ext, x_ppm_ext]
     if n_dim == 2:
-
-        idx_x0_F2, x0_F2 = find_nearest(x_ppm,x_lim[0])
-        idx_x1_F2, x1_F2 = find_nearest(x_ppm,x_lim[1])
-        data_ext = data[:,idx_x0_F2:idx_x1_F2]
-        x_ppm_ext = x_ppm[idx_x0_F2:idx_x1_F2]
+        if x_ppm.ndim == 1:
+            idx_x0_F2, x0_F2 = find_nearest(x_ppm,x_lim[0])
+            idx_x1_F2, x1_F2 = find_nearest(x_ppm,x_lim[1])
+            data_ext = data[:,idx_x0_F2:idx_x1_F2]
+            x_ppm_ext = x_ppm[idx_x0_F2:idx_x1_F2]
+            output = [data_ext, x_ppm_ext]
+        if x_ppm.ndim != 1:
+            n_s = x_ppm.shape[0]
+            for k in range(n_s):
+                idx_x0_F2, x0_F2 = find_nearest(x_ppm[k],x_lim[0])
+                idx_x1_F2, x1_F2 = find_nearest(x_ppm[k],x_lim[1])
+                if k == 0:
+                    data_ext= data[k,idx_x0_F2:idx_x1_F2]
+                    x_ppm_ext = x_ppm[k,idx_x0_F2:idx_x1_F2] 
+                else:
+                    data_ext= np.vstack([data_ext,data[k,idx_x0_F2:idx_x1_F2]])
+                    x_ppm_ext= np.vstack([x_ppm_ext,x_ppm[k,idx_x0_F2:idx_x1_F2]])
         output = [data_ext, x_ppm_ext]
 
     return output

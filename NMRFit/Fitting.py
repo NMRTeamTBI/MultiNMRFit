@@ -57,8 +57,12 @@ def Peak_Initialisation(
     return Init_Val
 
 def update_resolution(constraints, x_fit_):
-    delta = (x_fit_[1]-x_fit_[0])*2
+    delta = abs(x_fit_[1]-x_fit_[0])*3
     constraints[3] = (delta, constraints[3][1])
+    return constraints
+
+def update_position(constraints, x_fit_):
+    constraints[0] = (np.min(x_fit_), np.max(x_fit_))
     return constraints
 
 def Initial_Values(
@@ -79,9 +83,10 @@ def Initial_Values(
         d_id[n] = [len(ini_params),len(ini_params)+len(Init_Val)]
         ini_params.extend(Init_Val)
         upd_cons = update_resolution(d_mapping[_multiplet_type_]["constraints"], x_fit_)
+        upd_cons = update_position(d_mapping[_multiplet_type_]["constraints"], x_fit_)
         ini_constraints.extend(upd_cons)
     ini_params.extend([Initial_offset])
-    ini_constraints.extend([(-max_offset/1.e8, max_offset/1.e8)])
+    ini_constraints.extend([(-max_offset/1e2, max_offset/1.e2)])
     return d_id, ini_params, ini_constraints
 
 def simulate_data(
@@ -99,7 +104,7 @@ def simulate_data(
         params = fit_par[d_id[n][0]:d_id[n][1]] 
         y = _multiplet_type_function(x_fit_, *params)
         sim_intensity += y
-    sim_intensity += fit_par[-1]*1e8
+    sim_intensity += fit_par[-1]*1e2
     return sim_intensity  
 
 def fit_objective(
@@ -163,37 +168,39 @@ def Pseudo2D_PeakFitting(
             )
 
     Fit_results.loc[id_spec_ref,:] = Initial_Fit_.x.tolist()
-    print('Ascending Spectrum Fitting : from: '+str(ref_spec)+' to '+str(np.max(id_spec_sup)))
-    for s in tqdm(id_spec_sup):
-        y_Spec = Intensities[s,:]
-        Initial_Fit_Values = list(Fit_results.loc[s-1].iloc[:].values)
-        try:
-            _1D_Fit_ = Fitting_Function(
-                        x_Spec,
-                        peak_picking_data,
-                        y_Spec,
-                        Initial_Fit_Values)                   
-            
-            # for n in range(len(Col_Names)-1):
-            Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
+    if ref_spec != str(n_spec):
+        print('Ascending Spectrum Fitting : from: '+str(ref_spec)+' to '+str(np.max(id_spec_sup)))
+        for s in tqdm(id_spec_sup):
+            y_Spec = Intensities[s,:]
+            Initial_Fit_Values = list(Fit_results.loc[s-1].iloc[:].values)
+            try:
+                _1D_Fit_ = Fitting_Function(
+                            x_Spec,
+                            peak_picking_data,
+                            y_Spec,
+                            Initial_Fit_Values)                   
+                
+                # for n in range(len(Col_Names)-1):
+                Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
 
-        except:
-            print('Error'+str(s))
+            except:
+                print('Error'+str(s))
     print('#--------#')
-    print('Descending Spectrum Fitting : from: '+str(np.min(id_spec_inf))+' to '+str(np.max(id_spec_inf)))
-    for s in tqdm(id_spec_inf[::-1]):
-        # print(s,s+1)
-        y_Spec = Intensities[s,:]   
-        Initial_Fit_Values = list(Fit_results.loc[s+1].iloc[:].values) 
-        try:
-            _1D_Fit_ = Fitting_Function(
-                        x_Spec,
-                        peak_picking_data,
-                        y_Spec,
-                        Initial_Fit_Values) 
+    if ref_spec != '1':
+        print('Descending Spectrum Fitting : from: '+str(np.min(id_spec_inf))+' to '+str(np.max(id_spec_inf)))
+        for s in tqdm(id_spec_inf[::-1]):
+            # print(s,s+1)
+            y_Spec = Intensities[s,:]   
+            Initial_Fit_Values = list(Fit_results.loc[s+1].iloc[:].values) 
+            try:
+                _1D_Fit_ = Fitting_Function(
+                            x_Spec,
+                            peak_picking_data,
+                            y_Spec,
+                            Initial_Fit_Values) 
 
-            Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
-        except:
-            print('Error'+str(s))
+                Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
+            except:
+                print('Error'+str(s))
     print('#--------#')
     return Fit_results

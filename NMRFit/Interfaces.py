@@ -21,7 +21,6 @@ from tqdm import tqdm
 import os 
 from Fitting import *
 
-
 class MyOptionMenu(tk.OptionMenu):
     def __init__(self, master, status, *options):
         self.var = tk.StringVar(master)
@@ -177,6 +176,7 @@ def getList(dict):
 
 def Plot_All_Spectrum(
     pdf_path = 'pdf_path',
+    pdf_folder = 'pdf_folder',
     pdf_name = 'pdf_name',
     Fit_results = 'Fit_results', 
     Int_Pseudo_2D_Data = 'Int_Pseudo_2D_Data',
@@ -190,8 +190,11 @@ def Plot_All_Spectrum(
     cluster_list = getList(d_id)
     new_index = np.arange(1,len(Fit_results)+1)
     Fit_results = Fit_results.apply(pd.to_numeric)
-    Fit_results_text= Fit_results.round(6)
+    Fit_results_text= Fit_results.round(9)
     Fit_results_text = Fit_results_text.set_index(new_index)
+
+    if not os.path.exists(os.path.join(pdf_path,pdf_folder)):
+        os.makedirs(os.path.join(pdf_path,pdf_folder))
 
     for i in cluster_list:        
         col = range(d_id[i][0],d_id[i][1])
@@ -200,13 +203,14 @@ def Plot_All_Spectrum(
         mutliplet_results = Fit_results_text[Fit_results_text.columns & col]
         mutliplet_results.columns = _multiplet_params_
         mutliplet_results.to_csv(
-            os.path.join(pdf_path,pdf_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt'), 
+            os.path.join(pdf_path,pdf_folder,pdf_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt'), 
             index=True, 
             sep = '\t'
             )  
         
     speclist = Fit_results.index.values.tolist() 
-    with PdfPages(os.path.join(pdf_path,pdf_name+'.pdf')) as pdf:           
+
+    with PdfPages(os.path.join(pdf_path,pdf_folder,pdf_name+'.pdf')) as pdf:           
         for r in tqdm(speclist):
             fig, (ax) = plt.subplots(1, 1)
             fig.set_size_inches([11.7,8.3])
@@ -253,23 +257,26 @@ def Plot_All_Spectrum(
             plt.close(fig)
     print('#--------#')
 
-
 def browse_button():
     filename = filedialog.askdirectory()
-    print(filename)
     return filename
-    
-def save_config_file(wdw,dic):
-    d_p = dic['Data_Path'].get()
-    d_f = dic['Data_Folder'].get()
-    d_exp = dic['Data_ExpNo'].get()
-    d_proc = dic['Data_ProcNo'].get()
-    o_pdf = dic['pdf_name'].get()
-    ref_spec = dic['ref_spec'].get()
-    a_type = dic['analysis_type'].get()
-    s_l = dic['spec_lim'].get()
+
+def prep_config_file(wdw,dic):
+    global dic_to_NMRFit
+    dic_to_NMRFit = {
+    'Data_Path'     :   dic['Data_Path'].get(),
+    'Data_Folder'   :   dic['Data_Folder'].get(),
+    'ExpNo'         :   dic['ExpNo'].get(),
+    'ProcNo'        :   dic['ProcNo'].get(),
+    'pdf_name'      :   dic['pdf_name'].get(),
+    'Ref_Spec'      :   dic['Ref_Spec'].get(),
+    'Data_Type'     :   dic['analysis_type'].get(),
+    'Spec_Lim'      :   [float(i) for i in dic['Spec_Lim'].get().split(',')],
+    'Threshold'     :   float(dic['Threshold'].get()),
+    'pdf_path'      :   dic['pdf_path'].get(),
+    'pdf_folder'    :   dic['pdf_folder'].get()
+    }
     wdw.destroy()
-    print(d_p,d_f,d_exp,d_proc,o_pdf,ref_spec,a_type,s_l)
     return 
 
 def start_gui():
@@ -277,13 +284,15 @@ def start_gui():
     dic_User_Input = {
     'Data_Path': [],
     'Data_Folder': [],
-    'Data_ExpNo': [],
-    'Data_ProcNo': [],
+    'ExpNo': [],
+    'ProcNo': [],
     'pdf_name': [],
-    'ref_spec': [],
+    'pdf_path': [],
+    'pdf_folder': [],    
+    'Ref_Spec': [],
     'analysis_type': [],
-    'spec_lim': [],
-    'pp_threshold': []
+    'Spec_Lim': [],
+    'Threshold': []
     }
 
 
@@ -293,13 +302,13 @@ def start_gui():
     gui_int.configure(bg='#FFFFFF')
 
     # Set bottom picture
-    img_network = Image.open('./Image/Reseaux_image.png')
+    img_network = Image.open('./../Image/Reseaux_image.png')
     img_network_ = ImageTk.PhotoImage(img_network.resize((700, 160))) 
     img_network_label = Label(gui_int, image = img_network_)
     img_network_label.place(x = 00, y = 440)
 
     # Import Logo
-    img_logo = Image.open('./Image/logo_small.png')
+    img_logo = Image.open('./../Image/logo_small.png')
     img_logo_ = ImageTk.PhotoImage(img_logo.resize((300, 100))) 
     img_logo_logo = Label(gui_int,image=img_logo_)
     img_logo_logo.place(x = 200, y = 0)
@@ -344,7 +353,7 @@ def start_gui():
     varInputExpNoUser = StringVar()
     inpuExpNoUser = Entry(gui_int,textvariable=varInputExpNoUser)
     inpuExpNoUser.place(x=10, y=300,width = 210)
-    dic_User_Input['Data_ExpNo'] = inpuExpNoUser
+    dic_User_Input['ExpNo'] = inpuExpNoUser
 
     # Input Processing Number - Label
     varInputProcNo = StringVar()
@@ -356,7 +365,7 @@ def start_gui():
     varInputProcNoUser = StringVar()
     inpuProcNoUser = Entry(gui_int,textvariable=varInputProcNoUser)
     inpuProcNoUser.place(x=10, y=360,width = 210)
-    dic_User_Input['Data_ProcNo'] = inpuProcNoUser
+    dic_User_Input['ProcNo'] = inpuProcNoUser
 
     ## ----- Analysis Section ----- ##
     varAnslysis = StringVar()
@@ -390,7 +399,7 @@ def start_gui():
     varRefSpectrumUser = StringVar()
     varRefSpectrumEntry = Entry(gui_int,textvariable=varRefSpectrumUser)
     varRefSpectrumEntry.place(x=250, y=240,width = 210)
-    dic_User_Input['ref_spec'] = varRefSpectrumEntry
+    dic_User_Input['Ref_Spec'] = varRefSpectrumEntry
 
     # Spectral Region - Label
     varPPM = StringVar()
@@ -402,7 +411,7 @@ def start_gui():
     varPPMUser = StringVar()
     PPMEntry = Entry(gui_int,textvariable=varPPMUser)
     PPMEntry.place(x=250, y=300,width = 210)
-    dic_User_Input['spec_lim'] = varPPMUser
+    dic_User_Input['Spec_Lim'] = varPPMUser
 
     # Threshold - Label
     varthreshold = StringVar()
@@ -414,7 +423,7 @@ def start_gui():
     varhresholdUser = StringVar()
     hresholdEntry = Entry(gui_int,textvariable=varhresholdUser)
     hresholdEntry.place(x=250, y=360,width = 210)
-    dic_User_Input['pp_threshold'] = varhresholdUser
+    dic_User_Input['Threshold'] = varhresholdUser
 
     ## ----- Output Section ----- ##
     varOutput = StringVar()
@@ -430,8 +439,9 @@ def start_gui():
 
     # Output Path - Entry
     varOutputPathUser = StringVar()
-    OutputDataEntry = Entry(gui_int,textvariable=varOutputPathUser)
-    OutputDataEntry.place(x=480, y=180,width = 210)
+    OutputPathEntry = Entry(gui_int,textvariable=varOutputPathUser)
+    OutputPathEntry.place(x=480, y=180,width = 210)
+    dic_User_Input['pdf_path'] = OutputPathEntry
 
     # Output Folder - Label
     varOutputFolder = StringVar()
@@ -443,6 +453,7 @@ def start_gui():
     varOutputFolderUser = StringVar()
     OutputFolderaEntry = Entry(gui_int,textvariable=varOutputFolderUser)
     OutputFolderaEntry.place(x=480, y=240,width = 210) 
+    dic_User_Input['pdf_folder'] = OutputFolderaEntry
 
     # PDF name - Label
     varOutputFileName = StringVar()
@@ -481,7 +492,7 @@ def start_gui():
         fg='#FFFFFF',
         font=("Helvetica", 20),
         highlightbackground = "#8B0000",
-        command=lambda:save_config_file(gui_int,dic_User_Input)
+        command=lambda:prep_config_file(gui_int,dic_User_Input)
     )
     RunButton.place(x=500, y=400,width=100,height=30)
 
@@ -497,5 +508,5 @@ def start_gui():
     #start gui interface
     gui_int.mainloop() 
 
-
+    return dic_to_NMRFit
 

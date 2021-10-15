@@ -25,9 +25,9 @@ def DoubletOfDoublet( x, x0, a, h_s, lw, J1, J2):
     return Signal * 1e8
 
 d_mapping = {
-    "Singlet":{"f_function":Singlet,"n_peaks" : 1, "params":['x0','a','Amp','lw'],"n_params" : 4, "constraints":[(1e-6,12),(1e-6,1),(1e-6,np.inf),(1e-6,0.5)]},
+    "Singlet":{"f_function":Singlet,"n_peaks" : 1, "params":['x0','a','Amp','lw'],"n_params" : 4, "constraints":[(1e-6,12),(0.1,1),(1e-6,np.inf),(1e-6,0.5)]},
     "Doublet":{"f_function":Doublet,"n_peaks" : 2,"params":['x0','a','Amp','lw','J1'],"n_params" : 5, "constraints":[(1e-6,12),(1e-6,1),(1e-6,np.inf),(1e-6,1),(2e-3,0.5)]},
-    "DoubletofDoublet":{"f_function":DoubletOfDoublet,"n_peaks" : 4,"params":['x0','a','Amp','lw','J1','J2'],"n_params" : 6, "constraints":[(1e-6,12),(1e-6,1),(1e-6,np.inf),(1e-6,1),(2e-3,1),(2e-3,0.5)]}
+    "DoubletofDoublet":{"f_function":DoubletOfDoublet,"n_peaks" : 4,"params":['x0','a','Amp','lw','J1','J2'],"n_params" : 6, "constraints":[(1e-6,12),(1e-6,1),(1e-6,np.inf),(1e-6,1),(2e-3,1),(2e-3,1)]}
 
     }
 d_clustering = {d_mapping[k]["n_peaks"]:k for k in d_mapping.keys()}
