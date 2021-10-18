@@ -276,25 +276,25 @@ def prep_config_file(wdw,dic):
     'pdf_path'      :   dic['pdf_path'].get(),
     'pdf_folder'    :   dic['pdf_folder'].get()
     }
+
     wdw.destroy()
     return 
 
 def start_gui():
 
     dic_User_Input = {
-    'Data_Path': [],
-    'Data_Folder': [],
-    'ExpNo': [],
-    'ProcNo': [],
-    'pdf_name': [],
-    'pdf_path': [],
-    'pdf_folder': [],    
-    'Ref_Spec': [],
-    'analysis_type': [],
-    'Spec_Lim': [],
-    'Threshold': []
+    'Data_Path'         : [],
+    'Data_Folder'       : [],
+    'ExpNo'             : [],
+    'ProcNo'            : [],
+    'pdf_name'          : [],
+    'pdf_path'          : [],
+    'pdf_folder'        : [],    
+    'Ref_Spec'          : [],
+    'analysis_type'     : [],
+    'Spec_Lim'          : [],
+    'Threshold'         : []
     }
-
 
     gui_int = tk.Tk()
     gui_int.title("NMRFit Interface")
@@ -484,8 +484,27 @@ def start_gui():
         varOutputFolderUser.set(config.User_Value.pdf_folder)
         varOutputFileNameUser.set(config.User_Value.pdf_name)
 
-
     ## ----- General Buttons ----- ##
+    LoadButton = Button(
+        gui_int,
+        text=" Load ", 
+        fg='#FFFFFF',
+        font=("Helvetica", 20),
+        highlightbackground = "#8B0000",
+        command=lambda:load_config_file(gui_int)
+        )
+    LoadButton.place(x=100, y=400,width=100,height=30)
+
+    SaveButton = Button(
+        gui_int,
+        text=" Save ", 
+        fg='#FFFFFF',
+        font=("Helvetica", 20),
+        highlightbackground = "#0000FF",
+        command=lambda:load_config_file(gui_int)
+        )
+    SaveButton.place(x=300, y=400,width=100,height=30)
+
     RunButton = Button(
         gui_int,
         text=" Run ", 
@@ -496,15 +515,6 @@ def start_gui():
     )
     RunButton.place(x=500, y=400,width=100,height=30)
 
-    LoadButton = Button(
-        gui_int,
-        text=" Load ", 
-        fg='#FFFFFF',
-        font=("Helvetica", 20),
-        highlightbackground = "#8B0000",
-        command=lambda:load_config_file(gui_int)
-        )
-    LoadButton.place(x=300, y=400,width=100,height=30)
     #start gui interface
     gui_int.mainloop() 
 

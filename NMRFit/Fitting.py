@@ -57,7 +57,7 @@ def Peak_Initialisation(
     return Init_Val
 
 def update_resolution(constraints, x_fit_):
-    delta = abs(x_fit_[1]-x_fit_[0])*3
+    delta = abs(x_fit_[1]-x_fit_[0])*2
     constraints[3] = (delta, constraints[3][1])
     return constraints
 
