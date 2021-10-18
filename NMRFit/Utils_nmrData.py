@@ -69,7 +69,18 @@ def Extract_Data(
                 if k == 0:
                     data_ext= data[k,idx_x0_F2:idx_x1_F2]
                     x_ppm_ext = x_ppm[k,idx_x0_F2:idx_x1_F2] 
+                    dim_spectra = abs(idx_x1_F2-idx_x0_F2)
                 else:
+                    print(x_ppm_ext.shape)
+                    print(dim_spectra)
+                    print(abs(idx_x1_F2-idx_x0_F2))
+                    if abs(idx_x1_F2-idx_x0_F2) < dim_spectra:
+                        print("nok")
+                        print(abs(idx_x1_F2-idx_x0_F2) - dim_spectra)
+                        idx_x0_F2 -= 1
+                    elif abs(idx_x1_F2-idx_x0_F2) > dim_spectra:
+                        print("nok2")
+                        idx_x0_F2 += 1
                     data_ext= np.vstack([data_ext,data[k,idx_x0_F2:idx_x1_F2]])
                     x_ppm_ext= np.vstack([x_ppm_ext,x_ppm[k,idx_x0_F2:idx_x1_F2]])
         output = [data_ext, x_ppm_ext]

@@ -57,7 +57,11 @@ def Peak_Initialisation(
     return Init_Val
 
 def update_resolution(constraints, x_fit_):
+<<<<<<< HEAD
     delta = abs(x_fit_[1]-x_fit_[0])*2
+=======
+    delta = abs(x_fit_[1]-x_fit_[0])
+>>>>>>> e6884892f51d1eede338ff9a55d267d43142e07d
     constraints[3] = (delta, constraints[3][1])
     return constraints
 
@@ -102,6 +106,7 @@ def simulate_data(
         _multiplet_type_ = d_clustering[len(_cluster_)]
         _multiplet_type_function = d_mapping[_multiplet_type_]["f_function"]
         params = fit_par[d_id[n][0]:d_id[n][1]] 
+        #print(params)
         y = _multiplet_type_function(x_fit_, *params)
         sim_intensity += y
     sim_intensity += fit_par[-1]*1e2

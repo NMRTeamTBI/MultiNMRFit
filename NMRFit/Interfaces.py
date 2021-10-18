@@ -174,6 +174,13 @@ def getList(dict):
           
     return list
 
+def getIntegral(x_fit_, _multiplet_type_, fit_par):
+    _multiplet_type_function = d_mapping[_multiplet_type_]["f_function"]
+    y = _multiplet_type_function(x_fit_, *fit_par)
+    integral = np.sum(y)*(x_fit_[1]-x_fit_[0])
+    return integral
+
+
 def Plot_All_Spectrum(
     pdf_path = 'pdf_path',
     pdf_folder = 'pdf_folder',
@@ -202,6 +209,7 @@ def Plot_All_Spectrum(
         _multiplet_params_ = d_mapping[_multiplet_type_]['params']
         mutliplet_results = Fit_results_text[Fit_results_text.columns & col]
         mutliplet_results.columns = _multiplet_params_
+        mutliplet_results["integral"] = [getIntegral(x_fit, _multiplet_type_, row.tolist()) for index, row in mutliplet_results.iterrows()]
         mutliplet_results.to_csv(
             os.path.join(pdf_path,pdf_folder,pdf_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt'), 
             index=True, 
