@@ -1,0 +1,3 @@
+import pandas as pd
+
+pd.read_csv('/Test_Extraits/Test_extraits/Inputs_Spec_Fitting_0.txt',sep=\s+)

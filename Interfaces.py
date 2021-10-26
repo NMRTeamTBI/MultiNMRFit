@@ -1,12 +1,12 @@
 ﻿from tkinter import * 
-from tkinter import simpledialog
+from tkinter import messagebox 
 from tkinter import filedialog
 import tkinter.font as tkFont
 import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import ttk
 from tkinter import filedialog as fd
-from datetime import date
+
 import pandas as pd
 from random import randint
 import matplotlib.pyplot as plt
@@ -174,13 +174,6 @@ def getList(dict):
           
     return list
 
-def getIntegral(x_fit_, _multiplet_type_, fit_par):
-    _multiplet_type_function = d_mapping[_multiplet_type_]["f_function"]
-    y = _multiplet_type_function(x_fit_, *fit_par)
-    integral = np.sum(y)*(x_fit_[1]-x_fit_[0])
-    return integral
-
-
 def Plot_All_Spectrum(
     pdf_path = 'pdf_path',
     pdf_folder = 'pdf_folder',
@@ -209,7 +202,6 @@ def Plot_All_Spectrum(
         _multiplet_params_ = d_mapping[_multiplet_type_]['params']
         mutliplet_results = Fit_results_text[Fit_results_text.columns & col]
         mutliplet_results.columns = _multiplet_params_
-        mutliplet_results["integral"] = [getIntegral(x_fit, _multiplet_type_, row.tolist()) for index, row in mutliplet_results.iterrows()]
         mutliplet_results.to_csv(
             os.path.join(pdf_path,pdf_folder,pdf_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt'), 
             index=True, 
@@ -217,29 +209,19 @@ def Plot_All_Spectrum(
             )  
         
     speclist = Fit_results.index.values.tolist() 
+
     with PdfPages(os.path.join(pdf_path,pdf_folder,pdf_name+'.pdf')) as pdf:           
         for r in tqdm(speclist):
-
             fig, (ax) = plt.subplots(1, 1)
             fig.set_size_inches([11.7,8.3])
-            if len(speclist) != 1:
-                ax.plot(
-                    x_ppm,
-                    Int_Pseudo_2D_Data[r,:],
-                    color='b',
-                    ls='None',
-                    marker='o',
-                    markersize=0.5
-                    )    
-            if len(speclist) == 1:
-                ax.plot(
-                    x_ppm,
-                    Int_Pseudo_2D_Data,
-                    color='b',
-                    ls='None',
-                    marker='o',
-                    markersize=0.5
-                    )    
+            ax.plot(
+                x_ppm,
+                Int_Pseudo_2D_Data[r,:],
+                color='b',
+                ls='None',
+                marker='o',
+                markersize=0.5
+                )    
             ax.invert_xaxis()
             # ax[r].set_xlabel('PPM')
             #ax.set_ylim(top=1.1,bottom=-0.1)
@@ -294,62 +276,9 @@ def prep_config_file(wdw,dic):
     'pdf_path'      :   dic['pdf_path'].get(),
     'pdf_folder'    :   dic['pdf_folder'].get()
     }
+
     wdw.destroy()
     return 
-
-def on_closing(wdw):
-    wdw.destroy()
-    exit()
-
-def save_config_file(dic):
-    dic_to_Save = {
-    'Data_Path'         :   dic['Data_Path'].get(),
-    'Data_Folder'       :   dic['Data_Folder'].get(),
-    'Exp_Number'        :   dic['ExpNo'].get(),
-    'ProcNo_Number'     :   dic['ProcNo'].get(),
-    'pdf_name'          :   dic['pdf_name'].get(),
-    'Ref_Spectrum'      :   dic['Ref_Spec'].get(),
-    'Analysis_Type'     :   dic['analysis_type'].get(),
-    'Specral_Region'    :   [float(i) for i in dic['Spec_Lim'].get().split(',')],
-    'Threshold'         :   float(dic['Threshold'].get()),
-    'pdf_path'          :   dic['pdf_path'].get(),
-    'pdf_folder'        :   dic['pdf_folder'].get()
-    }
-
-    config_path = os.path.join(dic_to_Save['pdf_path'],dic_to_Save['pdf_folder'])
-
-    if not os.path.exists(config_path):
-        os.makedirs(config_path)
-
-    # config_file = os.path.join(config_path,'Inputs_Spec_Fitting.txt')
-    # if os.path.exists(config_file):
-    ROOT = tk.Tk()
-    ROOT.withdraw()
-    # the input dialog
-    USER_INP = simpledialog.askstring(
-        title="Config File Name",
-        prompt="Config Input File Name:",
-        initialvalue="Inputs_Spec_Fitting")
-    if USER_INP is None:
-        ROOT.destroy()
-    else:
-        config_file = os.path.join(config_path,str(USER_INP)+'.txt')
-        ROOT.destroy()
-
-    cf_file = open(config_file,"w")
-    cf_file.write('## Config file created on '+str(date.today()))
-    cf_file.write('\n')
-    cf_file.write('##')
-    cf_file.write('\n')
-    for i in dic_to_Save.keys():
-        if i is 'Specral_Region':
-                cf_file.write('{} \t {},{}'.format(i, dic_to_Save[i][0],dic_to_Save[i][1]))
-        else:
-            cf_file.write('{} {}'.format(i, dic_to_Save[i]))
-        cf_file.write('\n')
-       
-    return 
-
 
 def start_gui():
 
@@ -359,7 +288,7 @@ def start_gui():
     'ExpNo'             : [],
     'ProcNo'            : [],
     'pdf_name'          : [],
-    'pdf_path'          : [],   
+    'pdf_path'          : [],
     'pdf_folder'        : [],    
     'Ref_Spec'          : [],
     'analysis_type'     : [],
@@ -564,7 +493,7 @@ def start_gui():
         highlightbackground = "#8B0000",
         command=lambda:load_config_file(gui_int)
         )
-    LoadButton.place(x=20, y=400,width=80,height=30)
+    LoadButton.place(x=100, y=400,width=100,height=30)
 
     SaveButton = Button(
         gui_int,
@@ -572,9 +501,9 @@ def start_gui():
         fg='#FFFFFF',
         font=("Helvetica", 20),
         highlightbackground = "#0000FF",
-        command=lambda:save_config_file(dic_User_Input)
+        command=lambda:load_config_file(gui_int)
         )
-    SaveButton.place(x=200, y=400,width=80,height=30)
+    SaveButton.place(x=300, y=400,width=100,height=30)
 
     RunButton = Button(
         gui_int,
@@ -584,19 +513,8 @@ def start_gui():
         highlightbackground = "#8B0000",
         command=lambda:prep_config_file(gui_int,dic_User_Input)
     )
-    RunButton.place(x=380, y=400,width=80,height=30)
+    RunButton.place(x=500, y=400,width=100,height=30)
 
-    CloseButton = Button(
-        gui_int,
-        text=" Close ", 
-        fg='#FFFFFF',
-        font=("Helvetica", 20),
-        highlightbackground = "#0000FF",
-        command=lambda:on_closing(gui_int)
-        )
-    CloseButton.place(x=560, y=400,width=80,height=30)
-    
-    # gui_int.protocol("WM_DELETE_WINDOW", on_closing(gui_int))
     #start gui interface
     gui_int.mainloop() 
 
