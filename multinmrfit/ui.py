@@ -1,3 +1,4 @@
+from json.decoder import JSONDecodeError
 from tkinter import * 
 from tkinter import simpledialog
 from tkinter import filedialog
@@ -292,21 +293,22 @@ def Plot_All_Spectrum(
 def error_interface(message):
     gui_int = tk.Tk()
     gui_int.title("Error")
-    gui_int.geometry("100x20")
     gui_int.configure(bg='#FFFFFF')
 
-    var_label = StringVar()
-    Label(gui_int, textvariable=var_label,font=("Helvetica"),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
-    var_label.set(message)
+    label = Label(gui_int, text=message,font=("Helvetica",18),bg='#FFFFFF',borderwidth=20)
+    label.pack()
 
-    Button(
+    close_button = Button(
         gui_int,
         text="Close ",
-        fg='#FFFFFF',
-        font=("Helvetica", 20),
-        highlightbackground = "#0000FF",
+        # fg='#FFFFFF',
+        font=("Helvetica", 14),
+        # highlightbackground = "#0000FF",
         command=lambda:gui_int.destroy()
+
     )
+    close_button.pack()
+
 ###################################
 # Loading Data interface
 ###################################
@@ -407,12 +409,28 @@ def create_label(gui_wdw, label, x, y, font_size=14, font_weight='normal'):
     var_label.set(label.replace("_", " ").capitalize())
 
 def load_config_file(user_input):
-    error_interface('Bullshit')
+    
     config_file_path = fd.askopenfilename()
-    f = open(config_file_path,"r")
-    config = json.loads(f.read())
+    if not config_file_path:
+        return None
+
+    try:
+        f = open(config_file_path,"r")    
+    except FileNotFoundError:
+        error_interface('Config file not found')
+        return None
+
+    try:
+        config = json.loads(f.read())
+    except JSONDecodeError as e:
+        error_interface('Json config file must be reformated')
+        return None
+    except UnicodeDecodeError as e:
+        error_interface('Wrong config file type (not a json file, see example)')
+        return None
+
     for label in user_input.keys():
-        user_input[label].set(config[label])
+        user_input[label].set(config.get(label, ''))
 
 
 def start_gui():
