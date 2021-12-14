@@ -226,8 +226,8 @@ def Pseudo2D_PeakFitting(
                                 x_Spec,
                                 peak_picking_data,
                                 y_Spec,
-                                scaling_factor,
-                                Initial_Fit_Values)                   
+                                scaling_factor)#,
+                                #Initial_Fit_Values)                   
                     
                     # for n in range(len(Col_Names)-1):
                     Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
@@ -246,8 +246,8 @@ def Pseudo2D_PeakFitting(
                                 x_Spec,
                                 peak_picking_data,
                                 y_Spec,
-                                scaling_factor,
-                                Initial_Fit_Values) 
+                                scaling_factor)#,
+                                #Initial_Fit_Values) 
 
                     Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
                 except:

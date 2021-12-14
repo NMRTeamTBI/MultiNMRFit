@@ -1,0 +1,6 @@
+[console_scripts]
+nmrfitcli = nmrfit.ui:start_cli
+
+[gui_scripts]
+nmrfit = nmrfit.ui:start_gui
+

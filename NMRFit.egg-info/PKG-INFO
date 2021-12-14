@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: NMRFit
+Version: 0.1.0
+Summary: NMRFit: Fitting NMR spectra
+Home-page: https://github.com/NMRTeamTBI/NMRFit
+Author: Cyril Charlier, Pierre Millard
+Author-email: charlier@insa-toulouse.fr
+License: UNKNOWN
+Description: add long description here
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+Requires-Python: >=3.5
+Description-Content-Type: text/markdown
