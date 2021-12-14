@@ -1,6 +1,6 @@
-﻿import nmrfit as nf
-import nmrfit.utils_nmrdata as nfu
-import nmrfit.fitting as nff
+﻿import multinmrfit as nf
+import multinmrfit.utils_nmrdata as nfu
+import multinmrfit.fitting as nff
 import numpy as np
 import sys
 import os

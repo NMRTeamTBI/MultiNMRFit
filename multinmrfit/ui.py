@@ -18,9 +18,9 @@ import matplotlib
 matplotlib.use("TkAgg")
 import numpy as np
 import os 
-import nmrfit.run as nmrr
-import nmrfit.multiplets as nmrm
-import nmrfit.fitting as nmrf
+import multinmrfit.run as nmrr
+import multinmrfit.multiplets as nmrm
+import multinmrfit.fitting as nmrf
 import pkg_resources
 
 class MyOptionMenu(tk.OptionMenu):
@@ -379,7 +379,7 @@ def start_gui():
     gui_int.geometry("700x600")
     gui_int.configure(bg='#FFFFFF')
 
-    path_image = pkg_resources.resource_filename('nmrfit', 'data/')
+    path_image = pkg_resources.resource_filename('multinmrfit', 'data/')
     # Set bottom picture
     img_network = Image.open(os.path.join(path_image, 'network.png'))
     img_network_ = ImageTk.PhotoImage(img_network.resize((700, 160))) 

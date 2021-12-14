@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import time
 
 
-import nmrfit.multiplets as nmrm
+import multinmrfit.multiplets as nmrm
 
 # Set Initial Values for fitting
 
