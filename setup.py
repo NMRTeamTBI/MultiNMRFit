@@ -33,10 +33,10 @@ setuptools.setup(
         ],
     entry_points={
         'console_scripts': [
-            'nmrfitcli = nmrfit.ui:start_cli',
+            'multinmrfitcli = multinmrfit.ui:start_cli',
         ],
         'gui_scripts': [
-            'nmrfit = nmrfit.ui:start_gui',
+            'multinmrfit = multinmrfit.ui:start_gui',
         ]
     }
 )
