@@ -321,22 +321,44 @@ def error_interface(message, critical_error=False):
 # Loading Data interface
 ###################################
 
-def launch_analysis(dic):
-    dic_to_NMRFit = {
-        'Data_Path'     :   dic['Data_Path'],
-        'Data_Folder'   :   dic['Data_Folder'],
-        'ExpNo'         :   dic['ExpNo'],
-        'ProcNo'        :   dic['ProcNo'],
-        'pdf_name'      :   dic['pdf_name'],
-        'Ref_Spec'      :   dic['Ref_Spec'],
-        'Data_Type'     :   dic['analysis_type'],
-        'Spec_Lim'      :   [float(i) for i in dic['Spec_Lim'].split(',')],
-        'Threshold'     :   float(dic['Threshold']),
-        'pdf_path'      :   dic['pdf_path'],
-        'pdf_folder'    :   dic['pdf_folder']
-    }
-    #tk_wdw.destroy()
-    nmrr.run_analysis(dic_to_NMRFit, gui = (tk_wdw != None))
+def launch_analysis(user_input):
+    is_gui = (tk_wdw != None)
+    is_not_gui = (tk_wdw == None)
+
+    try:
+        if not user_input.get('spectral_limits'):
+            return error_interface("Argument : 'spectral_limits' is missing", critical_error=is_not_gui)
+
+        spec_lim = [float(i) for i in user_input.get('spectral_limits').split(',')]
+
+        if len(spec_lim)%2 != 0 and len(spec_lim) != 0:
+            return error_interface("Argument : 'spectral_limits' is incomplete", critical_error=is_not_gui)
+
+        if float(user_input.get('threshold', 1)) == float(0):
+            return error_interface("Argument : 'threshold' is too low (cannot be 0)", critical_error=is_not_gui)
+
+        config = {
+            'Data_Path'     :   user_input.get('data_path'),
+            'Data_Folder'   :   user_input.get('data_folder'),
+            'ExpNo'         :   user_input.get('data_exp_no'),
+            'ProcNo'        :   user_input.get('data_proc_no'),
+            'pdf_name'      :   user_input.get('output_name'),
+            'Ref_Spec'      :   user_input.get('reference_spectrum'),
+            'Data_Type'     :   user_input.get('analysis_type'),
+            'Spec_Lim'      :   spec_lim,
+            'Threshold'     :   float(user_input.get('threshold', 0)),
+            'pdf_path'      :   user_input.get('output_path'),
+            'pdf_folder'    :   user_input.get('output_folder')
+        }
+    except ValueError as e:
+        return error_interface(e, critical_error=is_not_gui)
+    for key, conf in config.items():
+        if not conf:
+            return error_interface(f"Argument : '{key}' is missing", critical_error=is_not_gui)
+    if is_gui:
+        tk_wdw.destroy()
+    print(json.dumps(config,indent=4))
+    nmrr.run_analysis(config, gui = is_gui)
 
 def on_closing():
     tk_wdw.destroy()
@@ -358,7 +380,7 @@ def ask_filename(config_path):
     return config_file
 
 def save_config_file(user_input):
-    config_path = os.path.join(user_input['output_path'].get(), user_input['output_folder'].get())
+    config_path = os.path.join(user_input['output_path'], user_input['output_folder'])
     file_name = ask_filename(config_path)
     f = open(file_name, "a")
     f.seek(0)
