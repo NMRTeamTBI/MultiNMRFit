@@ -2,7 +2,6 @@
 import multinmrfit.utils_nmrdata as nfu
 import multinmrfit.fitting as nff
 import numpy as np
-import sys
 import os
 import pandas as pd
 

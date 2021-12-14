@@ -1,11 +1,8 @@
 import numpy as np
 import nmrglue as ng
 import os
-from tkinter import * 
-from tkinter import messagebox 
-import tkinter.font as tkFont
+
 import tkinter as tk
-import matplotlib.pyplot as plt
 import pandas as pd
 
 def find_nearest(array, value):
@@ -107,15 +104,13 @@ def Peak_Picking_1D(
         results.loc[:,'Peak_Amp'] = peak_amplitudes
         results = results.sort_values(by='ppm_H_AXIS', ascending=True)
     except:
-        main = Tk()
+        main = tk.Tk()
         main.title("Error")
         
-        str_var = StringVar()
+        str_var = tk.StringVar()
         #Message Function
-        label = Message( main, textvariable=str_var, 
-            relief=RAISED,width=400,foreground='red')
-        def_font = tk.font.nametofont("TkDefaultFont")
-        def_font.config(size=12)
+        label = tk.Message( main, textvariable=str_var, 
+            relief=tk.RAISED,width=400,foreground='red')
         str_var.set("No signal were found \n Lower the threshold") 
         label.pack()
         main.mainloop()

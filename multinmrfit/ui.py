@@ -1,30 +1,31 @@
-from json.decoder import JSONDecodeError
-from tkinter import * 
-from tkinter import simpledialog
-from tkinter import filedialog
-import tkinter.font as tkFont
+# Import system libraries
+import pkg_resources
+import random
+import json
+import sys
+import os 
+
+# Import display libraries
 import tkinter as tk
+from tkinter import simpledialog, ttk, filedialog
 from PIL import Image, ImageTk
-from tkinter import ttk
-from tkinter import filedialog as fd
-from datetime import date
-import pandas as pd
-from random import randint
+
+# Import plot libraries
+import matplotlib
 import matplotlib.pyplot as plt
-import pandas as pd
-from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.backends.backend_pdf import PdfPages
-import matplotlib
-matplotlib.use("TkAgg")
+
+# Import math libraries
+import pandas as pd
 import numpy as np
-import os 
+
+# Import our own libraries
 import multinmrfit.run as nmrr
 import multinmrfit.multiplets as nmrm
 import multinmrfit.fitting as nmrf
-import pkg_resources
-import json
-import sys
+
+matplotlib.use("TkAgg")
 
 tk_wdw = None 
 
@@ -112,7 +113,7 @@ def wdw_peak_picking(PeakPicking_Threshold, pp_results,figure,pts_Color,Res,new_
             en_c.insert(0, round(data,3))
             en_c.grid(column=c+1,row=i+3,sticky=tk.N+tk.S+tk.E+tk.W)
     
-    disp = Entry(wdw, readonlybackground="white")
+    disp = tk.Entry(wdw, readonlybackground="white")
     tk.Label(wdw, text="Threshold", fg='#f00').grid(column=0, row=1)
     disp.insert(0, PeakPicking_Threshold)
     disp.grid(column=1, row=1)
@@ -154,7 +155,7 @@ def gui_peak_picking(x_Spec,y_Spec,PeakPicking_Threshold,PeakPicking_data):
     # Create a list of colors
     colors = []
     for i in range(n_peak):
-        colors.append('#%06X' % randint(0, 0xFFFFFF))
+        colors.append('#%06X' % random.randint(0, 0xFFFFFF))
 
     #Plot Spectrum with peak picking
     fig = plt.figure()
@@ -394,7 +395,7 @@ def create_entry(label, x, y, width=210):
 
     # Entry
     if label == 'analysis_type':
-        analysis_var = StringVar()
+        analysis_var = tk.StringVar()
         analysis_options = ttk.Combobox(
             textvariable=analysis_var, 
             values=['1D','Pseudo2D','1D_Series'], 
@@ -402,8 +403,8 @@ def create_entry(label, x, y, width=210):
         ).place(x=x, y=y+20, width=width)
         return analysis_var
 
-    imput_var = StringVar()
-    input_entry = Entry(textvariable=imput_var)
+    imput_var = tk.StringVar()
+    input_entry = tk.Entry(textvariable=imput_var)
     input_entry.place(x=x, y=y+20, width=width)
 
     return imput_var
@@ -420,7 +421,7 @@ def create_label(label, x, y, font_size=14, font_weight='normal'):
 
 def load_config_file(user_input=None, config_file_path=None):
     if tk_wdw:
-        config_file_path = fd.askopenfilename()    
+        config_file_path = filedialog.askopenfilename()    
         if not config_file_path:
             return None
 
@@ -432,7 +433,7 @@ def load_config_file(user_input=None, config_file_path=None):
 
     try:
         config = json.loads(f.read())
-    except JSONDecodeError as e:
+    except json.decoder.JSONDecodeError as e:
         error_interface('Json config file must be reformated')
         return None
     except UnicodeDecodeError as e:
@@ -471,13 +472,13 @@ def start_gui():
     # Set bottom picture
     img_network = Image.open(os.path.join(path_image, 'network.png'))
     img_network_ = ImageTk.PhotoImage(img_network.resize((700, 160))) 
-    img_network_label = Label(tk_wdw, image = img_network_)
+    img_network_label = tk.Label(tk_wdw, image = img_network_)
     img_network_label.place(x = 00, y = 440)
 
     # Import Logo
     img_logo = Image.open(os.path.join(path_image, 'logo_small.png'))
     img_logo_ = ImageTk.PhotoImage(img_logo.resize((300, 100))) 
-    img_logo_logo = Label(tk_wdw,image=img_logo_)
+    img_logo_logo = tk.Label(tk_wdw,image=img_logo_)
     img_logo_logo.place(x = 200, y = 0)
 
 
@@ -492,7 +493,7 @@ def start_gui():
         i += 1
 
     ## ----- General Buttons ----- ##
-    LoadButton = Button(
+    LoadButton = tk.Button(
         tk_wdw,
         text=" Load ",
         fg='#FFFFFF',
@@ -502,7 +503,7 @@ def start_gui():
         )
     LoadButton.place(x=20, y=400,width=80,height=30)
     
-    SaveButton = Button(
+    SaveButton = tk.Button(
         tk_wdw,
         text=" Save ",
         fg='#FFFFFF',
@@ -512,7 +513,7 @@ def start_gui():
         )
     SaveButton.place(x=200, y=400,width=80,height=30)
 
-    RunButton = Button(
+    RunButton = tk.Button(
         tk_wdw,
         text=" Run ",
         fg='#FFFFFF',
@@ -522,7 +523,7 @@ def start_gui():
     )
     RunButton.place(x=380, y=400,width=80,height=30)
     
-    CloseButton = Button(
+    CloseButton = tk.Button(
         tk_wdw,
         text=" Close ",
         fg='#FFFFFF',
