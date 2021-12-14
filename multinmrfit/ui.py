@@ -24,6 +24,9 @@ import multinmrfit.multiplets as nmrm
 import multinmrfit.fitting as nmrf
 import pkg_resources
 import json
+import sys
+
+tk_wdw = None 
 
 class MyOptionMenu(tk.OptionMenu):
     def __init__(self, master, status, *options):
@@ -290,53 +293,54 @@ def Plot_All_Spectrum(
 # Error interface
 ###################################
 
-def error_interface(message):
-    gui_int = tk.Tk()
-    gui_int.title("Error")
-    gui_int.configure(bg='#FFFFFF')
+def error_interface(message, critical_error=False):
+    if tk_wdw:
+        error_window = tk.Tk()
+        error_window.title("Error")
+        error_window.configure(bg='#FFFFFF')
 
-    label = Label(gui_int, text=message,font=("Helvetica",18),bg='#FFFFFF',borderwidth=20)
-    label.pack()
+        label = Label(error_window, text=message, font=("Helvetica",18),bg='#FFFFFF',borderwidth=20)
+        label.pack()
 
-    close_button = Button(
-        gui_int,
-        text="Close ",
-        # fg='#FFFFFF',
-        font=("Helvetica", 14),
-        # highlightbackground = "#0000FF",
-        command=lambda:gui_int.destroy()
+        close_button = Button(
+            error_window,
+            text="Close ",
+            # fg='#FFFFFF',
+            font=("Helvetica", 14),
+            # highlightbackground = "#0000FF",
+            command=lambda:error_window.destroy()
 
-    )
-    close_button.pack()
+        )
+        close_button.pack()
+    else:
+        print(f"ERROR: {message}")
+    if critical_error:
+        exit(1)
 
 ###################################
 # Loading Data interface
 ###################################
 
-def browse_button():
-    filename = filedialog.askdirectory()
-    return filename
-
-def prep_config_file(wdw,dic,gui=True):
+def launch_analysis(dic):
     dic_to_NMRFit = {
-        'Data_Path'     :   dic['Data_Path'].get(),
-        'Data_Folder'   :   dic['Data_Folder'].get(),
-        'ExpNo'         :   dic['ExpNo'].get(),
-        'ProcNo'        :   dic['ProcNo'].get(),
-        'pdf_name'      :   dic['pdf_name'].get(),
-        'Ref_Spec'      :   dic['Ref_Spec'].get(),
-        'Data_Type'     :   dic['analysis_type'].get(),
-        'Spec_Lim'      :   [float(i) for i in dic['Spec_Lim'].get().split(',')],
-        'Threshold'     :   float(dic['Threshold'].get()),
-        'pdf_path'      :   dic['pdf_path'].get(),
-        'pdf_folder'    :   dic['pdf_folder'].get()
+        'Data_Path'     :   dic['Data_Path'],
+        'Data_Folder'   :   dic['Data_Folder'],
+        'ExpNo'         :   dic['ExpNo'],
+        'ProcNo'        :   dic['ProcNo'],
+        'pdf_name'      :   dic['pdf_name'],
+        'Ref_Spec'      :   dic['Ref_Spec'],
+        'Data_Type'     :   dic['analysis_type'],
+        'Spec_Lim'      :   [float(i) for i in dic['Spec_Lim'].split(',')],
+        'Threshold'     :   float(dic['Threshold']),
+        'pdf_path'      :   dic['pdf_path'],
+        'pdf_folder'    :   dic['pdf_folder']
     }
-    wdw.destroy()
-    nmrr.run_analysis(dic_to_NMRFit, gui=gui)
+    #tk_wdw.destroy()
+    nmrr.run_analysis(dic_to_NMRFit, gui = (tk_wdw != None))
 
-def on_closing(wdw):
-    wdw.destroy()
-    exit()
+def on_closing():
+    tk_wdw.destroy()
+    exit(0)
 
 def ask_filename(config_path):
     wdw = tk.Tk()
@@ -362,9 +366,9 @@ def save_config_file(user_input):
     f.write(json.dumps({k: v.get() for k, v in user_input.items()}, indent=4))
     f.close()    
 
-def create_entry(gui_wdw, label, x, y, width=210):
+def create_entry(label, x, y, width=210):
     # Label
-    create_label(gui_wdw, label, x, y)
+    create_label(label, x, y)
 
     # Entry
     if label == 'analysis_type':
@@ -377,21 +381,26 @@ def create_entry(gui_wdw, label, x, y, width=210):
         return analysis_var
 
     imput_var = StringVar()
-    input_entry = Entry(gui_wdw,textvariable=imput_var)
+    input_entry = Entry(textvariable=imput_var)
     input_entry.place(x=x, y=y+20, width=width)
 
     return imput_var
     
-def create_label(gui_wdw, label, x, y, font_size=14, font_weight='normal'):
-    var_label = StringVar()
-    Label(gui_wdw, textvariable=var_label,font=("Helvetica", font_size, font_weight),bg='#FFFFFF',fg='#8B0000',borderwidth=0).place(x=x, y=y)
-    var_label.set(label.replace("_", " ").capitalize())
+def create_label(label, x, y, font_size=14, font_weight='normal'):
+    Label(
+        tk_wdw,
+        text=label.replace("_", " ").capitalize(),
+        font=("Helvetica", font_size, font_weight),
+        bg='#FFFFFF',
+        fg='#8B0000',
+        borderwidth=0
+    ).place(x=x, y=y)
 
-def load_config_file(user_input):
-    
-    config_file_path = fd.askopenfilename()
-    if not config_file_path:
-        return None
+def load_config_file(user_input=None, config_file_path=None):
+    if tk_wdw:
+        config_file_path = fd.askopenfilename()    
+        if not config_file_path:
+            return None
 
     try:
         f = open(config_file_path,"r")    
@@ -408,43 +417,45 @@ def load_config_file(user_input):
         error_interface('Wrong config file type (not a json file, see example)')
         return None
 
-    for label in user_input.keys():
-        user_input[label].set(config.get(label, ''))
-
-    return user_input
+    if tk_wdw:
+        for label in user_input.keys():
+            user_input[label].set(config.get(label, ''))
+        return user_input
+    else:
+        return config
 
 def start_gui():
 
     user_input = {
-        'data_path':            [],
-        'data_folder':          [],
-        'data_exp_no':          [],
-        'data_proc_no':         [],
-        'analysis_type':        [],
-        'reference_spectrum':   [],    
-        'spectral_limits':      [],
-        'threshold':            [],
-        'output_path':          [],
-        'output_folder':        [],    
-        'output_name':          [],
+        'data_path':            None,
+        'data_folder':          None,
+        'data_exp_no':          None,
+        'data_proc_no':         None,
+        'analysis_type':        None,
+        'reference_spectrum':   None,    
+        'spectral_limits':      None,
+        'threshold':            None,
+        'output_path':          None,
+        'output_folder':        None,    
+        'output_name':          None,
     }
-
-    gui_int = tk.Tk()
-    gui_int.title("MultiNMRFit Interface")
-    gui_int.geometry("700x600")
-    gui_int.configure(bg='#FFFFFF')
+    global tk_wdw
+    tk_wdw = tk.Tk()
+    tk_wdw.title("MultiNMRFit Interface")
+    tk_wdw.geometry("700x600")
+    tk_wdw.configure(bg='#FFFFFF')
 
     path_image = pkg_resources.resource_filename('multinmrfit', 'data/')
     # Set bottom picture
     img_network = Image.open(os.path.join(path_image, 'network.png'))
     img_network_ = ImageTk.PhotoImage(img_network.resize((700, 160))) 
-    img_network_label = Label(gui_int, image = img_network_)
+    img_network_label = Label(tk_wdw, image = img_network_)
     img_network_label.place(x = 00, y = 440)
 
     # Import Logo
     img_logo = Image.open(os.path.join(path_image, 'logo_small.png'))
     img_logo_ = ImageTk.PhotoImage(img_logo.resize((300, 100))) 
-    img_logo_logo = Label(gui_int,image=img_logo_)
+    img_logo_logo = Label(tk_wdw,image=img_logo_)
     img_logo_logo.place(x = 200, y = 0)
 
 
@@ -454,13 +465,13 @@ def start_gui():
         x = 10 + int(i / 4) * 240
         y = 160 + int(i % 4) * 60
         if int(i%4) == 0:
-            create_label(gui_int, title[int(i/4)], x + 50, 120, 18, 'bold')
-        user_input[label] = create_entry(gui_int, label, x, y)
+            create_label(title[int(i/4)], x + 50, 120, 18, 'bold')
+        user_input[label] = create_entry(label, x, y)
         i += 1
 
     ## ----- General Buttons ----- ##
     LoadButton = Button(
-        gui_int,
+        tk_wdw,
         text=" Load ",
         fg='#FFFFFF',
         font=("Helvetica", 20),
@@ -470,7 +481,7 @@ def start_gui():
     LoadButton.place(x=20, y=400,width=80,height=30)
     
     SaveButton = Button(
-        gui_int,
+        tk_wdw,
         text=" Save ",
         fg='#FFFFFF',
         font=("Helvetica", 20),
@@ -480,51 +491,35 @@ def start_gui():
     SaveButton.place(x=200, y=400,width=80,height=30)
 
     RunButton = Button(
-        gui_int,
+        tk_wdw,
         text=" Run ",
         fg='#FFFFFF',
         font=("Helvetica", 20),
         highlightbackground = "#8B0000",
-        command=lambda:prep_config_file(gui_int, dic_User_Input, gui=True)
+        command=lambda:launch_analysis(user_input)
     )
     RunButton.place(x=380, y=400,width=80,height=30)
     
     CloseButton = Button(
-        gui_int,
+        tk_wdw,
         text=" Close ",
         fg='#FFFFFF',
         font=("Helvetica", 20),
         highlightbackground = "#0000FF",
-        command=lambda:on_closing(gui_int)
+        command=lambda:on_closing()
         )
     CloseButton.place(x=560, y=400,width=80,height=30)
     
-    # gui_int.protocol("WM_DELETE_WINDOW", on_closing(gui_int))
-    #start gui interface
-    gui_int.mainloop()
+    tk_wdw.mainloop()
     
-    #return dic_to_NMRFit
 
 def start_cli():
-    config_file = sys.argv[1]
-    inputs_dic = read_config(config_file)
-    nmrr.run_analysis(inputs_dic, gui=False)
+    if not len(sys.argv) == 2:
+        error_interface('usage: multinmrfitcli <path/config/file>  ', critical_error=True)
+    user_input = load_config_file(config_file_path=sys.argv[1])
+    if not user_input:
+        exit(1)
+    launch_analysis(user_input)
     exit()
 
-def read_config(config_file):
-    user_inputs = pd.read_csv(config_file,sep='\t', header=1,names=['Var','User_Value']).set_index('Var')
-    inputs_dic = {
-        'Data_Path'         :   user_inputs.User_Value.Data_Path, 
-        'Data_Folder'       :   user_inputs.User_Value.Data_Folder, 
-        'Data_Type'         :   user_inputs.User_Value.Analysis_Type,
-        'ExpNo'             :   int(user_inputs.User_Value.Exp_Number) if len(user_inputs.User_Value.Exp_Number) == 1 else user_inputs.User_Value.Exp_Number, 
-        'ProcNo'            :   int(user_inputs.User_Value.ProcNo_Number), 
-        'Ref_Spec'          :   int(user_inputs.User_Value.Ref_Spectrum), 
-        'Spec_Lim'          :   [float(i) for i in user_inputs.User_Value.Specral_Region.split(',')],  
-        'Threshold'         :   float(user_inputs.User_Value.Threshold),       
-        'pdf_path'          :   user_inputs.User_Value.pdf_path,
-        'pdf_folder'        :   user_inputs.User_Value.pdf_folder,        
-        'pdf_name'          :   user_inputs.User_Value.pdf_name
-        }
-    return inputs_dic
 
