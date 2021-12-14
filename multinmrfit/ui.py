@@ -363,7 +363,7 @@ def save_config_file(user_input):
     f = open(file_name, "a")
     f.seek(0)
     f.truncate()
-    f.write(json.dumps({k: v.get() for k, v in user_input.items()}, indent=4))
+    f.write(json.dumps(user_input, indent=4))
     f.close()    
 
 def create_entry(label, x, y, width=210):
@@ -486,7 +486,7 @@ def start_gui():
         fg='#FFFFFF',
         font=("Helvetica", 20),
         highlightbackground = "#0000FF",
-        command=lambda:save_config_file(user_input)
+        command=lambda:save_config_file({k: v.get() for k, v in user_input.items()})
         )
     SaveButton.place(x=200, y=400,width=80,height=30)
 
@@ -496,7 +496,7 @@ def start_gui():
         fg='#FFFFFF',
         font=("Helvetica", 20),
         highlightbackground = "#8B0000",
-        command=lambda:launch_analysis(user_input)
+        command=lambda:launch_analysis({k: v.get() for k, v in user_input.items()})
     )
     RunButton.place(x=380, y=400,width=80,height=30)
     
