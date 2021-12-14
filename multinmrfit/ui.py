@@ -338,67 +338,29 @@ def on_closing(wdw):
     wdw.destroy()
     exit()
 
-# def ask_filename():
-#     wdw = tk.Tk()
-#     wdw.withdraw()
-#     # the input dialog
-#     file_name = simpledialog.askstring(
-#         title="Config File Name",
-#         prompt="Config Input File Name:",
-#         initialvalue="Inputs_Spec_Fitting")
-#     if file_name is None:
-#         wdw.destroy()
-#     else:
-#         config_file = os.path.join(config_path,str(file_name)+'.json')
-#         wdw.destroy()
-
+def ask_filename(config_path):
+    wdw = tk.Tk()
+    wdw.withdraw()
+    # the input dialog
+    file_name = simpledialog.askstring(
+        title="Config File Name",
+        prompt="Config Input File Name:",
+        initialvalue="Inputs_Spec_Fitting")
+    if file_name is None:
+        wdw.destroy()
+    else:
+        config_file = os.path.join(config_path,str(file_name)+'.json')
+        wdw.destroy()
+    return config_file
 
 def save_config_file(user_input):
-    f = fd.askopenfilename()
-    print(f)
-    # dic_to_Save = {
-    # 'Data_Path'         :   dic['Data_Path'].get(),
-    # 'Data_Folder'       :   dic['Data_Folder'].get(),
-    # 'Exp_Number'        :   dic['ExpNo'].get(),
-    # 'ProcNo_Number'     :   dic['ProcNo'].get(),
-    # 'pdf_name'          :   dic['pdf_name'].get(),
-    # 'Ref_Spectrum'      :   dic['Ref_Spec'].get(),
-    # 'Analysis_Type'     :   dic['analysis_type'].get(),
-    # 'Specral_Region'    :   [float(i) for i in dic['Spec_Lim'].get().split(',')],
-    # 'Threshold'         :   float(dic['Threshold'].get()),
-    # 'pdf_path'          :   dic['pdf_path'].get(),
-    # 'pdf_folder'        :   dic['pdf_folder'].get()
-    # }
-    # config_path = os.path.join(dic_to_Save['pdf_path'],dic_to_Save['pdf_folder'])
-    # if not os.path.exists(config_path):
-    #     os.makedirs(config_path)
-    
-    # # config_file = os.path.join(config_path,'Inputs_Spec_Fitting.txt')
-    # # if os.path.exists(config_file):
-    # ROOT = tk.Tk()
-    # ROOT.withdraw()
-    # # the input dialog
-    # USER_INP = simpledialog.askstring(
-    #     title="Config File Name",
-    #     prompt="Config Input File Name:",
-    #     initialvalue="Inputs_Spec_Fitting")
-    # if USER_INP is None:
-    #     ROOT.destroy()
-    # else:
-    #     config_file = os.path.join(config_path,str(USER_INP)+'.txt')
-    #     ROOT.destroy()
-    
-    # cf_file = open(config_file,"w")
-    # cf_file.write('## Config file created on '+str(date.today()))
-    # cf_file.write('\n')
-    # cf_file.write('##')
-    # cf_file.write('\n')
-    # for i in dic_to_Save.keys():
-    #     if i is 'Specral_Region':
-    #             cf_file.write('{}\t{},{}'.format(i, dic_to_Save[i][0],dic_to_Save[i][1]))
-    #     else:
-    #         cf_file.write('{}\t{}'.format(i, dic_to_Save[i]))
-    #     cf_file.write('\n')
+    config_path = os.path.join(user_input['output_path'].get(), user_input['output_folder'].get())
+    file_name = ask_filename(config_path)
+    f = open(file_name, "a")
+    f.seek(0)
+    f.truncate()
+    f.write(json.dumps({k: v.get() for k, v in user_input.items()}, indent=4))
+    f.close()    
 
 def create_entry(gui_wdw, label, x, y, width=210):
     # Label
@@ -449,6 +411,7 @@ def load_config_file(user_input):
     for label in user_input.keys():
         user_input[label].set(config.get(label, ''))
 
+    return user_input
 
 def start_gui():
 
@@ -512,7 +475,7 @@ def start_gui():
         fg='#FFFFFF',
         font=("Helvetica", 20),
         highlightbackground = "#0000FF",
-        command=lambda:save_config_file(dic_User_Input)
+        command=lambda:save_config_file(user_input)
         )
     SaveButton.place(x=200, y=400,width=80,height=30)
 
