@@ -338,50 +338,67 @@ def on_closing(wdw):
     wdw.destroy()
     exit()
 
-def save_config_file(dic):
-    dic_to_Save = {
-    'Data_Path'         :   dic['Data_Path'].get(),
-    'Data_Folder'       :   dic['Data_Folder'].get(),
-    'Exp_Number'        :   dic['ExpNo'].get(),
-    'ProcNo_Number'     :   dic['ProcNo'].get(),
-    'pdf_name'          :   dic['pdf_name'].get(),
-    'Ref_Spectrum'      :   dic['Ref_Spec'].get(),
-    'Analysis_Type'     :   dic['analysis_type'].get(),
-    'Specral_Region'    :   [float(i) for i in dic['Spec_Lim'].get().split(',')],
-    'Threshold'         :   float(dic['Threshold'].get()),
-    'pdf_path'          :   dic['pdf_path'].get(),
-    'pdf_folder'        :   dic['pdf_folder'].get()
-    }
-    config_path = os.path.join(dic_to_Save['pdf_path'],dic_to_Save['pdf_folder'])
-    if not os.path.exists(config_path):
-        os.makedirs(config_path)
+# def ask_filename():
+#     wdw = tk.Tk()
+#     wdw.withdraw()
+#     # the input dialog
+#     file_name = simpledialog.askstring(
+#         title="Config File Name",
+#         prompt="Config Input File Name:",
+#         initialvalue="Inputs_Spec_Fitting")
+#     if file_name is None:
+#         wdw.destroy()
+#     else:
+#         config_file = os.path.join(config_path,str(file_name)+'.json')
+#         wdw.destroy()
+
+
+def save_config_file(user_input):
+    f = fd.askopenfilename()
+    print(f)
+    # dic_to_Save = {
+    # 'Data_Path'         :   dic['Data_Path'].get(),
+    # 'Data_Folder'       :   dic['Data_Folder'].get(),
+    # 'Exp_Number'        :   dic['ExpNo'].get(),
+    # 'ProcNo_Number'     :   dic['ProcNo'].get(),
+    # 'pdf_name'          :   dic['pdf_name'].get(),
+    # 'Ref_Spectrum'      :   dic['Ref_Spec'].get(),
+    # 'Analysis_Type'     :   dic['analysis_type'].get(),
+    # 'Specral_Region'    :   [float(i) for i in dic['Spec_Lim'].get().split(',')],
+    # 'Threshold'         :   float(dic['Threshold'].get()),
+    # 'pdf_path'          :   dic['pdf_path'].get(),
+    # 'pdf_folder'        :   dic['pdf_folder'].get()
+    # }
+    # config_path = os.path.join(dic_to_Save['pdf_path'],dic_to_Save['pdf_folder'])
+    # if not os.path.exists(config_path):
+    #     os.makedirs(config_path)
     
-    # config_file = os.path.join(config_path,'Inputs_Spec_Fitting.txt')
-    # if os.path.exists(config_file):
-    ROOT = tk.Tk()
-    ROOT.withdraw()
-    # the input dialog
-    USER_INP = simpledialog.askstring(
-        title="Config File Name",
-        prompt="Config Input File Name:",
-        initialvalue="Inputs_Spec_Fitting")
-    if USER_INP is None:
-        ROOT.destroy()
-    else:
-        config_file = os.path.join(config_path,str(USER_INP)+'.txt')
-        ROOT.destroy()
+    # # config_file = os.path.join(config_path,'Inputs_Spec_Fitting.txt')
+    # # if os.path.exists(config_file):
+    # ROOT = tk.Tk()
+    # ROOT.withdraw()
+    # # the input dialog
+    # USER_INP = simpledialog.askstring(
+    #     title="Config File Name",
+    #     prompt="Config Input File Name:",
+    #     initialvalue="Inputs_Spec_Fitting")
+    # if USER_INP is None:
+    #     ROOT.destroy()
+    # else:
+    #     config_file = os.path.join(config_path,str(USER_INP)+'.txt')
+    #     ROOT.destroy()
     
-    cf_file = open(config_file,"w")
-    cf_file.write('## Config file created on '+str(date.today()))
-    cf_file.write('\n')
-    cf_file.write('##')
-    cf_file.write('\n')
-    for i in dic_to_Save.keys():
-        if i is 'Specral_Region':
-                cf_file.write('{}\t{},{}'.format(i, dic_to_Save[i][0],dic_to_Save[i][1]))
-        else:
-            cf_file.write('{}\t{}'.format(i, dic_to_Save[i]))
-        cf_file.write('\n')
+    # cf_file = open(config_file,"w")
+    # cf_file.write('## Config file created on '+str(date.today()))
+    # cf_file.write('\n')
+    # cf_file.write('##')
+    # cf_file.write('\n')
+    # for i in dic_to_Save.keys():
+    #     if i is 'Specral_Region':
+    #             cf_file.write('{}\t{},{}'.format(i, dic_to_Save[i][0],dic_to_Save[i][1]))
+    #     else:
+    #         cf_file.write('{}\t{}'.format(i, dic_to_Save[i]))
+    #     cf_file.write('\n')
 
 def create_entry(gui_wdw, label, x, y, width=210):
     # Label
