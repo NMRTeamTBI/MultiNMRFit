@@ -286,6 +286,28 @@ def Plot_All_Spectrum(
     print('#--------#')
 
 ###################################
+# Error interface
+###################################
+
+def error_interface(message):
+    gui_int = tk.Tk()
+    gui_int.title("Error")
+    gui_int.geometry("100x20")
+    gui_int.configure(bg='#FFFFFF')
+
+    var_label = StringVar()
+    Label(gui_int, textvariable=var_label,font=("Helvetica"),bg='#FFFFFF',fg='#8B0000',borderwidth=0)
+    var_label.set(message)
+
+    Button(
+        gui_int,
+        text="Close ",
+        fg='#FFFFFF',
+        font=("Helvetica", 20),
+        highlightbackground = "#0000FF",
+        command=lambda:gui_int.destroy()
+    )
+###################################
 # Loading Data interface
 ###################################
 
@@ -437,9 +459,6 @@ def start_gui():
         user_input[label] = create_entry(gui_int, label, x, y)
         i += 1
 
-   
- 
-    
     ## ----- General Buttons ----- ##
     LoadButton = Button(
         gui_int,
