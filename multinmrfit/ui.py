@@ -407,6 +407,7 @@ def create_label(gui_wdw, label, x, y, font_size=14, font_weight='normal'):
     var_label.set(label.replace("_", " ").capitalize())
 
 def load_config_file(user_input):
+    error_interface('Bullshit')
     config_file_path = fd.askopenfilename()
     f = open(config_file_path,"r")
     config = json.loads(f.read())
