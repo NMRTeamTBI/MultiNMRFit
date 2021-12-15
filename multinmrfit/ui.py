@@ -40,16 +40,17 @@ class MyOptionMenu(tk.OptionMenu):
         tk.OptionMenu.__init__(self, master, self.var, *options)
         self.config(font=('calibri',(10)),bg='white',width=12)
         self['menu'].config(font=('calibri',(10)),bg='white')
+
 ###################################
 # Peak Picking window
 ###################################
 
 def save_info_clustering(r,dic, Res):
-    Res.Peak_Amp = dic['Intensity']
-    Res.ppm_H_AXIS = dic['Peak_Position']
+    Res.Peak_Amp = dic['Peak Intensity']
+    Res.ppm_H_AXIS = dic['Peak Position']
     Res.Options = [i.get() for i in dic["Options"]]
-    Res.Cluster = [i.get() for i in dic["Cluster"]]
-    Res.Selection = [True if i.get() != '' else False for i in dic["Cluster"]]
+    Res.Cluster = [i.get() for i in dic["Cluster ID"]]
+    Res.Selection = [True if i.get() != '' else False for i in dic["Cluster ID"]]
     r.destroy()
     plt.close()
 
@@ -66,65 +67,70 @@ def Exit(r):
     plt.close()
     exit()
 
-def wdw_peak_picking(PeakPicking_Threshold, pp_results,figure,pts_Color,Res,new_threshold):
+def wdw_peak_picking(peak_picking_threshold, peak_picking_data, figure, colors, Res, new_threshold):
+
     wdw = tk.Tk()
     wdw.title('Peak Picking Visualisation and Validation')
+
     graph = FigureCanvasTkAgg(figure, master=wdw)
     canvas = graph.get_tk_widget()
     canvas.grid(row=0, column=0,columnspan = 8,rowspan=1)
 
-    pp_names = ['ppm_H_AXIS','Peak_Amp']
-    data_cols_names = ['1H ppm','Peak Intensity','Cluster','Options']
-    # Multiplicity_Choice = ('Singlet','Doublet')
+    list_of_options=['Roof'] # options
     
-    for c in range(len(data_cols_names)):
-        tk.Label(wdw, text=str(data_cols_names[c]), ).grid(column=c+1, row=2)
-
-    dic = {
-        'Cluster': [],
-        'Selection': [],
-        'Intensity':[],
-        'Peak_Position':[],
-        'Options':[]
+    user_input = {
+        'Peak Position'    :   [],
+        'Peak Intensity'   :   [],
+        'Cluster ID'       :   [],
+        'Options'          :   []
     }
+
+    c = 0 
+    for label in user_input.keys():
+        tk.Label(
+            wdw, 
+            text=label, 
+            font=("Helvetica", 14, 'bold')
+        ).grid(column=c+1, row=2)
+        c +=1
+
     dic_par = {
         'th':[]
     }
-    npeaks = len(pp_results)
+    npeaks = len(peak_picking_data)
     for i in range(npeaks):
-        tk.Label(wdw, text="Peak "+str(i+1),fg=pts_Color[i]).grid(column=0, row=i+3)
+        tk.Label(wdw, text="Peak "+str(i+1),fg=colors[i]).grid(column=0, row=i+3)
         en = tk.Entry(wdw,justify = "center")
        
         # Clustering
         en_cluster = tk.Entry(wdw,justify = "center")
-        en_cluster.insert(0, '')
-        dic['Cluster'].append(en_cluster)
-        en_cluster.grid(column=len(data_cols_names)-1,row=i+3,ipadx=5)
+        user_input['Cluster ID'].append(en_cluster)
+        en_cluster.grid(row=i+3,column=3)
         
-        listofoptions=['Roof'] # options
-        en_options = ttk.Combobox(wdw, values=listofoptions) # Combobox
-        en_options.grid(row=i+3,column=len(data_cols_names),ipadx=6) # adding to grid
-        dic['Options'].append(en_options)
+        en_options = ttk.Combobox(wdw, values=list_of_options) # Combobox
+        en_options.grid(row=i+3,column=4) # adding to grid
+        user_input['Options'].append(en_options)
 
-        for c in range(len(pp_names)):
-            col = pp_names[c]
+        for col in peak_picking_data.columns:
             en_c = tk.Entry(wdw,justify = "center")
-            data = pp_results.iloc[i].loc[col]
+            data = peak_picking_data.iloc[i].loc[col]
             if col == 'ppm_H_AXIS':
-                dic['Peak_Position'].append(data)
+                user_input['Peak Position'].append(data)
+                cc = 0
             if col == 'Peak_Amp':
-                dic['Intensity'].append(data)
+                user_input['Peak Intensity'].append(data)
+                cc = 1
             en_c.insert(0, round(data,3))
-            en_c.grid(column=c+1,row=i+3,sticky=tk.N+tk.S+tk.E+tk.W)
+            en_c.grid(column=cc+1,row=i+3)#,sticky=tk.N+tk.S+tk.E+tk.W)
     
     disp = tk.Entry(wdw, readonlybackground="white")
-    tk.Label(wdw, text="Threshold", fg='#f00').grid(column=0, row=1)
-    disp.insert(0, PeakPicking_Threshold)
+    tk.Label(wdw, text="Threshold", font=("Helvetica", 14, 'bold'), fg='#f00').grid(column=0, row=1)
+    disp.insert(0, peak_picking_threshold)
     disp.grid(column=1, row=1)
     dic_par['th'].append(disp)
 
     tk.Button(wdw, text="Refresh & Close", fg = "orange", command=lambda: refresh_threshold(wdw, dic_par, new_threshold)).grid()  
-    tk.Button(wdw, text="Save & Close", fg = "blue", command=lambda: save_info_clustering(wdw, dic, Res)).grid() 
+    tk.Button(wdw, text="Save & Close", fg = "blue", command=lambda: save_info_clustering(wdw, user_input, Res)).grid() 
     tk.Button(wdw, text="Exit", fg = "black", command=lambda: Exit(wdw)).grid() 
 
     wdw.mainloop()
@@ -144,41 +150,50 @@ def filter_multiple_clusters(Res):
     print(Res)
     return Res
 
-def gui_peak_picking(x_Spec,y_Spec,PeakPicking_Threshold,PeakPicking_data):
-
-    n_peak = len(PeakPicking_data)
-    if n_peak >=10:
-        PeakPicking_data = PeakPicking_data.sort_values(by='Peak_Amp', ascending=False).head(10)
-        PeakPicking_data = PeakPicking_data.sort_values(by='ppm_H_AXIS', ascending=True)
-        n_peak = len(PeakPicking_data)
-
-    #Res = pd.DataFrame(columns=['ppm_H_AXIS','Peak_Amp','Check','Cluster'],index=np.arange(1,n_peak+1))
-    Res = initialize_results_clustering()
-    new_threshold = pd.DataFrame(columns=['nt'],index=[1])
+def plot_picking_data(x_spec, y_spec, peak_picking_threshold, peak_picking_data):
+    n_peak = len(peak_picking_data)
 
     # Create a list of colors
     colors = []
     for i in range(n_peak):
         colors.append('#%06X' % random.randint(0, 0xFFFFFF))
 
-    #Plot Spectrum with peak picking
     fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(x_Spec, y_Spec, '-',color='teal')
+    plt.plot(x_spec, y_spec, '-',color='teal')
     for i in range(n_peak):
-        ax.plot(PeakPicking_data.ppm_H_AXIS.iloc[i],PeakPicking_data.Peak_Amp.iloc[i],c=colors[i],ls='none',marker='o')
-    ax.axhline(PeakPicking_Threshold,c='r')
-    ax.invert_xaxis()
-    ax.set_xlabel(r'$^1H$ $(ppm)$')
+        plt.plot(
+            peak_picking_data.ppm_H_AXIS.iloc[i],
+            peak_picking_data.Peak_Amp.iloc[i],
+            c=colors[i],
+            ls='none',
+            marker='o'
+            )
+    plt.axhline(peak_picking_threshold,c='r')
+    plt.gca().invert_xaxis()
+    plt.xlabel(r'$^1H$ $(ppm)$')
+    return fig, colors 
+
+def run_peak_picking(x_spec,y_spec,peak_picking_threshold,peak_picking_data):
+
+
+    Res = initialize_results_clustering()
+    new_threshold = pd.DataFrame(columns=['nt'],index=[1])
+
+    fig, colors = plot_picking_data(
+        x_spec, 
+        y_spec, 
+        peak_picking_threshold, 
+        peak_picking_data
+    )
 
     wdw_peak_picking(
-        PeakPicking_Threshold,
-        PeakPicking_data, 
+        peak_picking_threshold,
+        peak_picking_data, 
         fig,
         colors,
         Res,
         new_threshold
-        )
+    )
     Res = filter_multiple_clusters(Res)
     return new_threshold, Res
 
@@ -404,17 +419,17 @@ def launch_analysis(user_input):
             return error_interface(f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in experiment list", critical_error=is_not_gui)
 
         config = {
-            'Data_Path'     :   user_input.get('data_path'),
-            'Data_Folder'   :   user_input.get('data_folder'),
-            'ExpNo'         :   exp_list,
-            'ProcNo'        :   user_input.get('data_proc_no'),
-            'Ref_Spec'      :   user_input.get('reference_spectrum'),
-            'Data_Type'     :   user_input.get('analysis_type'),
-            'Spec_Lim'      :   spec_lim,
-            'Threshold'     :   float(user_input.get('threshold', 0)),
-            'pdf_path'      :   user_input.get('output_path'),
-            'pdf_folder'    :   user_input.get('output_folder'),
-            'pdf_name'      :   user_input.get('output_name'),
+            'data_path'             :   user_input.get('data_path'),
+            'data_folder'           :   user_input.get('data_folder'),
+            'data_exp_no'           :   exp_list,
+            'data_proc_no'          :   user_input.get('data_proc_no'),####
+            'reference_spectrum'    :   user_input.get('reference_spectrum'),
+            'analysis_type'         :   user_input.get('analysis_type'),
+            'spectral_limits'       :   spec_lim,
+            'threshold'             :   float(user_input.get('threshold', 0)),
+            'output_path'           :   user_input.get('output_path'),
+            'output_folder'         :   user_input.get('output_folder'),
+            'output_name'           :   user_input.get('output_name'),
 
         }
     except Exception as e:
