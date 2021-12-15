@@ -4,6 +4,9 @@ import random
 import json
 import sys
 import os 
+import logging
+import argparse
+from pathlib import Path
 
 # Import display libraries
 import tkinter as tk
@@ -28,6 +31,7 @@ import multinmrfit.fitting as nmrf
 matplotlib.use("TkAgg")
 
 tk_wdw = None 
+logger = logging.getLogger()
 
 class MyOptionMenu(tk.OptionMenu):
     def __init__(self, master, status, *options):
@@ -300,10 +304,10 @@ def error_interface(message, critical_error=False):
         error_window.title("Error")
         error_window.configure(bg='#FFFFFF')
 
-        label = Label(error_window, text=message, font=("Helvetica",18),bg='#FFFFFF',borderwidth=20)
+        label = tk.Label(error_window, text=message, font=("Helvetica",18),bg='#FFFFFF',borderwidth=20)
         label.pack()
 
-        close_button = Button(
+        close_button = tk.Button(
             error_window,
             text="Close ",
             # fg='#FFFFFF',
@@ -313,8 +317,9 @@ def error_interface(message, critical_error=False):
 
         )
         close_button.pack()
-    else:
-        print(f"ERROR: {message}")
+    elif logger:
+        logger.error(message)
+    
     if critical_error:
         exit(1)
 
@@ -322,36 +327,78 @@ def error_interface(message, critical_error=False):
 # Loading Data interface
 ###################################
 
+
+def check_path(path):
+    """
+    check if 'path' exists, and create it if it doesn't exist
+    """
+    sub_path = os.path.dirname(path)
+    if not os.path.exists(sub_path):
+        check_path(sub_path)
+    if not os.path.exists(path):
+        os.mkdir(path)
+
 def launch_analysis(user_input):
     is_gui = (tk_wdw != None)
     is_not_gui = (tk_wdw == None)
 
     try:
+        output_dir = os.path.join(user_input.get('output_path'),user_input.get('output_folder'))
+        if not output_dir:
+            return error_interface("Argument : 'output_folder' is missing", critical_error=is_not_gui)
+
+        if not Path(output_dir).exists():
+            check_path(output_dir)
+
+        # create logger (should be root to catch builder and simulator loggers)
+        # logger = logging.getLogger()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', "%Y-%m-%d %H:%M:%S")
+        # sends logging output to 'process_log.txt' file
+        file_handler = logging.FileHandler(str(Path(output_dir, "process_log.txt")), mode='w+')
+        file_handler.setFormatter(formatter)
+        # sends logging output to sys.stderr
+        strm_handler = logging.StreamHandler()
+        strm_handler.setFormatter(formatter)
+        # add handlers to logger
+        logger.addHandler(strm_handler)
+        logger.addHandler(file_handler)
+        logger.setLevel(logging.INFO)
+
+        if not Path(user_input.get('data_path')).exists():
+            return error_interface("Argument : 'data_path' does not exist", critical_error=is_not_gui)
+
+        if not Path(user_input.get('data_path'),user_input.get('data_folder')).exists():
+            return error_interface("Argument : 'data_folder' does not exist", critical_error=is_not_gui)
+
         if not user_input.get('spectral_limits'):
-            return error_interface("Argument : 'spectral_limits' is missing", critical_error=is_not_gui)
+            return error_interface("Argument : 'spectral_limits' is missing" , critical_error=is_not_gui)
 
         spec_lim = [float(i) for i in user_input.get('spectral_limits').split(',')]
 
         if len(spec_lim)%2 != 0 and len(spec_lim) != 0:
             return error_interface("Argument : 'spectral_limits' is incomplete", critical_error=is_not_gui)
 
-        if float(user_input.get('threshold', 1)) == float(0):
-            return error_interface("Argument : 'threshold' is too low (cannot be 0)", critical_error=is_not_gui)
+        if float(user_input.get('threshold', 1)) <= float(0):
+            return error_interface("Argument : 'threshold' is too low (should be > 0)", critical_error=is_not_gui)
 
+        if user_input.get('analysis_type') not in ['Pseudo2D', '1D', '1D_Series']:
+            return error_interface("Argument : 'analysis_type' expected as 'Pseudo2D','1D' or '1D_Series", critical_error=is_not_gui)
+            
         config = {
             'Data_Path'     :   user_input.get('data_path'),
             'Data_Folder'   :   user_input.get('data_folder'),
             'ExpNo'         :   user_input.get('data_exp_no'),
             'ProcNo'        :   user_input.get('data_proc_no'),
-            'pdf_name'      :   user_input.get('output_name'),
             'Ref_Spec'      :   user_input.get('reference_spectrum'),
             'Data_Type'     :   user_input.get('analysis_type'),
             'Spec_Lim'      :   spec_lim,
             'Threshold'     :   float(user_input.get('threshold', 0)),
             'pdf_path'      :   user_input.get('output_path'),
-            'pdf_folder'    :   user_input.get('output_folder')
+            'pdf_folder'    :   user_input.get('output_folder'),
+            'pdf_name'      :   user_input.get('output_name'),
+
         }
-    except ValueError as e:
+    except Exception as e:
         return error_interface(e, critical_error=is_not_gui)
     for key, conf in config.items():
         if not conf:
