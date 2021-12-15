@@ -1,0 +1,12 @@
+{
+    "data_folder":          "210921_Projet_EAD3_Caroline_09-2021_280k",
+    "data_exp_no":          "3,4-12",
+    "data_proc_no":         "1",
+    "analysis_type":        "1D_Series",
+    "reference_spectrum":   "4",    
+    "spectral_limits":      "5.3,5.05",
+    "threshold":            "200000",
+    "output_path":          "/Users/cyrilcharlier/Desktop/",
+    "output_folder":        "Test_Lindsay",    
+    "output_name":          "test"
+}

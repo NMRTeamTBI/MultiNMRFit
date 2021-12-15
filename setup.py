@@ -3,18 +3,18 @@ import re
 
 
 # Version is maintained in the __init__.py file
-with open("nmrfit/__init__.py") as f:
+with open("multinmrfit/__init__.py") as f:
     try:
         VERSION = re.findall(r"^__version__ = ['\"]([^'\"]*)['\"]", f.read(), re.M)[0]
     except IndexError:
         raise RuntimeError('Unable to determine version.')
 
 setuptools.setup(
-    name="NMRFit",
+    name="MultiNMRFit",
     version=VERSION,
     author="Cyril Charlier, Pierre Millard",
     author_email="charlier@insa-toulouse.fr",
-    description="NMRFit: Fitting NMR spectra",
+    description="MultiNMRFit: Fitting NMR spectra",
     long_description="add long description here",
     long_description_content_type="text/markdown",
     url="https://github.com/NMRTeamTBI/NMRFit",
@@ -33,10 +33,10 @@ setuptools.setup(
         ],
     entry_points={
         'console_scripts': [
-            'nmrfitcli = nmrfit.ui:start_cli',
+            'multinmrfitcli = multinmrfit.ui:start_cli',
         ],
         'gui_scripts': [
-            'nmrfit = nmrfit.ui:start_gui',
+            'multinmrfit = multinmrfit.ui:start_gui',
         ]
     }
 )
