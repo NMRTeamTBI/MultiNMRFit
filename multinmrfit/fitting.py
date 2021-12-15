@@ -218,7 +218,7 @@ def Pseudo2D_PeakFitting(
             print('Ascending Spectrum Fitting : from: '+str(ref_spec)+' to '+str(np.max(id_spec_sup)))
             for s in tqdm(id_spec_sup, leave=leave):
                 y_Spec = Intensities[s,:]
-                Initial_Fit_Values = list(Fit_results.loc[s-1].iloc[:].values)
+                Initial_Fit_Values = list(Fit_results.loc[s-1].iloc[:].values) #!!!!!!!!!!!!!!!!!!!!!!! config if initial values
                 try:
                     _1D_Fit_ = Fitting_Function(
                                 x_Spec,
@@ -238,7 +238,7 @@ def Pseudo2D_PeakFitting(
             for s in tqdm(id_spec_inf[::-1], leave=leave):
                 # print(s,s+1)
                 y_Spec = Intensities[s,:]   
-                Initial_Fit_Values = list(Fit_results.loc[s+1].iloc[:].values) 
+                Initial_Fit_Values = list(Fit_results.loc[s+1].iloc[:].values) #!!!!!!!!!!!!!!!!!!!!!!! config if initial values
                 try:
                     _1D_Fit_ = Fitting_Function(
                                 x_Spec,

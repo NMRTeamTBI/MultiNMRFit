@@ -4,8 +4,9 @@ import multinmrfit.fitting as nff
 import numpy as np
 import os
 import pandas as pd
+import logging
 
-
+logger = logging.getLogger(__name__)
 
 ################################################################
 # Loading Raw Data 
@@ -16,7 +17,7 @@ import pandas as pd
 def run_analysis(imputs_dic, gui=False):
 
     Analysis_Type = imputs_dic['Data_Type']
-
+    logger.info('Test')
     ######################################################
     ##################### Read and Load Data #############
     ######################################################
@@ -30,14 +31,7 @@ def run_analysis(imputs_dic, gui=False):
     elif Analysis_Type in ['1D_Series']:
         Raw_y_Data = []
         Raw_x_Data = []
-        Exp_List_tmp = [i for i in imputs_dic['ExpNo'].split(',')]
-        Exp_List = []
-        for i in Exp_List_tmp:
-            if "-" in i:
-                spectra = i.split('-')
-                Exp_List += range(int(spectra[0]), int(spectra[1])+1)
-            else:
-                Exp_List.append(int(i))
+        Exp_List = imputs_dic['ExpNo']
         for n in Exp_List:
             [data, diC, x_ppm] = nfu.Read_Raw_NMR_Data_Bruker(
                     path_nmr_data   =   os.path.join(imputs_dic['Data_Path'],imputs_dic['Data_Folder']),

@@ -326,7 +326,15 @@ def error_interface(message, critical_error=False):
 ###################################
 # Loading Data interface
 ###################################
-
+def create_experiments_list(user_input):
+    Exp_List = []
+    for i in user_input.get('data_exp_no').split(','):
+        if "-" in i:
+            spectra = i.split('-')
+            Exp_List += range(int(spectra[0]), int(spectra[1])+1)
+        else:
+            Exp_List.append(int(i))
+    return Exp_List
 
 def check_path(path):
     """
@@ -370,6 +378,12 @@ def launch_analysis(user_input):
         if not Path(user_input.get('data_path'),user_input.get('data_folder')).exists():
             return error_interface("Argument : 'data_folder' does not exist", critical_error=is_not_gui)
 
+        if float(user_input.get('threshold', 1)) <= float(0):
+            return error_interface("Argument : 'threshold' is too low (should be > 0)", critical_error=is_not_gui)
+
+        if user_input.get('analysis_type') not in ['Pseudo2D', '1D', '1D_Series']:
+            return error_interface("Argument : 'analysis_type' expected as 'Pseudo2D','1D' or '1D_Series", critical_error=is_not_gui)
+
         if not user_input.get('spectral_limits'):
             return error_interface("Argument : 'spectral_limits' is missing" , critical_error=is_not_gui)
 
@@ -378,16 +392,21 @@ def launch_analysis(user_input):
         if len(spec_lim)%2 != 0 and len(spec_lim) != 0:
             return error_interface("Argument : 'spectral_limits' is incomplete", critical_error=is_not_gui)
 
-        if float(user_input.get('threshold', 1)) <= float(0):
-            return error_interface("Argument : 'threshold' is too low (should be > 0)", critical_error=is_not_gui)
+        exp_list = create_experiments_list(user_input)
+        for exp in exp_list:
+            if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp)).exists():
+                return error_interface(f"Argument : experiment <{exp}> does not exist", critical_error=is_not_gui)
+            else:
+                if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp),'pdata',user_input.get('data_proc_no')).exists():
+                    return error_interface(f"Argument : experiment/procno <{exp}/{user_input.get('data_proc_no')}> does not exist", critical_error=is_not_gui)
 
-        if user_input.get('analysis_type') not in ['Pseudo2D', '1D', '1D_Series']:
-            return error_interface("Argument : 'analysis_type' expected as 'Pseudo2D','1D' or '1D_Series", critical_error=is_not_gui)
-            
+        if int(user_input.get('reference_spectrum')) not in exp_list:
+            return error_interface(f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in experiment list", critical_error=is_not_gui)
+
         config = {
             'Data_Path'     :   user_input.get('data_path'),
             'Data_Folder'   :   user_input.get('data_folder'),
-            'ExpNo'         :   user_input.get('data_exp_no'),
+            'ExpNo'         :   exp_list,
             'ProcNo'        :   user_input.get('data_proc_no'),
             'Ref_Spec'      :   user_input.get('reference_spectrum'),
             'Data_Type'     :   user_input.get('analysis_type'),
@@ -405,7 +424,7 @@ def launch_analysis(user_input):
             return error_interface(f"Argument : '{key}' is missing", critical_error=is_not_gui)
     if is_gui:
         tk_wdw.destroy()
-    print(json.dumps(config,indent=4))
+    logger.info(json.dumps(config,indent=4))
     nmrr.run_analysis(config, gui = is_gui)
 
 def on_closing():
@@ -457,7 +476,7 @@ def create_entry(label, x, y, width=210):
     return imput_var
     
 def create_label(label, x, y, font_size=14, font_weight='normal'):
-    Label(
+    tk.Label(
         tk_wdw,
         text=label.replace("_", " ").capitalize(),
         font=("Helvetica", font_size, font_weight),
