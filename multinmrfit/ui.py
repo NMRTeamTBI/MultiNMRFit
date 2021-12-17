@@ -1,4 +1,5 @@
 # Import system libraries
+from tkinter.constants import N
 import pkg_resources
 import random
 import json
@@ -45,31 +46,30 @@ class MyOptionMenu(tk.OptionMenu):
 # Peak Picking window
 ###################################
 
-def save_info_clustering(r,dic, Res):
-    Res.Peak_Amp = dic['Peak Intensity']
-    Res.ppm_H_AXIS = dic['Peak Position']
+def save_info_clustering(dic, Res):
+    Res.Peak_Intensity = dic['Peak Intensity']
+    Res.Peak_Position = dic['Peak Position']
     Res.Options = [i.get() for i in dic["Options"]]
     Res.Cluster = [i.get() for i in dic["Cluster ID"]]
     Res.Selection = [True if i.get() != '' else False for i in dic["Cluster ID"]]
-    r.destroy()
+    tk_wdw.destroy()
     plt.close()
 
-def refresh_threshold(r, dic, updated_threshold):
-    for n in dic['th']:
-        nt = n.get()
-    updated_threshold.nt.loc[1] = nt
-    r.destroy()
+def refresh_ui(refreshed_threshold, threshold_entry):
+    refreshed_threshold["th"] = threshold_entry.get()
+    tk_wdw.destroy()
     plt.close()
-    return updated_threshold
 
-def Exit(r):
-    r.destroy()
-    plt.close()
-    exit()
+def Exit():
+    if tk.messagebox.askokcancel("quit",'Do you want to quit?'):
+        tk_wdw.destroy()
+        plt.close()
+        exit()
 
-def user_clustering_gui(peak_picking_threshold, peak_picking_data, figure, colors, Res, updated_threshold):
+def user_clustering_gui(peak_picking_threshold, peak_picking_data, figure, colors, Res):
     global tk_wdw
     tk_wdw = tk.Tk()
+    tk_wdw.protocol("WM_DELETE_WINDOW", Exit)
     tk_wdw.title('Peak Picking Visualisation and Validation')
 
     graph = FigureCanvasTkAgg(figure, master=tk_wdw)
@@ -85,84 +85,96 @@ def user_clustering_gui(peak_picking_threshold, peak_picking_data, figure, color
         'Options'          :   []
     }
 
-    c = 0 
-    for label in user_input.keys():
+    npeaks = len(peak_picking_data)
+    if not npeaks:
         tk.Label(
             tk_wdw, 
-            text=label, 
-            font=("Helvetica", 14, 'bold')
-        ).grid(column=c+1, row=2)
-        c +=1
-
-    dic_par = {'th'    :   []}
-    npeaks = len(peak_picking_data)
-    for i in range(npeaks):
-        tk.Label(tk_wdw, text="Peak "+str(i+1),fg=colors[i]).grid(column=0, row=i+3)
+            text='No peak found, please lower the threshold',
+            font=("Helvetica", 14, 'bold'),
+            fg='#f00'
+        ).grid(column=0, row=3)
         tk.Entry(tk_wdw,justify = "center")
-       
-        # Clustering
-        cluster_entry = tk.Entry(tk_wdw,justify = "center")
-        user_input['Cluster ID'].append(cluster_entry)
-        cluster_entry.grid(row=i+3,column=3)
+    else:
+        c = 0 
+        for label in user_input.keys():
+            tk.Label(
+                tk_wdw, 
+                text=label, 
+                font=("Helvetica", 14, 'bold')
+            ).grid(column=c+1, row=2)
+            c +=1
 
-        options_entry = ttk.Combobox(tk_wdw, values=list_of_options)
-        user_input['Options'].append(options_entry)
-        options_entry.grid(row=i+3,column=4)
-        for col in peak_picking_data.columns:
-            en_c = tk.Entry(tk_wdw,justify = "center")
-            data = peak_picking_data.iloc[i].loc[col]
-            if col == 'ppm_H_AXIS':
-                user_input['Peak Position'].append(data)
-                cc = 0
-            if col == 'Peak_Amp':
-                user_input['Peak Intensity'].append(data)
-                cc = 1
-            en_c.insert(0, round(data,3))
-            en_c.grid(column=cc+1,row=i+3)
+        for i in range(npeaks):
+            tk.Label(tk_wdw, text="Peak "+str(i+1),fg=colors[i]).grid(column=0, row=i+3)
+            tk.Entry(tk_wdw,justify = "center")
+        
+            # Clustering
+            cluster_entry = tk.Entry(tk_wdw,justify = "center")
+            user_input['Cluster ID'].append(cluster_entry)
+            cluster_entry.grid(row=i+3,column=3)
+
+            options_entry = ttk.Combobox(tk_wdw, values=list_of_options)
+            user_input['Options'].append(options_entry)
+            options_entry.grid(row=i+3,column=4)
+            for col in peak_picking_data.columns:
+                en_c = tk.Entry(tk_wdw,justify = "center")
+                data = peak_picking_data.iloc[i].loc[col]
+                if col == 'Peak_Position':
+                    user_input['Peak Position'].append(data)
+                    cc = 0
+                if col == 'Peak_Intensity':
+                    user_input['Peak Intensity'].append(data)
+                    cc = 1
+                en_c.insert(0, round(data,3))
+                en_c.grid(column=cc+1,row=i+3)
     
-    disp = tk.Entry(tk_wdw, readonlybackground="white")
     tk.Label(
         tk_wdw, 
         text="Threshold", 
         font=("Helvetica", 14, 'bold'), fg='#f00'
     ).grid(column=0, row=1)
 
-    disp.insert(0, peak_picking_threshold)
-    disp.grid(column=1, row=1)
-    dic_par['th'].append(disp)
+    threshold_entry = tk.Entry(tk_wdw, readonlybackground="white")
+    threshold_entry.insert(0, peak_picking_threshold)
+    threshold_entry.grid(column=1, row=1)
+    refreshed_threshold = { "th" : None }
 
     tk.Button(
         tk_wdw, 
         text="Refresh & Close", 
         fg = "orange", 
         font=("Helvetica", 20),        
-        command=lambda: refresh_threshold(tk_wdw, dic_par, updated_threshold)
-    ).grid(column = 0, row = npeaks+3)  
+        command=lambda: refresh_ui(refreshed_threshold, threshold_entry)
+    ).grid(column = 0, row = npeaks+3 if npeaks else 4)  
     
     tk.Button(
         tk_wdw, 
         text="Save & Close", 
         fg = "blue", 
         font=("Helvetica", 20),        
-        command=lambda: save_info_clustering(tk_wdw, user_input, Res)
-    ).grid(column = 1, row = npeaks+3) 
+        command=lambda: save_info_clustering(user_input, Res)
+    ).grid(column = 1, row = npeaks+3 if npeaks else 4) 
 
     tk.Button(
         tk_wdw, 
         text="Exit", 
         fg = "black", 
         font=("Helvetica", 20),        
-        command=lambda: Exit(tk_wdw)
-    ).grid(column = 2, row = npeaks+3) 
+        command=lambda: Exit()
+    ).grid(column = 2, row = npeaks+3 if npeaks else 4) 
 
     tk_wdw.mainloop()
+    if refreshed_threshold["th"]:
+        return float(refreshed_threshold["th"])
+    else:
+        return None
 
 def filter_multiple_clusters(Res):
     for i,j in enumerate(Res.Cluster):
         cluster_num = j.split(',')
         if len(cluster_num) > 1:
             for k in cluster_num:
-                new_pk = {'ppm_H_AXIS': Res.iloc[i].ppm_H_AXIS,'Peak_Amp': Res.iloc[i].Peak_Amp,'Selection': Res.iloc[i].Selection,'Cluster': k}
+                new_pk = {'Peak_Position': Res.iloc[i].ppm_H_AXIS,'Peak_Intensity': Res.iloc[i].Peak_Amp,'Selection': Res.iloc[i].Selection,'Cluster': k}
                 Res = Res.append(new_pk, ignore_index = True)
             Res = Res.drop(Res.index[i])
     return Res
@@ -179,8 +191,8 @@ def plot_picking_data(x_spec, y_spec, peak_picking_threshold, peak_picking_data)
     plt.plot(x_spec, y_spec, '-',color='teal')
     for i in range(n_peak):
         plt.plot(
-            peak_picking_data.ppm_H_AXIS.iloc[i],
-            peak_picking_data.Peak_Amp.iloc[i],
+            peak_picking_data.Peak_Position.iloc[i],
+            peak_picking_data.Peak_Intensity.iloc[i],
             c=colors[i],
             ls='none',
             marker='o'
@@ -192,19 +204,18 @@ def plot_picking_data(x_spec, y_spec, peak_picking_threshold, peak_picking_data)
 
 def run_user_clustering(figures, colors_plot, peak_picking_threshold, peak_picking_data):
 
-    clustering_results = pd.DataFrame(columns=['ppm_H_AXIS','Peak_Amp','Selection','Cluster','Options'])
-    updated_threshold = pd.DataFrame(columns=['nt'],index=[1])
+    clustering_results = pd.DataFrame(columns=['Peak_Position','Peak_Intensity','Selection','Cluster','Options'])
 
-    user_clustering_gui(
+    refreshed_threshold = user_clustering_gui(
         peak_picking_threshold,
         peak_picking_data, 
         figures,
         colors_plot,
-        clustering_results,
-        updated_threshold
+        clustering_results
     )
+
     clustering_results = filter_multiple_clusters(clustering_results)
-    return updated_threshold, clustering_results
+    return refreshed_threshold, clustering_results
 
 ###################################
 # Final Plots
@@ -498,7 +509,7 @@ def create_entry(label, x, y, width=210):
     input_entry.place(x=x, y=y+20, width=width)
 
     return imput_var
-    
+
 def create_label(label, x, y, font_size=14, font_weight='normal'):
     tk.Label(
         tk_wdw,
@@ -610,6 +621,7 @@ def start_gui():
         font=("Helvetica", 20),
         highlightbackground = "#8B0000",
         command=lambda:launch_analysis({k: v.get() for k, v in user_input.items()})
+
     )
     RunButton.place(x=380, y=400,width=80,height=30)
     
@@ -626,13 +638,5 @@ def start_gui():
     tk_wdw.mainloop()
     
 
-def start_cli():
-    if not len(sys.argv) == 2:
-        error_interface('usage: multinmrfitcli <path/config/file>  ', critical_error=True)
-    user_input = load_config_file(config_file_path=sys.argv[1])
-    if not user_input:
-        exit(1)
-    launch_analysis(user_input)
-    exit()
 
 

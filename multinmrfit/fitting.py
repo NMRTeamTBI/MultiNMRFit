@@ -15,20 +15,20 @@ def Peak_Initialisation(
     Line_Width = 0.001
     Ratio_Lorentzian_Gaussian = 0.5
 
-    Peak_Picking_Results[["ppm_H_AXIS", "Peak_Amp"]] = Peak_Picking_Results[["ppm_H_AXIS", "Peak_Amp"]].apply(pd.to_numeric)
+    Peak_Picking_Results[["Peak_Position", "Peak_Intensity"]] = Peak_Picking_Results[["Peak_Position", "Peak_Intensity"]].apply(pd.to_numeric)
 
     if Peak_Type == 'Singlet':
         Init_Val= [
-        Peak_Picking_Results.ppm_H_AXIS.values[0], 
+        Peak_Picking_Results.Peak_Position.values[0], 
         Ratio_Lorentzian_Gaussian,
-        Peak_Picking_Results.Peak_Amp.values[0]/scaling_factor, 
+        Peak_Picking_Results.Peak_Intensity.values[0]/scaling_factor, 
         Line_Width
         ]
 
     elif Peak_Type =='Doublet':
-        x0 = np.mean(Peak_Picking_Results.ppm_H_AXIS)
-        J1 = 2*(np.abs(Peak_Picking_Results.ppm_H_AXIS.max())-np.abs(x0))
-        Amp = np.mean(Peak_Picking_Results.loc[:,'Peak_Amp'])/scaling_factor
+        x0 = np.mean(Peak_Picking_Results.Peak_Position)
+        J1 = 2*(np.abs(Peak_Picking_Results.Peak_Position.max())-np.abs(x0))
+        Amp = np.mean(Peak_Picking_Results.loc[:,'Peak_Intensity'])/scaling_factor
 
         Init_Val= [
                 x0, 
@@ -40,10 +40,10 @@ def Peak_Initialisation(
     #print(Init_Val);exit()
     elif Peak_Type =='DoubletofDoublet':
 
-        x0_init = np.mean(Peak_Picking_Results.loc[:,'ppm_H_AXIS'])
-        J_small = Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').ppm_H_AXIS.diff().iloc[1]
-        J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'ppm_H_AXIS').ppm_H_AXIS)-np.mean(Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').ppm_H_AXIS))
-        Amp_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Amp'])/scaling_factor
+        x0_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Position'])
+        J_small = Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position.diff().iloc[1]
+        J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'Peak_Position').Peak_Position)-np.mean(Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position))
+        Amp_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Intensity'])/scaling_factor
         Init_Val= [
                 x0_init, 
                 Ratio_Lorentzian_Gaussian,
@@ -54,10 +54,10 @@ def Peak_Initialisation(
                 ]
     elif Peak_Type =='DoubletofDoubletAsymetric':
 
-        x0_init = np.mean(Peak_Picking_Results.loc[:,'ppm_H_AXIS'])
-        J_small = Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').ppm_H_AXIS.diff().iloc[1]
-        J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'ppm_H_AXIS').ppm_H_AXIS)-np.mean(Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').ppm_H_AXIS))
-        Amp_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Amp'])/scaling_factor
+        x0_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Position'])
+        J_small = Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position.diff().iloc[1]
+        J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'Peak_Position').Peak_Position)-np.mean(Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position))
+        Amp_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Intensity'])/scaling_factor
         Init_Val= [
                 x0_init, 
                 Ratio_Lorentzian_Gaussian,
@@ -68,10 +68,10 @@ def Peak_Initialisation(
                 0
                 ]
     elif Peak_Type =='Triplet':
-        x0 = np.mean(Peak_Picking_Results.ppm_H_AXIS)
-        J1 = (np.abs(Peak_Picking_Results.ppm_H_AXIS.max())-np.abs(x0))
-        Amp = Peak_Picking_Results.loc[:,'Peak_Amp'].min()/scaling_factor
-        I_ratio = Peak_Picking_Results.loc[:,'Peak_Amp'].max()/Peak_Picking_Results.loc[:,'Peak_Amp'].min()
+        x0 = np.mean(Peak_Picking_Results.Peak_Position)
+        J1 = (np.abs(Peak_Picking_Results.Peak_Position.max())-np.abs(x0))
+        Amp = Peak_Picking_Results.loc[:,'Peak_Intensity'].min()/scaling_factor
+        I_ratio = Peak_Picking_Results.loc[:,'Peak_Intensity'].max()/Peak_Picking_Results.loc[:,'Peak_Intensity'].min()
         Init_Val= [
                 x0, 
                 Ratio_Lorentzian_Gaussian,
