@@ -12,8 +12,6 @@ logger = logging.getLogger(__name__)
 ################################################################
 # Loading Raw Data 
 ################################################################
-# if Analysis_Type not in ['1D_Series','Pseudo2D','1D']:
-#     exit()
 
 def run_analysis(user_input, gui=False):
     Analysis_Type = user_input['analysis_type']
@@ -88,18 +86,23 @@ def run_analysis(user_input, gui=False):
 
     peak_picking_data = nfu.sort_peak_picking_data(Peak_Picking, 10)
 
-    new_th, user_picked_data = nf.ui.run_peak_picking(
-        x_Spec_init_,
-        y_Spec_init_,
+    fig_peak_picking_region, color_list = nf.ui.plot_picking_data(
+        x_Spec_init_, 
+        y_Spec_init_, 
+        user_input['threshold'], 
+        peak_picking_data
+    )
+
+    new_th, user_picked_data = nf.ui.run_user_clustering(
+        fig_peak_picking_region,
+        color_list,
         user_input['threshold'],
         peak_picking_data
     )
-    print("=======================================")
-    print("=======================================")
-    print("=======================================")
-    print(user_picked_data)
-    print("-----------------------------")
+
     check_for_nt = new_th.isnull().values.any()
+
+ 
     while check_for_nt == False:
         new_th = new_th.apply(pd.to_numeric, errors='coerce')
         pp_t = new_th.nt.values[0]
@@ -109,10 +112,18 @@ def run_analysis(user_input, gui=False):
             y_data          =   y_Spec_init_, 
             threshold       =   pp_t,
         )
+
+        fig_peak_picking_region, color_list = nf.ui.plot_picking_data(
+            x_Spec_init_, 
+            y_Spec_init_, 
+            pp_t, 
+            Peak_Picking
+        )
+
         peak_picking_data = nfu.sort_peak_picking_data(Peak_Picking, 10)
-        new_th, user_picked_data = nf.ui.run_peak_picking(
-            x_Spec_init_,
-            y_Spec_init_,
+        new_th, user_picked_data = nf.ui.run_user_clustering(
+            fig_peak_picking_region,
+            color_list,
             pp_t,
             peak_picking_data
         )
