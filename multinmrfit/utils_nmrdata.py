@@ -118,8 +118,8 @@ def Peak_Picking_1D(
 
     return results
 
-def sort_peak_picking_data(peak_picking_data):
-    if len(peak_picking_data) >=10:
-        peak_picking_data = peak_picking_data.sort_values(by='Peak_Amp', ascending=False).head(10)
+def sort_peak_picking_data(peak_picking_data, n_peak_max):
+    if len(peak_picking_data) >= n_peak_max:
+        peak_picking_data = peak_picking_data.sort_values(by='Peak_Amp', ascending=False).head(n_peak_max)
         peak_picking_data = peak_picking_data.sort_values(by='ppm_H_AXIS', ascending=True)
     return peak_picking_data

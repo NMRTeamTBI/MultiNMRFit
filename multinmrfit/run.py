@@ -5,6 +5,7 @@ import numpy as np
 import os
 import pandas as pd
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,6 @@ logger = logging.getLogger(__name__)
 #     exit()
 
 def run_analysis(user_input, gui=False):
-
     Analysis_Type = user_input['analysis_type']
     logger.info('Test')
     ######################################################
@@ -76,9 +76,9 @@ def run_analysis(user_input, gui=False):
     ####################Peak Picking######################
     ######################################################
     Peak_Picking = nfu.Peak_Picking_1D(
-    x_data          =   x_Spec_init_, 
-    y_data          =   y_Spec_init_, 
-    threshold       =   user_input['threshold'],
+        x_data          =   x_Spec_init_, 
+        y_data          =   y_Spec_init_, 
+        threshold       =   user_input['threshold'],
     )
     #-----------------------------------------------------#   
 
@@ -86,9 +86,19 @@ def run_analysis(user_input, gui=False):
     #############Manual Check of Peak Picking#############
     ######################################################
 
-    peak_picking_data = nfu.sort_peak_picking_data(Peak_Picking)
+    peak_picking_data = nfu.sort_peak_picking_data(Peak_Picking, 10)
 
-    new_th, user_picked_data = nf.ui.run_peak_picking(x_Spec_init_,y_Spec_init_,user_input['threshold'],peak_picking_data)
+    new_th, user_picked_data = nf.ui.run_peak_picking(
+        x_Spec_init_,
+        y_Spec_init_,
+        user_input['threshold'],
+        peak_picking_data
+    )
+    print("=======================================")
+    print("=======================================")
+    print("=======================================")
+    print(user_picked_data)
+    print("-----------------------------")
     check_for_nt = new_th.isnull().values.any()
     while check_for_nt == False:
         new_th = new_th.apply(pd.to_numeric, errors='coerce')
@@ -99,11 +109,15 @@ def run_analysis(user_input, gui=False):
             y_data          =   y_Spec_init_, 
             threshold       =   pp_t,
         )
-        peak_picking_data = nfu.sort_peak_picking_data(Peak_Picking)
-        new_th, user_picked_data = nf.ui.run_peak_picking(x_Spec_init_,y_Spec_init_,pp_t,peak_picking_data)
+        peak_picking_data = nfu.sort_peak_picking_data(Peak_Picking, 10)
+        new_th, user_picked_data = nf.ui.run_peak_picking(
+            x_Spec_init_,
+            y_Spec_init_,
+            pp_t,
+            peak_picking_data
+        )
         check_for_nt = new_th.isnull().values.any()
-        if check_for_nt == True:
-            break
+    
     #print(user_picked_data)
     #print(user_picked_data["Selection"].values)
     #exit()

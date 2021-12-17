@@ -54,20 +54,20 @@ def save_info_clustering(r,dic, Res):
     r.destroy()
     plt.close()
 
-def refresh_threshold(r, dic, new_threshold):
+def refresh_threshold(r, dic, updated_threshold):
     for n in dic['th']:
         nt = n.get()
-    new_threshold.nt.loc[1] = nt
+    updated_threshold.nt.loc[1] = nt
     r.destroy()
     plt.close()
-    return new_threshold
+    return updated_threshold
 
 def Exit(r):
     r.destroy()
     plt.close()
     exit()
 
-def wdw_peak_picking(peak_picking_threshold, peak_picking_data, figure, colors, Res, new_threshold):
+def wdw_peak_picking(peak_picking_threshold, peak_picking_data, figure, colors, Res, updated_threshold):
 
     wdw = tk.Tk()
     wdw.title('Peak Picking Visualisation and Validation')
@@ -94,23 +94,20 @@ def wdw_peak_picking(peak_picking_threshold, peak_picking_data, figure, colors, 
         ).grid(column=c+1, row=2)
         c +=1
 
-    dic_par = {
-        'th':[]
-    }
+    dic_par = {'th'    :   []}
     npeaks = len(peak_picking_data)
     for i in range(npeaks):
         tk.Label(wdw, text="Peak "+str(i+1),fg=colors[i]).grid(column=0, row=i+3)
-        en = tk.Entry(wdw,justify = "center")
+        tk.Entry(wdw,justify = "center")
        
         # Clustering
-        en_cluster = tk.Entry(wdw,justify = "center")
-        user_input['Cluster ID'].append(en_cluster)
-        en_cluster.grid(row=i+3,column=3)
-        
-        en_options = ttk.Combobox(wdw, values=list_of_options) # Combobox
-        en_options.grid(row=i+3,column=4) # adding to grid
-        user_input['Options'].append(en_options)
+        cluster_entry = tk.Entry(wdw,justify = "center")
+        user_input['Cluster ID'].append(cluster_entry)
+        cluster_entry.grid(row=i+3,column=3)
 
+        options_entry = ttk.Combobox(wdw, values=list_of_options)
+        user_input['Options'].append(options_entry)
+        options_entry.grid(row=i+3,column=4)
         for col in peak_picking_data.columns:
             en_c = tk.Entry(wdw,justify = "center")
             data = peak_picking_data.iloc[i].loc[col]
@@ -121,17 +118,42 @@ def wdw_peak_picking(peak_picking_threshold, peak_picking_data, figure, colors, 
                 user_input['Peak Intensity'].append(data)
                 cc = 1
             en_c.insert(0, round(data,3))
-            en_c.grid(column=cc+1,row=i+3)#,sticky=tk.N+tk.S+tk.E+tk.W)
+            en_c.grid(column=cc+1,row=i+3)
     
     disp = tk.Entry(wdw, readonlybackground="white")
-    tk.Label(wdw, text="Threshold", font=("Helvetica", 14, 'bold'), fg='#f00').grid(column=0, row=1)
+    tk.Label(
+        wdw, 
+        text="Threshold", 
+        font=("Helvetica", 14, 'bold'), fg='#f00'
+    ).grid(column=0, row=1)
+
     disp.insert(0, peak_picking_threshold)
     disp.grid(column=1, row=1)
     dic_par['th'].append(disp)
 
-    tk.Button(wdw, text="Refresh & Close", fg = "orange", command=lambda: refresh_threshold(wdw, dic_par, new_threshold)).grid()  
-    tk.Button(wdw, text="Save & Close", fg = "blue", command=lambda: save_info_clustering(wdw, user_input, Res)).grid() 
-    tk.Button(wdw, text="Exit", fg = "black", command=lambda: Exit(wdw)).grid() 
+    tk.Button(
+        wdw, 
+        text="Refresh & Close", 
+        fg = "orange", 
+        font=("Helvetica", 20),        
+        command=lambda: refresh_threshold(wdw, dic_par, updated_threshold)
+    ).grid(column = 0, row = npeaks+3)  
+    
+    tk.Button(
+        wdw, 
+        text="Save & Close", 
+        fg = "blue", 
+        font=("Helvetica", 20),        
+        command=lambda: save_info_clustering(wdw, user_input, Res)
+    ).grid(column = 1, row = npeaks+3) 
+
+    tk.Button(
+        wdw, 
+        text="Exit", 
+        fg = "black", 
+        font=("Helvetica", 20),        
+        command=lambda: Exit(wdw)
+    ).grid(column = 2, row = npeaks+3) 
 
     wdw.mainloop()
 
@@ -147,7 +169,6 @@ def filter_multiple_clusters(Res):
                 new_pk = {'ppm_H_AXIS': Res.iloc[i].ppm_H_AXIS,'Peak_Amp': Res.iloc[i].Peak_Amp,'Selection': Res.iloc[i].Selection,'Cluster': k}
                 Res = Res.append(new_pk, ignore_index = True)
             Res = Res.drop(Res.index[i])
-    print(Res)
     return Res
 
 def plot_picking_data(x_spec, y_spec, peak_picking_threshold, peak_picking_data):
@@ -176,8 +197,8 @@ def plot_picking_data(x_spec, y_spec, peak_picking_threshold, peak_picking_data)
 def run_peak_picking(x_spec,y_spec,peak_picking_threshold,peak_picking_data):
 
 
-    Res = initialize_results_clustering()
-    new_threshold = pd.DataFrame(columns=['nt'],index=[1])
+    clustering_results = initialize_results_clustering()
+    updated_threshold = pd.DataFrame(columns=['nt'],index=[1])
 
     fig, colors = plot_picking_data(
         x_spec, 
@@ -191,11 +212,11 @@ def run_peak_picking(x_spec,y_spec,peak_picking_threshold,peak_picking_data):
         peak_picking_data, 
         fig,
         colors,
-        Res,
-        new_threshold
+        clustering_results,
+        updated_threshold
     )
-    Res = filter_multiple_clusters(Res)
-    return new_threshold, Res
+    clustering_results = filter_multiple_clusters(clustering_results)
+    return updated_threshold, clustering_results
 
 ###################################
 # Final Plots
