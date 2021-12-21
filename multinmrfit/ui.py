@@ -27,8 +27,8 @@ import numpy as np
 
 # Import our own libraries
 import multinmrfit.run as nmrr
-import multinmrfit.multiplets as nmrm
-import multinmrfit.fitting as nmrf
+import multinmrfit.multiplets as nfm
+import multinmrfit.fitting as nff
 
 matplotlib.use("TkAgg")
 
@@ -226,38 +226,79 @@ def getList(dict):
     return [k for k in dict.keys()]
 
 def getIntegral(x_fit_, _multiplet_type_, fit_par):
-    d_mapping = nmrm.mapping_multiplets()[0]
+    d_mapping = nfm.mapping_multiplets()[0]
     _multiplet_type_function = d_mapping[_multiplet_type_]["f_function"]
     y = _multiplet_type_function(x_fit_, *fit_par)
     integral = np.sum(y)*(x_fit_[1]-x_fit_[0])
     return integral
 
-def Plot_All_Spectrum(
-    pdf_path = 'pdf_path',
-    pdf_folder = 'pdf_folder',
-    pdf_name = 'pdf_name',
-    Fit_results = 'Fit_results', 
-    Int_Pseudo_2D_Data = 'Int_Pseudo_2D_Data',
-    x_ppm = 'x_ppm',
-    Peak_Picking_data = None,
-    scaling_factor=None,
-    gui=False,
-    id_spectra=None
+def single_plot_function(r, pdf, x_scale, intensities,        fit_results, x_fit, d_id, scaling_factor, id_spectra, speclist):    
+    fig, ax = plt.subplots(1, 1)
+    fig.set_size_inches([11.7,8.3])
+    ax.plot(
+        x_scale,
+        intensities[r       ,:],
+        color='b',
+        ls='None',
+        marker='o',
+        markersize=0.5
+        )    
+    ax.invert_xaxis()
+    res = fit_results.loc[r].iloc[:].values.tolist()
+
+    sim = nff.simulate_data(
+        x_fit,
+        res,
+        d_id,
+        scaling_factor
+        )
+
+    ax.plot(
+        x_fit, 
+        sim, 
+        'r-', 
+        lw=0.6,
+        label='fit')
+    ax.text(0.05,0.9,"Spectra : " +str(id_spectra[r]),transform=ax.transAxes,fontsize=20)  
+    ax.set_ylabel('Intensity')
+    ax.set_xlabel(r'$^1H$ $(ppm)$')
+
+    plt.subplots_adjust(
+        left = 0.1,
+        #bottom = 0.04,
+        right = 0.96,
+        top = 0.96,
+        wspace = 0.3,
+        hspace = 0.3,
+    )
+    pdf.savefig(fig)
+    plt.close(fig)
+
+def save_output_data(
+    pdf_path            = 'pdf_path',
+    pdf_folder          = 'pdf_folder',
+    pdf_name            = 'pdf_name',
+    fit_results         = 'fit_results', 
+    intensities         = 'intensities',    
+    x_scale             = 'x_scale',
+    Peak_Picking_data   =  None,
+    scaling_factor      =  None,
+    id_spectra          =  None
     ):
 
     print('Plot in pdf file')  
-    x_fit = np.linspace(np.min(x_ppm),np.max(x_ppm),2048)
-    d_id = nmrf.Initial_Values(Peak_Picking_data, x_fit, scaling_factor)[0]
-    #d_id = {k:[] for k in Peak_Picking_data.Cluster.unique()}
+    x_fit = np.linspace(np.min(x_scale),np.max(x_scale),2048)
+    d_id = nff.Initial_Values(Peak_Picking_data, x_fit, scaling_factor)[0]
+
     cluster_list = getList(d_id)
     if id_spectra is None:
-        id_spectra = np.arange(1,len(Fit_results)+1)
-    Fit_results = Fit_results.apply(pd.to_numeric)
+        id_spectra = np.arange(1,len(fit_results)+1)
+    Fit_results = fit_results.apply(pd.to_numeric)
     Fit_results_text= Fit_results.round(9)
     
     if not os.path.exists(os.path.join(pdf_path,pdf_folder)):
         os.makedirs(os.path.join(pdf_path,pdf_folder))
-    d_mapping, _, d_parameters = nmrm.mapping_multiplets()
+    d_mapping, _, d_parameters = nfm.mapping_multiplets()
     for i in cluster_list:        
         col = range(d_id[i][1][0],d_id[i][1][1])
         _multiplet_type_ = d_parameters[len(col)]
@@ -276,14 +317,7 @@ def Plot_All_Spectrum(
         
     speclist = Fit_results.index.values.tolist()
     
-    if gui:
-        from tqdm.gui import tqdm
-        leave=False
-    else:
-        from tqdm import tqdm
-        leave=True
-
-    root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)]) 
+    root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)],title='Output data in pdf') 
 
     with PdfPages(os.path.join(pdf_path,pdf_folder,pdf_name+'.pdf')) as pdf:   
         matplotlib.pyplot.switch_backend('Agg') 
@@ -291,9 +325,9 @@ def Plot_All_Spectrum(
         threads.append(MyApp_Plotting(data={
             'speclist'              : speclist,
             'pdf'                   : pdf, 
-            'x_ppm'                 : x_ppm, 
-            'Int_Pseudo_2D_Data'    : Int_Pseudo_2D_Data, 
-            'Fit_results'           : Fit_results, 
+            'x_scale'                 : x_scale, 
+            'intensities'          : intensities,       
+            'fit_results'           : fit_results, 
             'x_fit'                 : x_fit, 
             'd_id'                  : d_id, 
             'scaling_factor'        : scaling_factor, 
@@ -305,57 +339,7 @@ def Plot_All_Spectrum(
         progressbar=progress_bars[0]
         ))
         root.mainloop()
-        print('tppppp')
     print('#--------#')
-
-
-def single_plot_function(r, pdf, x_ppm, Int_Pseudo_2D_Data, Fit_results, x_fit, d_id, scaling_factor, id_spectra, speclist):    
-    print('tutu')
-    fig, ax = plt.subplots(1, 1)
-    fig.set_size_inches([11.7,8.3])
-    ax.plot(
-        x_ppm,
-        Int_Pseudo_2D_Data[r,:],
-        color='b',
-        ls='None',
-        marker='o',
-        markersize=0.5
-        )    
-    ax.invert_xaxis()
-    print('toto')
-    res = Fit_results.loc[r].iloc[:].values.tolist()
-
-    sim = nmrf.simulate_data(
-        x_fit,
-        res,
-        d_id,
-        scaling_factor
-        )
-
-    ax.plot(
-        x_fit, 
-        sim,#/Norm, 
-        'r-', 
-        lw=0.6,
-        label='fit')
-    ax.text(0.05,0.9,"Spectra : " +str(id_spectra[r]),transform=ax.transAxes,fontsize=20)  
-    ax.set_ylabel('Intensity')
-    ax.set_xlabel(r'$^1H$ $(ppm)$')
-
-
-    plt.subplots_adjust(
-        left = 0.1,
-        #bottom = 0.04,
-        right = 0.96,
-        top = 0.96,
-        wspace = 0.3,
-        hspace = 0.3,
-    )
-    print('ttttttt')
-    pdf.savefig(fig)
-    print('uuuuuu')
-    plt.close(fig)
-    print('cccccc')
     
 ###################################
 # Error interface
@@ -390,14 +374,14 @@ def error_interface(message, critical_error=False):
 # Loading Data interface
 ###################################
 def create_experiments_list(user_input):
-    Exp_List = []
+    experiment_list = []
     for i in user_input.get('data_exp_no').split(','):
         if "-" in i:
             spectra = i.split('-')
-            Exp_List += range(int(spectra[0]), int(spectra[1])+1)
+            experiment_list += range(int(spectra[0]), int(spectra[1])+1)
         else:
-            Exp_List.append(int(i))
-    return Exp_List
+            experiment_list.append(int(i))
+    return experiment_list
 
 def check_path(path):
     """
@@ -593,11 +577,11 @@ def start_gui():
     }
     global tk_wdw
     tk_wdw = tk.Tk()
-    tk_wdw.title("MultiNMRFit Interface")
+    tk_wdw.title("Multinffit Interface")
     tk_wdw.geometry("700x600")
     tk_wdw.configure(bg='#FFFFFF')
 
-    path_image = pkg_resources.resource_filename('multinmrfit', 'data/')
+    path_image = pkg_resources.resource_filename('multinffit', 'data/')
     # Set bottom picture
     img_network = Image.open(os.path.join(path_image, 'network.png'))
     img_network_ = ImageTk.PhotoImage(img_network.resize((700, 160))) 
@@ -665,13 +649,20 @@ def start_gui():
     
     tk_wdw.mainloop()
 
+###################################
+# Progress bars
+###################################
+
 def progress_bar_exit(root):
     root.destroy()
 
-def init_progress_bar_windows(len_progresses):
+def update_progress_label():
+    return f"Current Progress: {pb['value']}%"
+
+def init_progress_bar_windows(len_progresses, title=None):
     root = tk.Tk()
     root.geometry('300x320')
-    root.title('Progressbar Demo')
+    root.title(title)
 
     progress_bars = []
     for len_progress in len_progresses:
@@ -696,7 +687,7 @@ def init_progress_bar_windows(len_progresses):
     return root, close_button, progress_bars
 
 
-class MyApp(threading.Thread):
+class MyApp_Fitting(threading.Thread):
 
     def __init__(self, data, threads, close_button, progressbar):
         self.finished = False
@@ -710,7 +701,7 @@ class MyApp(threading.Thread):
     def run(self):
         for fit in self.data["spec_list"]:
             self.progressbar["value"] += 1
-            nmrf.run_single_fit_function(fit=fit, **self.data)
+            nff.run_single_fit_function(fit=fit, **self.data)
         self.finished = True
         finished = True
         for thread in self.threads:
@@ -730,7 +721,6 @@ class MyApp_Plotting(threading.Thread):
 
     def run(self):
         for r in self.data["speclist"]:
-            print(r)
             single_plot_function(r = r, **self.data)
             self.progressbar["value"] += 1
         

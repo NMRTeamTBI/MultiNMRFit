@@ -105,25 +105,23 @@ def run_analysis(user_input, gui=False):
         ref_spec            =   user_input['reference_spectrum'],
         peak_picking_data   =   user_picked_data,
         scaling_factor      =   scaling_factor,
-        analysis_type       =   user_input['analysis_type'],
-        gui                 =   gui
+        analysis_type       =   user_input['analysis_type']
+        
     )
     #-----------------------------------------------------#   
     ######################################################
     #######################Output#########################
     ######################################################
-
     
-    nf.ui.Plot_All_Spectrum(
+    nf.ui.save_output_data(
         pdf_path            =   user_input['output_path'],
         pdf_folder          =   user_input['output_folder'],
         pdf_name            =   user_input['output_name'],
-        Fit_results         =   fit_results,
-        Int_Pseudo_2D_Data  =   intensities,
-        x_ppm               =   x_ppm_reference_spectrum,
+        fit_results         =   fit_results,
+        intensities         =   intensities,
+        x_scale             =   x_ppm_reference_spectrum,
         Peak_Picking_data   =   user_picked_data,
         scaling_factor      =   scaling_factor,
-        gui                 =   gui,
         id_spectra          =   experiments_list
     )
     print('Full Analysis is done')
