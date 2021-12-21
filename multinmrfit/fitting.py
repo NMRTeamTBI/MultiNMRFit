@@ -3,6 +3,8 @@ import pandas as pd
 from scipy.optimize import minimize
 import warnings
 warnings.filterwarnings('ignore')
+import threading
+import time
 
 import multinmrfit.multiplets as nmrm
 
@@ -216,44 +218,64 @@ def Pseudo2D_PeakFitting(
         leave=True
     if Intensities.ndim != 1:
         Fit_results.loc[id_spec_ref,:] = Initial_Fit_.x.tolist()
-        if ref_spec != str(n_spec):
-            print('Ascending Spectrum Fitting : from: '+str(ref_spec)+' to '+str(np.max(id_spec_sup)))
-            run_fitting_function(
-                up                  = True,
-                spec_list           = id_spec_sup,
-                intensities         = Intensities,
-                fit_results         = Fit_results,
-                x_Spec              = x_Spec,
-                peak_picking_data   = peak_picking_data,
-                scaling_factor      = scaling_factor
-            )
+        # if ref_spec != str(n_spec):
+        threads = []
+        print('Ascending Spectrum Fitting : from: '+str(ref_spec)+' to '+str(np.max(id_spec_sup)))
+        threads.append(MyApp(data={
+            "up"                  : True,
+            "spec_list"           : id_spec_sup,
+            "intensities"         : Intensities,
+            "fit_results"         : Fit_results,
+            "x_Spec"              : x_Spec,
+            "peak_picking_data"   : peak_picking_data,
+            "scaling_factor"      : scaling_factor
+        }))
         print('#--------#')
         if ref_spec != '1':
             print('Descending Spectrum Fitting : from: '+str(np.min(id_spec_inf))+' to '+str(np.max(id_spec_inf)))
-            run_fitting_function(
-                up                  = False,
-                spec_list           = id_spec_inf[::-1],
-                intensities         = Intensities,
-                fit_results         = Fit_results,
-                x_Spec              = x_Spec,
-                peak_picking_data   = peak_picking_data,
-                scaling_factor      = scaling_factor
-            )
+            threads.append(MyApp(data={
+                "up"                  : False,
+                "spec_list"           : id_spec_inf[::-1],
+                "intensities"         : Intensities,
+                "fit_results"         : Fit_results,
+                "x_Spec"              : x_Spec,
+                "peak_picking_data"   : peak_picking_data,
+                "scaling_factor"      : scaling_factor
+            }))
         print('#--------#')
+        finished = False
+        while not finished:
+            finished = True
+            for thread in threads:
+                finished = thread.finished if thread.finished == False else finished
+            time.sleep(0.5)
     return Fit_results
 
-def run_fitting_function(up, spec_list, intensities, fit_results, x_Spec, peak_picking_data, scaling_factor):
-    for s in spec_list:
-        y_Spec = intensities[s,:]   
-        Initial_Fit_Values = list(fit_results.loc[s-1 if up else s+1].iloc[:].values)
-        try:
-            _1D_Fit_ = Fitting_Function(
-                        x_Spec,
-                        peak_picking_data,
-                        y_Spec,
-                        scaling_factor,
-                        Initial_Fit_Values) 
+def run_single_fit_function(up, fit, intensities, fit_results, x_Spec, peak_picking_data, scaling_factor, spec_list):
+    y_Spec = intensities[fit,:]   
+    Initial_Fit_Values = list(fit_results.loc[fit-1 if up else fit+1].iloc[:].values)
+    try:
+        _1D_Fit_ = Fitting_Function(
+                    x_Spec,
+                    peak_picking_data,
+                    y_Spec,
+                    scaling_factor,
+                    Initial_Fit_Values) 
 
-            fit_results.loc[s,:] = _1D_Fit_.x.tolist()
-        except:
-            print('Error'+str(s))
+        fit_results.loc[fit,:] = _1D_Fit_.x.tolist()
+    except:
+        print('Error'+str(fit))
+
+
+class MyApp(threading.Thread):
+
+    def __init__(self, data):
+        self.finished = False
+        self.data = data
+        threading.Thread.__init__(self)
+        self.start()
+
+    def run(self):
+        for fit in self.data["spec_list"]:
+            run_single_fit_function(fit=fit, **self.data)
+        self.finished = True
