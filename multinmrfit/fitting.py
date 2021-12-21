@@ -201,7 +201,7 @@ def Pseudo2D_PeakFitting(
         scaling_factor)
     print('Reference Spectrum Fitting -- Complete')
     print('#--------#')
-    
+
     Fit_results = pd.DataFrame(
         index=np.arange(0,n_spec,1),
         columns=np.arange(0,len(Initial_Fit_.x.tolist()),1)
@@ -218,39 +218,42 @@ def Pseudo2D_PeakFitting(
         Fit_results.loc[id_spec_ref,:] = Initial_Fit_.x.tolist()
         if ref_spec != str(n_spec):
             print('Ascending Spectrum Fitting : from: '+str(ref_spec)+' to '+str(np.max(id_spec_sup)))
-            for s in tqdm(id_spec_sup, leave=leave):
-                y_Spec = Intensities[s,:]
-                Initial_Fit_Values = list(Fit_results.loc[s-1].iloc[:].values) #!!!!!!!!!!!!!!!!!!!!!!! config if initial values
-                try:
-                    _1D_Fit_ = Fitting_Function(
-                                x_Spec,
-                                peak_picking_data,
-                                y_Spec,
-                                scaling_factor,
-                                Initial_Fit_Values)                   
-                    
-                    # for n in range(len(Col_Names)-1):
-                    Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
-
-                except:
-                    print('Error'+str(s))
+            run_fitting_function(
+                up                  = True,
+                spec_list           = id_spec_sup,
+                intensities         = Intensities,
+                fit_results         = Fit_results,
+                x_Spec              = x_Spec,
+                peak_picking_data   = peak_picking_data,
+                scaling_factor      = scaling_factor
+            )
         print('#--------#')
         if ref_spec != '1':
             print('Descending Spectrum Fitting : from: '+str(np.min(id_spec_inf))+' to '+str(np.max(id_spec_inf)))
-            for s in tqdm(id_spec_inf[::-1], leave=leave):
-                # print(s,s+1)
-                y_Spec = Intensities[s,:]   
-                Initial_Fit_Values = list(Fit_results.loc[s+1].iloc[:].values) #!!!!!!!!!!!!!!!!!!!!!!! config if initial values
-                try:
-                    _1D_Fit_ = Fitting_Function(
-                                x_Spec,
-                                peak_picking_data,
-                                y_Spec,
-                                scaling_factor,
-                                Initial_Fit_Values) 
-
-                    Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
-                except:
-                    print('Error'+str(s))
+            run_fitting_function(
+                up                  = False,
+                spec_list           = id_spec_inf[::-1],
+                intensities         = Intensities,
+                fit_results         = Fit_results,
+                x_Spec              = x_Spec,
+                peak_picking_data   = peak_picking_data,
+                scaling_factor      = scaling_factor
+            )
         print('#--------#')
     return Fit_results
+
+def run_fitting_function(up, spec_list, intensities, fit_results, x_Spec, peak_picking_data, scaling_factor):
+    for s in spec_list:
+        y_Spec = intensities[s,:]   
+        Initial_Fit_Values = list(fit_results.loc[s-1 if up else s+1].iloc[:].values)
+        try:
+            _1D_Fit_ = Fitting_Function(
+                        x_Spec,
+                        peak_picking_data,
+                        y_Spec,
+                        scaling_factor,
+                        Initial_Fit_Values) 
+
+            fit_results.loc[s,:] = _1D_Fit_.x.tolist()
+        except:
+            print('Error'+str(s))
