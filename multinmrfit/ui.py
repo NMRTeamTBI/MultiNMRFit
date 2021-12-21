@@ -661,8 +661,9 @@ def start_gui():
 def progress_bar_exit(root):
     root.destroy()
 
-def update_progress_label():
-    return f"Current Progress: {pb['value']}%"
+# def progress_label(progress_bar):
+#     return f"Current Progress: {progress_bar['value']}%"
+
 
 def init_progress_bar_windows(len_progresses, title, progress_bar_label):
     root = tk.Tk()
@@ -714,6 +715,7 @@ class MyApp_Fitting(threading.Thread):
     def run(self):
         for fit in self.data["spec_list"]:
             self.progressbar["value"] += 1
+            # self.progress_label["value"] +=1
             nff.run_single_fit_function(fit=fit, **self.data)
         self.finished = True
         finished = True
