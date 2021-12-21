@@ -3,10 +3,11 @@ import pandas as pd
 from scipy.optimize import minimize
 import warnings
 warnings.filterwarnings('ignore')
-import threading
-import time
+import tkinter as tk
+from tkinter import ttk
 
 import multinmrfit.multiplets as nmrm
+import multinmrfit.ui as nmrui
 
 # Set Initial Values for fitting
 
@@ -173,27 +174,29 @@ def Fitting_Function(
     )
     return res_fit
 
-def Pseudo2D_PeakFitting(   
-    Intensities =   'Intensities'           ,
-    x_Spec      =   'x_Spec'                ,    
-    ref_spec    =   'ref_spec'              ,
-    peak_picking_data = 'peak_picking_data',
-    scaling_factor=None,
-    gui=False
+
+def Full_Fitting_Function(   
+    intensities         =   'intensities',
+    x_Spec              =   'x_Spec',
+    ref_spec            =   'ref_spec',
+    peak_picking_data   =   'peak_picking_data',
+    scaling_factor      =   None,
+    analysis_type       =   'analysis_type',
+    gui                 =   False
     ): 
-    if Intensities.ndim == 1:
+    if intensities.ndim == 1:
         n_spec = 1
     else:
-        n_spec = Intensities.shape[0]
+        n_spec = intensities.shape[0]
 
     id_spec_ref = int(ref_spec)-1
     id_spec_sup = np.arange(id_spec_ref+1,n_spec,1)
     id_spec_inf = np.arange(0,id_spec_ref,1)
 
-    if Intensities.ndim == 1:
-        y_Spec_init_ = Intensities
+    if intensities.ndim == 1:
+        y_Spec_init_ = intensities
     else:
-        y_Spec_init_ = Intensities[id_spec_ref,:]
+        y_Spec_init_ = intensities[id_spec_ref,:]
     #Fitting of the reference 1D spectrum -- This function can be used for 1D spectrum alone
     print('Reference Spectrum Fitting : reference spectrum: '+str(ref_spec))
     Initial_Fit_ = Fitting_Function(
@@ -208,52 +211,59 @@ def Pseudo2D_PeakFitting(
         index=np.arange(0,n_spec,1),
         columns=np.arange(0,len(Initial_Fit_.x.tolist()),1)
             )
-    if Intensities.ndim == 1:
+    if intensities.ndim == 1:
         Fit_results.loc[0,:] = Initial_Fit_.x.tolist()
-    if gui:
-        from tqdm.gui import tqdm
-        leave=False
-    else:
-        from tqdm import tqdm
-        leave=True
-    if Intensities.ndim != 1:
+
+    root, close_button, progress_bars = nmrui.init_progress_bar_windows(len_progresses = [len(id_spec_sup), len(id_spec_inf)]) 
+
+    if intensities.ndim != 1:
         Fit_results.loc[id_spec_ref,:] = Initial_Fit_.x.tolist()
         # if ref_spec != str(n_spec):
         threads = []
         print('Ascending Spectrum Fitting : from: '+str(ref_spec)+' to '+str(np.max(id_spec_sup)))
-        threads.append(MyApp(data={
+        threads.append(nmrui.MyApp(data={
             "up"                  : True,
             "spec_list"           : id_spec_sup,
-            "intensities"         : Intensities,
+            "intensities"         : intensities,
             "fit_results"         : Fit_results,
             "x_Spec"              : x_Spec,
             "peak_picking_data"   : peak_picking_data,
+            "analysis_type"       : analysis_type,
             "scaling_factor"      : scaling_factor
-        }))
+        },
+        threads=threads,
+        close_button=close_button,
+        progressbar=progress_bars[0]
+        ))
         print('#--------#')
         if ref_spec != '1':
             print('Descending Spectrum Fitting : from: '+str(np.min(id_spec_inf))+' to '+str(np.max(id_spec_inf)))
-            threads.append(MyApp(data={
+            threads.append(nmrui.MyApp(data={
                 "up"                  : False,
                 "spec_list"           : id_spec_inf[::-1],
-                "intensities"         : Intensities,
+                "intensities"         : intensities,
                 "fit_results"         : Fit_results,
                 "x_Spec"              : x_Spec,
                 "peak_picking_data"   : peak_picking_data,
+                "analysis_type"       : analysis_type,
                 "scaling_factor"      : scaling_factor
-            }))
+            },
+            threads=threads,
+            close_button=close_button,
+            progressbar=progress_bars[1]
+            ))
         print('#--------#')
-        finished = False
-        while not finished:
-            finished = True
-            for thread in threads:
-                finished = thread.finished if thread.finished == False else finished
-            time.sleep(0.5)
+
+
+        root.mainloop()
     return Fit_results
 
-def run_single_fit_function(up, fit, intensities, fit_results, x_Spec, peak_picking_data, scaling_factor, spec_list):
-    y_Spec = intensities[fit,:]   
-    Initial_Fit_Values = list(fit_results.loc[fit-1 if up else fit+1].iloc[:].values)
+def run_single_fit_function(up, fit, intensities, fit_results, x_Spec, peak_picking_data, scaling_factor, analysis_type, spec_list):
+    y_Spec = intensities[fit,:]
+    if analysis_type is 'Pseudo2D':
+        Initial_Fit_Values = list(fit_results.loc[fit-1 if up else fit+1].iloc[:].values)
+    else:
+        Initial_Fit_Values = None
     try:
         _1D_Fit_ = Fitting_Function(
                     x_Spec,
@@ -265,17 +275,3 @@ def run_single_fit_function(up, fit, intensities, fit_results, x_Spec, peak_pick
         fit_results.loc[fit,:] = _1D_Fit_.x.tolist()
     except:
         print('Error'+str(fit))
-
-
-class MyApp(threading.Thread):
-
-    def __init__(self, data):
-        self.finished = False
-        self.data = data
-        threading.Thread.__init__(self)
-        self.start()
-
-    def run(self):
-        for fit in self.data["spec_list"]:
-            run_single_fit_function(fit=fit, **self.data)
-        self.finished = True

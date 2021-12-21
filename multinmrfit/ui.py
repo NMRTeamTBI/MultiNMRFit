@@ -7,6 +7,7 @@ import sys
 import os 
 import logging
 import argparse
+import threading
 from pathlib import Path
 
 # Import display libraries
@@ -281,54 +282,81 @@ def Plot_All_Spectrum(
     else:
         from tqdm import tqdm
         leave=True
-    
-    with PdfPages(os.path.join(pdf_path,pdf_folder,pdf_name+'.pdf')) as pdf:           
-        for r in tqdm(speclist, leave=leave):
-            fig, (ax) = plt.subplots(1, 1)
-            fig.set_size_inches([11.7,8.3])
-            ax.plot(
-                x_ppm,
-                Int_Pseudo_2D_Data[r,:],
-                color='b',
-                ls='None',
-                marker='o',
-                markersize=0.5
-                )    
-            ax.invert_xaxis()
-            # ax[r].set_xlabel('PPM')
-            #ax.set_ylim(top=1.1,bottom=-0.1)
-            res = Fit_results.loc[r].iloc[:].values.tolist()
 
-            sim = nmrf.simulate_data(
-                x_fit,
-                res,
-                d_id,
-                scaling_factor
-                )
+    root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)]) 
 
-            ax.plot(
-                x_fit, 
-                sim,#/Norm, 
-                'r-', 
-                lw=0.6,
-                label='fit')
-            ax.text(0.05,0.9,"Spectra : " +str(id_spectra[r]),transform=ax.transAxes,fontsize=20)  
-            ax.set_ylabel('Intensity')
-            ax.set_xlabel(r'$^1H$ $(ppm)$')
+    with PdfPages(os.path.join(pdf_path,pdf_folder,pdf_name+'.pdf')) as pdf:   
+        matplotlib.pyplot.switch_backend('Agg') 
+        threads = []
+        threads.append(MyApp_Plotting(data={
+            'speclist'              : speclist,
+            'pdf'                   : pdf, 
+            'x_ppm'                 : x_ppm, 
+            'Int_Pseudo_2D_Data'    : Int_Pseudo_2D_Data, 
+            'Fit_results'           : Fit_results, 
+            'x_fit'                 : x_fit, 
+            'd_id'                  : d_id, 
+            'scaling_factor'        : scaling_factor, 
+            'id_spectra'            : id_spectra
 
-
-            plt.subplots_adjust(
-                left = 0.1,
-                #bottom = 0.04,
-                right = 0.96,
-                top = 0.96,
-                wspace = 0.3,
-                hspace = 0.3,
-            )
-            pdf.savefig(fig)
-            plt.close(fig)
+        },
+        threads=threads,
+        close_button=close_button,
+        progressbar=progress_bars[0]
+        ))
+        root.mainloop()
+        print('tppppp')
     print('#--------#')
 
+
+def single_plot_function(r, pdf, x_ppm, Int_Pseudo_2D_Data, Fit_results, x_fit, d_id, scaling_factor, id_spectra, speclist):    
+    print('tutu')
+    fig, ax = plt.subplots(1, 1)
+    fig.set_size_inches([11.7,8.3])
+    ax.plot(
+        x_ppm,
+        Int_Pseudo_2D_Data[r,:],
+        color='b',
+        ls='None',
+        marker='o',
+        markersize=0.5
+        )    
+    ax.invert_xaxis()
+    print('toto')
+    res = Fit_results.loc[r].iloc[:].values.tolist()
+
+    sim = nmrf.simulate_data(
+        x_fit,
+        res,
+        d_id,
+        scaling_factor
+        )
+
+    ax.plot(
+        x_fit, 
+        sim,#/Norm, 
+        'r-', 
+        lw=0.6,
+        label='fit')
+    ax.text(0.05,0.9,"Spectra : " +str(id_spectra[r]),transform=ax.transAxes,fontsize=20)  
+    ax.set_ylabel('Intensity')
+    ax.set_xlabel(r'$^1H$ $(ppm)$')
+
+
+    plt.subplots_adjust(
+        left = 0.1,
+        #bottom = 0.04,
+        right = 0.96,
+        top = 0.96,
+        wspace = 0.3,
+        hspace = 0.3,
+    )
+    print('ttttttt')
+    pdf.savefig(fig)
+    print('uuuuuu')
+    plt.close(fig)
+    print('cccccc')
+    
 ###################################
 # Error interface
 ###################################
@@ -636,7 +664,80 @@ def start_gui():
     CloseButton.place(x=560, y=400,width=80,height=30)
     
     tk_wdw.mainloop()
-    
+
+def progress_bar_exit(root):
+    root.destroy()
+
+def init_progress_bar_windows(len_progresses):
+    root = tk.Tk()
+    root.geometry('300x320')
+    root.title('Progressbar Demo')
+
+    progress_bars = []
+    for len_progress in len_progresses:
+        pg_bar = ttk.Progressbar(
+            root,
+            orient='horizontal',
+            mode='determinate',
+            maximum=len_progress,
+            length=280
+        )
+        pg_bar.grid(column=0, row=len(progress_bars), columnspan=2, padx=10, pady=20)
+        progress_bars.append(pg_bar)
+
+    close_button = tk.Button(
+        root, 
+        text="Close", 
+        fg = "black", 
+        font=("Helvetica", 20),        
+        command=lambda: progress_bar_exit(root)
+    )
+    close_button.grid(column = 1, row = len(len_progresses))
+    return root, close_button, progress_bars
 
 
+class MyApp(threading.Thread):
+
+    def __init__(self, data, threads, close_button, progressbar):
+        self.finished = False
+        self.threads = threads
+        self.data = data
+        self.close_button = close_button
+        self.progressbar = progressbar
+        threading.Thread.__init__(self)
+        self.start()
+
+    def run(self):
+        for fit in self.data["spec_list"]:
+            self.progressbar["value"] += 1
+            nmrf.run_single_fit_function(fit=fit, **self.data)
+        self.finished = True
+        finished = True
+        for thread in self.threads:
+            finished = thread.finished if thread.finished == False else finished
+        if finished:
+            self.close_button.invoke()
+
+class MyApp_Plotting(threading.Thread):
+    def __init__(self, data, threads, close_button, progressbar):
+        self.finished = False
+        self.threads = threads
+        self.data = data
+        self.close_button = close_button
+        self.progressbar = progressbar
+        threading.Thread.__init__(self)
+        self.start()
+
+    def run(self):
+        for r in self.data["speclist"]:
+            print(r)
+            single_plot_function(r = r, **self.data)
+            self.progressbar["value"] += 1
+        
+        self.finished = True
+        finished = True
+        for thread in self.threads:
+            finished = thread.finished if thread.finished == False else finished
+        if finished:
+            self.close_button.invoke()
 

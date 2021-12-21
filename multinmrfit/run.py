@@ -99,18 +99,21 @@ def run_analysis(user_input, gui=False):
     ######################################################
     #######################Fitting########################
     ######################################################
-    fit_results = nff.Pseudo2D_PeakFitting(
-        Intensities         =   intensities,
+    fit_results = nff.Full_Fitting_Function(
+        intensities         =   intensities,
         x_Spec              =   x_ppm_reference_spectrum,
         ref_spec            =   user_input['reference_spectrum'],
         peak_picking_data   =   user_picked_data,
         scaling_factor      =   scaling_factor,
+        analysis_type       =   user_input['analysis_type'],
         gui                 =   gui
     )
     #-----------------------------------------------------#   
     ######################################################
     #######################Output#########################
     ######################################################
+
+    
     nf.ui.Plot_All_Spectrum(
         pdf_path            =   user_input['output_path'],
         pdf_folder          =   user_input['output_folder'],
