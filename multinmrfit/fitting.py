@@ -1,14 +1,17 @@
-﻿import numpy as np
-import pandas as pd
-from scipy.optimize import minimize
-import warnings
+﻿import warnings
+import logging
+
 warnings.filterwarnings('ignore')
 import tkinter as tk
 from tkinter import ttk
+import numpy as np
+import pandas as pd
+from scipy.optimize import minimize
 
 import multinmrfit.multiplets as nfm
 import multinmrfit.ui as nfui
 
+logger = logging.getLogger(__name__)
 # Set Initial Values for fitting
 
 def Peak_Initialisation(
@@ -191,7 +194,7 @@ def run_single_fit_function(up, fit, intensities, fit_results, x_Spec, peak_pick
         fit_results.loc[fit,:] = _1D_Fit_.x.tolist()
     except:
         print('Error'+str(fit))
-        
+
 def Full_Fitting_Function(   
     intensities         =   'intensities',
     x_Spec              =   'x_Spec',
@@ -214,14 +217,14 @@ def Full_Fitting_Function(
     else:
         y_Spec_init_ = intensities[id_spec_ref,:]
     #Fitting of the reference 1D spectrum -- This function can be used for 1D spectrum alone
-    print('Reference Spectrum Fitting : reference spectrum: '+str(ref_spec))
+    logger.info(f'Fitting Reference Spectrum (ExpNo {ref_spec})')
+
     Initial_Fit_ = Fitting_Function(
         x_Spec,
         peak_picking_data,
         y_Spec_init_,
         scaling_factor)
-    print('Reference Spectrum Fitting -- Complete')
-    print('#--------#')
+    logger.info(f'Fitting Reference Spectrum (ExpNo {ref_spec}) -- Complete')
 
     Fit_results = pd.DataFrame(
         index=np.arange(0,n_spec,1),
@@ -230,13 +233,19 @@ def Full_Fitting_Function(
     if intensities.ndim == 1:
         Fit_results.loc[0,:] = Initial_Fit_.x.tolist()
 
-    root, close_button, progress_bars = nfui.init_progress_bar_windows(len_progresses = [len(id_spec_sup), len(id_spec_inf)],title='Data Fitting') 
+    root, close_button, progress_bars = nfui.init_progress_bar_windows(
+        len_progresses = [len(id_spec_sup), len(id_spec_inf)],
+        title='Data Fitting',
+        progress_bar_label=['Ascending spectra','Descending spectra']
+        ) 
 
     if intensities.ndim != 1:
         Fit_results.loc[id_spec_ref,:] = Initial_Fit_.x.tolist()
         # if ref_spec != str(n_spec):
+
+        logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_sup)}')
+
         threads = []
-        print('Ascending Spectrum Fitting : from: '+str(ref_spec)+' to '+str(np.max(id_spec_sup)))
         threads.append(nfui.MyApp_Fitting(data={
             "up"                  : True,
             "spec_list"           : id_spec_sup,
@@ -251,9 +260,12 @@ def Full_Fitting_Function(
         close_button=close_button,
         progressbar=progress_bars[0]
         ))
-        print('#--------#')
+
+        logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_sup)} -- Complete')
+
         if ref_spec != '1':
-            print('Descending Spectrum Fitting : from: '+str(np.min(id_spec_inf))+' to '+str(np.max(id_spec_inf)))
+            logger.info(f'Fitting from ExpNo {np.min(id_spec_inf)} to {np.max(id_spec_inf)}')
+
             threads.append(nfui.MyApp_Fitting(data={
                 "up"                  : False,
                 "spec_list"           : id_spec_inf[::-1],
@@ -268,7 +280,7 @@ def Full_Fitting_Function(
             close_button=close_button,
             progressbar=progress_bars[1]
             ))
-        print('#--------#')
+            logger.info(f'Fitting from ExpNo {np.min(id_spec_inf)} to {np.max(id_spec_inf)} -- Complete')
 
 
         root.mainloop()

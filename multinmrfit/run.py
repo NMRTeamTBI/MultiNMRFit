@@ -34,7 +34,7 @@ def run_analysis(user_input, gui=False):
     ##################### Read and Load Data #############
     ######################################################
     intensities, x_ppm, experiments_list = nfu.retrieve_nmr_data(user_input)
-    logger.info('Loading Complete')
+    logger.info('Loading -- Complete')
     #-----------------------------------------------------#    
 
     ######################################################
@@ -46,7 +46,7 @@ def run_analysis(user_input, gui=False):
         x_ppm    = x_ppm,
         x_lim    = [user_input['spectral_limits'][0],user_input['spectral_limits'][1]]
     )
-    logger.info('Extraction Complete')
+    logger.info('Extraction -- Complete')
     #-----------------------------------------------------#   
 
     ######################################################
@@ -124,7 +124,7 @@ def run_analysis(user_input, gui=False):
         scaling_factor      =   scaling_factor,
         id_spectra          =   experiments_list
     )
-    print('Full Analysis is done')
-    print('#--------#')  
-    print('##########')
+    logger.info('Full Analysis is complete')
+    logger.info('####')
+
     return 

@@ -286,7 +286,8 @@ def save_output_data(
     id_spectra          =  None
     ):
 
-    print('Plot in pdf file')  
+    logger.info('Save data to text file ')
+
     x_fit = np.linspace(np.min(x_scale),np.max(x_scale),2048)
     d_id = nff.Initial_Values(Peak_Picking_data, x_fit, scaling_factor)[0]
 
@@ -314,10 +315,13 @@ def save_output_data(
             index=True, 
             sep = '\t'
             )
+    logger.info('Save data to text file -- Complete')
         
+    logger.info('Save plot to pdf')
+   
     speclist = Fit_results.index.values.tolist()
     
-    root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)],title='Output data in pdf') 
+    root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)],title='Output data in pdf',progress_bar_label=[None]) 
 
     with PdfPages(os.path.join(pdf_path,pdf_folder,pdf_name+'.pdf')) as pdf:   
         matplotlib.pyplot.switch_backend('Agg') 
@@ -339,7 +343,8 @@ def save_output_data(
         progressbar=progress_bars[0]
         ))
         root.mainloop()
-    print('#--------#')
+    logger.info('Save plot to pdf -- Complete')
+
     
 ###################################
 # Error interface
@@ -659,9 +664,10 @@ def progress_bar_exit(root):
 def update_progress_label():
     return f"Current Progress: {pb['value']}%"
 
-def init_progress_bar_windows(len_progresses, title=None):
+def init_progress_bar_windows(len_progresses, title, progress_bar_label):
     root = tk.Tk()
-    root.geometry('300x320')
+    root_height= len(len_progresses)*120
+    root.geometry(f'300x{root_height}')
     root.title(title)
 
     progress_bars = []
@@ -673,8 +679,14 @@ def init_progress_bar_windows(len_progresses, title=None):
             maximum=len_progress,
             length=280
         )
-        pg_bar.grid(column=0, row=len(progress_bars), columnspan=2, padx=10, pady=20)
+
+        # value_label = ttk.Label(root, text=update_progress_label())
+        value_label = ttk.Label(root, text=progress_bar_label[len(progress_bars)])
+        value_label.grid(column=0, row=len(len_progresses)*len(progress_bars), columnspan=2)
+
+        pg_bar.grid(column=0, row=len(len_progresses)*len(progress_bars)+1, columnspan=2, padx=10, pady=20)
         progress_bars.append(pg_bar)
+
 
     close_button = tk.Button(
         root, 
@@ -683,7 +695,7 @@ def init_progress_bar_windows(len_progresses, title=None):
         font=("Helvetica", 20),        
         command=lambda: progress_bar_exit(root)
     )
-    close_button.grid(column = 1, row = len(len_progresses))
+    close_button.grid(column = 1, row = len(len_progresses)+5)
     return root, close_button, progress_bars
 
 
@@ -694,6 +706,7 @@ class MyApp_Fitting(threading.Thread):
         self.threads = threads
         self.data = data
         self.close_button = close_button
+        # self.progress_label = progress_label
         self.progressbar = progressbar
         threading.Thread.__init__(self)
         self.start()
