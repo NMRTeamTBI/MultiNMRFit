@@ -66,101 +66,64 @@ def run_analysis(user_input, gui=False):
     ######################################################
     ####################Peak Picking######################
     ######################################################
-    check_for_refreshed_threshold = False
 
-    Peak_Picking = nfu.Peak_Picking_1D(
-        x_data          =   x_ppm_reference_spectrum, 
-        y_data          =   intensities_reference_spectrum, 
-        threshold       =   user_input['threshold']
-    )
+    threshold = user_input['threshold']
+    while threshold:
 
-    peak_picking_data = nfu.sort_peak_picking_data(Peak_Picking, 10)
-
-    fig_peak_picking_region, color_list = nf.ui.plot_picking_data(
-        x_ppm_reference_spectrum, 
-        intensities_reference_spectrum, 
-        user_input['threshold'], 
-        peak_picking_data
-    )
-
-    refreshed_threshold, user_picked_data = nf.ui.run_user_clustering(
-        fig_peak_picking_region,
-        color_list,
-        user_input['threshold'],
-        peak_picking_data
-    )
-
-    while refreshed_threshold:
-        threshold = refreshed_threshold
-
-        Peak_Picking = nfu.Peak_Picking_1D(
+        peak_picking = nfu.Peak_Picking_1D(
             x_data          =   x_ppm_reference_spectrum, 
             y_data          =   intensities_reference_spectrum, 
             threshold       =   threshold,
         )
 
+        peak_picking_data = nfu.sort_peak_picking_data(peak_picking, 10)
+
         fig_peak_picking_region, color_list = nf.ui.plot_picking_data(
             x_ppm_reference_spectrum, 
             intensities_reference_spectrum, 
             threshold, 
-            Peak_Picking
+            peak_picking_data
         )
 
-        peak_picking_data = nfu.sort_peak_picking_data(Peak_Picking, 10)
-        refreshed_threshold, user_picked_data = nf.ui.run_user_clustering(
+        threshold, user_picked_data = nf.ui.run_user_clustering(
             fig_peak_picking_region,
             color_list,
             threshold,
             peak_picking_data
         )
-    
-    #print(user_picked_data)
-    #print(user_picked_data["Selection"].values)
-    #exit()
+
     user_picked_data = user_picked_data[user_picked_data["Selection"].values]
-    #print(user_picked_data)
-    #exit()
+
     scaling_factor = user_picked_data.Peak_Intensity.mean()
-    #cluster_list =  user_picked_data.Cluster.unique()
     #-----------------------------------------------------#   
     ######################################################
     #######################Fitting########################
     ######################################################
-    if user_input['analysis_type'] in ['1D','1D_Series','Pseudo2D']:
-        Fit_results = nff.Pseudo2D_PeakFitting(
-                    Intensities  =   intensities,
-                    x_Spec       =   x_ppm_reference_spectrum,
-                    ref_spec     =   user_input['reference_spectrum'],
-                    peak_picking_data = user_picked_data,
-                    scaling_factor=scaling_factor,
-                    gui=gui
-            )
-
+    fit_results = nff.Pseudo2D_PeakFitting(
+        Intensities         =   intensities,
+        x_Spec              =   x_ppm_reference_spectrum,
+        ref_spec            =   user_input['reference_spectrum'],
+        peak_picking_data   =   user_picked_data,
+        scaling_factor      =   scaling_factor,
+        gui                 =   gui
+    )
     #-----------------------------------------------------#   
     ######################################################
     #######################Output#########################
     ######################################################
     nf.ui.Plot_All_Spectrum(
-        pdf_path = user_input['output_path'],
-        pdf_folder = user_input['output_folder'],
-        pdf_name = user_input['output_name'],
-        Fit_results= Fit_results,
-        Int_Pseudo_2D_Data = intensities,
-        x_ppm = x_ppm_reference_spectrum,
-        Peak_Picking_data= user_picked_data,
-        scaling_factor=scaling_factor,
-        gui=gui,
-        id_spectra=experiments_list
+        pdf_path            =   user_input['output_path'],
+        pdf_folder          =   user_input['output_folder'],
+        pdf_name            =   user_input['output_name'],
+        Fit_results         =   fit_results,
+        Int_Pseudo_2D_Data  =   intensities,
+        x_ppm               =   x_ppm_reference_spectrum,
+        Peak_Picking_data   =   user_picked_data,
+        scaling_factor      =   scaling_factor,
+        gui                 =   gui,
+        id_spectra          =   experiments_list
     )
     print('Full Analysis is done')
     print('#--------#')  
     print('##########')
-    return Peak_Picking
-
-
-#analysis_Pseudo2D(Inputs_dic)
-#exit()
-
-
-
-
+    return 

@@ -1,7 +1,8 @@
 ﻿import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
-
+import warnings
+warnings.filterwarnings('ignore')
 
 import multinmrfit.multiplets as nmrm
 
@@ -200,6 +201,7 @@ def Pseudo2D_PeakFitting(
         scaling_factor)
     print('Reference Spectrum Fitting -- Complete')
     print('#--------#')
+    
     Fit_results = pd.DataFrame(
         index=np.arange(0,n_spec,1),
         columns=np.arange(0,len(Initial_Fit_.x.tolist()),1)
