@@ -1,5 +1,7 @@
-﻿import warnings
+﻿from tkinter.constants import ANCHOR
+import warnings
 import logging
+import random
 
 warnings.filterwarnings('ignore')
 import tkinter as tk
@@ -208,9 +210,25 @@ def Full_Fitting_Function(
     else:
         n_spec = intensities.shape[0]
 
-    id_spec_ref = int(ref_spec)-1
-    id_spec_sup = np.arange(id_spec_ref+1,n_spec,1)
-    id_spec_inf = np.arange(0,id_spec_ref,1)
+    if analysis_type == 'Pseudo2D':
+        id_spec_ref = int(ref_spec)-1
+        id_spec_sup = np.arange(id_spec_ref+1,n_spec,1)
+        id_spec_inf = np.arange(0,id_spec_ref,1)
+
+        id_spec_part1 = id_spec_sup
+        id_spec_part2 = id_spec_inf
+
+    if analysis_type == '1D_Series':
+        id_spec_ref = int(ref_spec)-1
+        id_full_list = np.arange(0,n_spec,1)
+        id_no_spec_ref = list(set(id_full_list)-set([id_spec_ref]))
+
+        # Selection of ids for parallelization
+        k = len(id_no_spec_ref) * 50 // 100
+        indicies = random.sample(range(len(id_no_spec_ref)), k)
+        id_spec_part1 = [id_no_spec_ref[i] for i in indicies]
+        id_spec_part2 = list(set(id_no_spec_ref)-set(id_spec_part1))
+
 
     if intensities.ndim == 1:
         y_Spec_init_ = intensities
@@ -234,21 +252,21 @@ def Full_Fitting_Function(
         Fit_results.loc[0,:] = Initial_Fit_.x.tolist()
 
     root, close_button, progress_bars = nfui.init_progress_bar_windows(
-        len_progresses = [len(id_spec_sup), len(id_spec_inf)],
+        len_progresses = [len(id_spec_part1), len(id_spec_part2)],
         title='Data Fitting',
-        progress_bar_label=['Ascending spectra','Descending spectra']
+        progress_bar_label=(['Ascending spectra','Descending spectra'] if analysis_type is 'Pseudo2D' else ['Spectra part 1','Spectra part 2'])
         ) 
 
     if intensities.ndim != 1:
         Fit_results.loc[id_spec_ref,:] = Initial_Fit_.x.tolist()
         # if ref_spec != str(n_spec):
 
-        logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_sup)}')
+        logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)}')
 
         threads = []
         threads.append(nfui.MyApp_Fitting(data={
             "up"                  : True,
-            "spec_list"           : id_spec_sup,
+            "spec_list"           : id_spec_part1,
             "intensities"         : intensities,
             "fit_results"         : Fit_results,
             "x_Spec"              : x_Spec,
@@ -261,14 +279,14 @@ def Full_Fitting_Function(
         progressbar=progress_bars[0]
         ))
 
-        logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_sup)} -- Complete')
+        logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)} -- Complete')
 
         if ref_spec != '1':
-            logger.info(f'Fitting from ExpNo {np.min(id_spec_inf)} to {np.max(id_spec_inf)}')
+            logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)}')
 
             threads.append(nfui.MyApp_Fitting(data={
                 "up"                  : False,
-                "spec_list"           : id_spec_inf[::-1],
+                "spec_list"           : id_spec_part2[::-1],
                 "intensities"         : intensities,
                 "fit_results"         : Fit_results,
                 "x_Spec"              : x_Spec,
@@ -280,10 +298,11 @@ def Full_Fitting_Function(
             close_button=close_button,
             progressbar=progress_bars[1]
             ))
-            logger.info(f'Fitting from ExpNo {np.min(id_spec_inf)} to {np.max(id_spec_inf)} -- Complete')
+            logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)} -- Complete')
 
 
         root.mainloop()
     return Fit_results
 
 
+# 

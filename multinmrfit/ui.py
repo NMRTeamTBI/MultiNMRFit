@@ -318,7 +318,7 @@ def save_output_data(
     logger.info('Save data to text file -- Complete')
         
     logger.info('Save plot to pdf')
-   
+
     speclist = Fit_results.index.values.tolist()
     
     root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)],title='Output data in pdf',progress_bar_label=[None]) 
@@ -329,8 +329,8 @@ def save_output_data(
         threads.append(MyApp_Plotting(data={
             'speclist'              : speclist,
             'pdf'                   : pdf, 
-            'x_scale'                 : x_scale, 
-            'intensities'          : intensities,       
+            'x_scale'               : x_scale, 
+            'intensities'           : intensities,       
             'fit_results'           : fit_results, 
             'x_fit'                 : x_fit, 
             'd_id'                  : d_id, 
