@@ -582,11 +582,11 @@ def start_gui():
     }
     global tk_wdw
     tk_wdw = tk.Tk()
-    tk_wdw.title("Multinffit Interface")
+    tk_wdw.title("Multinmrfit Interface")
     tk_wdw.geometry("700x600")
     tk_wdw.configure(bg='#FFFFFF')
 
-    path_image = pkg_resources.resource_filename('multinffit', 'data/')
+    path_image = pkg_resources.resource_filename('multinmrfit', 'data/')
     # Set bottom picture
     img_network = Image.open(os.path.join(path_image, 'network.png'))
     img_network_ = ImageTk.PhotoImage(img_network.resize((700, 160))) 
