@@ -276,6 +276,7 @@ def single_plot_function(r, pdf, x_scale, intensities,        fit_results, x_fit
     pdf.savefig(fig)
     plt.close(fig)
 
+
 def save_output_data(
     pdf_path            = 'pdf_path',
     pdf_folder          = 'pdf_folder',
@@ -323,28 +324,42 @@ def save_output_data(
 
     speclist = Fit_results.index.values.tolist()
     
-    root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)],title='Output data in pdf',progress_bar_label=[None]) 
+    #root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)],title='Output data in pdf',progress_bar_label=[None]) 
 
     with PdfPages(os.path.join(pdf_path,pdf_folder,pdf_name+'.pdf')) as pdf:   
         matplotlib.pyplot.switch_backend('Agg') 
-        threads = []
-        threads.append(MyApp_Plotting(data={
-            'speclist'              : speclist,
-            'pdf'                   : pdf, 
-            'x_scale'               : x_scale, 
-            'intensities'           : intensities,       
-            'fit_results'           : fit_results, 
-            'x_fit'                 : x_fit, 
-            'd_id'                  : d_id, 
-            'scaling_factor'        : scaling_factor, 
-            'id_spectra'            : id_spectra
+        for r in range(len(speclist)):
+            single_plot_function(
+                r, 
+                pdf, 
+                x_scale, 
+                intensities,        
+                fit_results, 
+                x_fit, 
+                d_id, 
+                scaling_factor, 
+                id_spectra, 
+                speclist
+            )    
 
-        },
-        threads=threads,
-        close_button=close_button,
-        progressbar=progress_bars[0]
-        ))
-        root.mainloop()
+        # threads = []
+        # threads.append(MyApp_Plotting(data={
+        #     'speclist'              : speclist,
+        #     'pdf'                   : pdf, 
+        #     'x_scale'               : x_scale, 
+        #     'intensities'           : intensities,       
+        #     'fit_results'           : fit_results, 
+        #     'x_fit'                 : x_fit, 
+        #     'd_id'                  : d_id, 
+        #     'scaling_factor'        : scaling_factor, 
+        #     'id_spectra'            : id_spectra
+
+        # },
+        # threads=threads,
+        # close_button=close_button,
+        # progressbar=progress_bars[0]
+        # ))
+        # root.mainloop()
     logger.info('Save plot to pdf -- Complete')
 
     
