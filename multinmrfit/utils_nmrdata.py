@@ -114,7 +114,7 @@ def retrieve_nmr_data(user_input):
     if user_input['analysis_type'] in ['Pseudo2D','1D']:
         [y_intensities_all, x_ppm_all] = read_nmr_data_bruker(
                 path_nmr_data   =   os.path.join(user_input['data_path'],user_input['data_folder']),
-                expno_data      =   user_input['data_exp_no'],
+                expno_data      =   user_input['data_exp_no'][0],
                 procno_data     =   user_input['data_proc_no']
         )
         experiments_list = None

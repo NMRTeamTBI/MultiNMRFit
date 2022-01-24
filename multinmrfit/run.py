@@ -3,6 +3,8 @@ import os
 import logging
 import json
 import sys
+import warnings
+warnings.filterwarnings('ignore')
 
 # Other libs
 import numpy as np
@@ -47,17 +49,22 @@ def run_analysis(user_input, gui=False):
         x_lim    = [user_input['spectral_limits'][0],user_input['spectral_limits'][1]]
     )
     logger.info('Extraction -- Complete')
-    #-----------------------------------------------------#   
+    #-----------------------------------------------------#
+    # 
+    if user_input['analysis_type'] == 'Pseudo2D':
+        idx_ref = int(user_input['reference_spectrum' ]) - 1  
+    else:            
+        idx_ref = user_input['data_exp_no'].index(int(user_input['reference_spectrum' ]))
 
     ######################################################
     ###########Extract the reference spectrum#############
     ######################################################
     if user_input['analysis_type'] == 'Pseudo2D':
-        intensities_reference_spectrum = intensities[int(user_input['reference_spectrum' ])-1,:]
+        intensities_reference_spectrum = intensities[idx_ref,:]
         x_ppm_reference_spectrum = x_ppm
     elif user_input['analysis_type'] == '1D_Series':
-        intensities_reference_spectrum = intensities[int(user_input['reference_spectrum' ])-1,:]
-        x_ppm_reference_spectrum = x_ppm[int(user_input['reference_spectrum' ])-1,:]
+        intensities_reference_spectrum = intensities[idx_ref,:]
+        x_ppm_reference_spectrum = x_ppm[idx_ref,:]
     elif user_input['analysis_type'] == '1D':
         intensities_reference_spectrum = intensities
         x_ppm_reference_spectrum = x_ppm
@@ -102,7 +109,7 @@ def run_analysis(user_input, gui=False):
     fit_results = nff.Full_Fitting_Function(
         intensities         =   intensities,
         x_Spec              =   x_ppm_reference_spectrum,
-        ref_spec            =   user_input['reference_spectrum'],
+        ref_spec            =   idx_ref,#user_input['reference_spectrum'],
         peak_picking_data   =   user_picked_data,
         scaling_factor      =   scaling_factor,
         analysis_type       =   user_input['analysis_type']

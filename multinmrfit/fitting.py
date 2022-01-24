@@ -219,7 +219,8 @@ def Full_Fitting_Function(
         id_spec_part2 = id_spec_inf
 
     if analysis_type == '1D_Series':
-        id_spec_ref = int(ref_spec)-1
+
+        id_spec_ref = int(ref_spec)
         id_full_list = np.arange(0,n_spec,1)
         id_no_spec_ref = list(set(id_full_list)-set([id_spec_ref]))
 

@@ -9,6 +9,8 @@ import logging
 import argparse
 import threading
 from pathlib import Path
+import warnings
+warnings.filterwarnings('ignore')
 
 # Import display libraries
 import tkinter as tk
@@ -451,8 +453,7 @@ def launch_analysis(user_input):
             else:
                 if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp),'pdata',user_input.get('data_proc_no')).exists():
                     return error_interface(f"Argument : experiment/procno <{exp}/{user_input.get('data_proc_no')}> does not exist", critical_error=is_not_gui)
-
-        if int(user_input.get('reference_spectrum')) not in exp_list:
+        if user_input.get('analysis_type') != 'Pseudo2D' and int(user_input.get('reference_spectrum')) not in exp_list:
             return error_interface(f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in experiment list", critical_error=is_not_gui)
 
         config = {
