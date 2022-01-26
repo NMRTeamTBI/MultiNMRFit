@@ -12,6 +12,10 @@ from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
 from pathlib import Path 
+import customtkinter 
+#https://github.com/TomSchimansky/CustomTkinter
+# customtkinter.set_appearance_mode("System")
+# customtkinter.set_default_color_theme("dark-blue")
 
 # Import display libraries
 import tkinter as tk
@@ -560,27 +564,26 @@ def create_entry(label, x, y, width=210):
     # Entry
     if label == 'analysis_type':
         analysis_var = tk.StringVar()
-        analysis_options = ttk.Combobox(
+        ttk.Combobox(
             textvariable=analysis_var, 
             values=['1D','Pseudo2D','1D_Series'], 
             state="readonly"
-        ).place(x=x, y=y+20, width=width)
+        ).place(x=x, y=y+30, width=width)
         return analysis_var
 
     imput_var = tk.StringVar()
-    input_entry = tk.Entry(textvariable=imput_var)
-    input_entry.place(x=x, y=y+20, width=width)
+    input_entry = customtkinter.CTkEntry(textvariable=imput_var,corner_radius=8)
+    input_entry.place(x=x, y=y+30, width=width)
 
     return imput_var
 
-def create_label(label, x, y, font_size=14, font_weight='normal'):
-    tk.Label(
+def create_label(label, x, y):
+    customtkinter.CTkLabel(
         tk_wdw,
         text=label.replace("_", " ").capitalize(),
-        font=("Helvetica", font_size, font_weight),
-        bg='#FFFFFF',
-        fg='#8B0000',
-        borderwidth=0
+        corner_radius=8,
+        borderwidth=0,
+        justify=tk.CENTER
     ).place(x=x, y=y)
 
 def load_config_file(user_input=None, config_file_path=None):
@@ -625,78 +628,88 @@ def start_gui():
         'output_path':          None,
         'output_folder':        None,    
         'output_name':          None,
+        'rows_pseudo2D':         None,
+
     }
     global tk_wdw
-    tk_wdw = tk.Tk()
+    tk_wdw = customtkinter.CTk()
     tk_wdw.title("Multinmrfit Interface")
-    tk_wdw.geometry("700x700")
-    tk_wdw.configure(bg='#FFFFFF')
+    tk_wdw.geometry("950x650")
+    #tk_wdw.configure(bg='#FFFFFF')
 
     path_image = pkg_resources.resource_filename('multinmrfit', 'data/')
     # Set bottom picture
     img_network = Image.open(str(Path(path_image, 'network.png')))
-    img_network_ = ImageTk.PhotoImage(img_network.resize((700, 160))) 
+    img_network_ = ImageTk.PhotoImage(img_network.resize((950, 160))) 
     img_network_label = tk.Label(tk_wdw, image = img_network_)
-    img_network_label.place(x = 00, y = 540)
+    img_network_label.place(x = 00, y = 490)
 
     # Import Logo
     img_logo = Image.open(str(Path(path_image, 'logo_small.png')))
     img_logo_ = ImageTk.PhotoImage(img_logo.resize((300, 100))) 
     img_logo_logo = tk.Label(tk_wdw,image=img_logo_)
-    img_logo_logo.place(x = 200, y = 0)
+    img_logo_logo.place(x = 300, y = 0)
 
 
-    title = ['Inputs','Analysis','Outputs']
+    title = ['Inputs','Analysis','Outputs','Options']
     i = 0
+    n_row = 4 
     for label in user_input.keys():
-        x = 10 + int(i / 4) * 240
-        y = 160 + int(i % 4) * 60
-        if int(i%4) == 0:
-            create_label(title[int(i/4)], x + 50, 120, 18, 'bold')
+        x = 10 + int(i / n_row) * 240
+        y = 160 + int(i % n_row) * 70
+        if int(i%n_row) == 0:
+            create_label(title[int(i/n_row)], x + 50, 120)
         user_input[label] = create_entry(label, x, y)
-        i += 1
+        if label is 'output_name':
+            i += 2
+        else:
+            i += 1
 
     ## ----- General Buttons ----- ##
-    LoadButton = tk.Button(
+    LoadButton = customtkinter.CTkButton(
         tk_wdw,
         text=" Load ",
-        fg='#FFFFFF',
-        font=("Helvetica", 20),
-        highlightbackground = "#8B0000",
+        #fg='#FFFFFF',
+        #font=("Helvetica", 20),
+        corner_radius=10,
+#        highlightbackground = "#8B0000",
         command=lambda:load_config_file(user_input)
         )
-    LoadButton.place(x=20, y=500,width=80,height=30)
+    LoadButton.place(x=20, y=440,width=80,height=30)
     
-    SaveButton = tk.Button(
+    SaveButton = customtkinter.CTkButton(
         tk_wdw,
         text=" Save ",
-        fg='#FFFFFF',
-        font=("Helvetica", 20),
-        highlightbackground = "#0000FF",
+        #fg='#FFFFFF',
+        #font=("Helvetica", 20),
+        corner_radius=10,
+#        highlightbackground = "#0000FF",
         command=lambda:save_config_file({k: v.get() for k, v in user_input.items()})
         )
-    SaveButton.place(x=200, y=500,width=80,height=30)
+    SaveButton.place(x=200, y=440,width=80,height=30)
 
-    RunButton = tk.Button(
+    RunButton = customtkinter.CTkButton(
         tk_wdw,
         text=" Run ",
-        fg='#FFFFFF',
-        font=("Helvetica", 20),
-        highlightbackground = "#8B0000",
+        #fg='#FFFFFF',
+        #font=("Helvetica", 20),
+        corner_radius=10,
+        #highlightbackground = "#8B0000",
         command=lambda:launch_analysis({k: v.get() for k, v in user_input.items()})
 
     )
-    RunButton.place(x=380, y=500,width=80,height=30)
+    RunButton.place(x=380, y=440,width=80,height=30)
     
-    CloseButton = tk.Button(
+    CloseButton = customtkinter.CTkButton(
         tk_wdw,
         text=" Close ",
-        fg='#FFFFFF',
-        font=("Helvetica", 20),
-        highlightbackground = "#0000FF",
+        #fg='#FFFFFF',
+        #font=("Helvetica", 20),
+        corner_radius=10,
+        #highlightbackground = "#0000FF",
         command=lambda:on_closing()
         )
-    CloseButton.place(x=560, y=500,width=80,height=30)
+    CloseButton.place(x=560, y=440,width=80,height=30)
     
     tk_wdw.mainloop()
 
