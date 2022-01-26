@@ -266,7 +266,7 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
         'r-', 
         lw=1,
         label='fit')
-    ax.text(0.05,0.9,"Spectra : " +str(id_spectra[r]),transform=ax.transAxes,fontsize=20)  
+    ax.text(0.05,0.9,"Spectra : " +str(r+1),transform=ax.transAxes,fontsize=20)  
     ax.set_ylabel('Intensity')
     ax.set_xlabel(r'$^1H$ $(ppm)$')
 
@@ -281,7 +281,7 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     path_2_save = Path(output_path,output_folder,'plot_ind')
     path_2_save.mkdir(parents=True,exist_ok=True)
 
-    plt.savefig(str(Path(path_2_save,output_name+'_'+str(id_spectra[r])+'.pdf')))
+    plt.savefig(str(Path(path_2_save,output_name+'_'+str(r+1)+'.pdf')))
     plt.close(fig)
 
 def save_output_data(
@@ -292,8 +292,7 @@ def save_output_data(
     intensities         = 'intensities',    
     x_scale             = 'x_scale',
     Peak_Picking_data   =  None,
-    scaling_factor      =  None,
-    id_spectra          =  None
+    scaling_factor      =  None
     ):
 
     logger.info('Save data to text file ')
@@ -302,12 +301,17 @@ def save_output_data(
     d_id = nff.Initial_Values(Peak_Picking_data, x_fit, scaling_factor)[0]
 
     cluster_list = getList(d_id)
-    if id_spectra is None:
-        id_spectra = np.arange(1,len(fit_results)+1)
+
+    #if id_spectra is None:
+    #    id_spectra = np.arange(1,len(fit_results)+1)
+    
     Fit_results = fit_results.apply(pd.to_numeric)
     Fit_results_text= Fit_results.round(9)
-    speclist = Fit_results.index.values.tolist()
-
+    id_spectra = Fit_results.index.values.tolist()
+    # print(Fit_results)
+    # print(id_spectra)
+    # print(speclist)
+    # exit()
     Path(output_path,output_folder).mkdir(parents=True,exist_ok=True)
     
     d_mapping, _, d_parameters = nfm.mapping_multiplets()
@@ -329,8 +333,7 @@ def save_output_data(
         mutliplet_results["Amp"] = scaling_factor*mutliplet_results["Amp"]
 
         mutliplet_results.insert(loc = 0, column = 'exp_no' , value = id_spectra)
-        mutliplet_results.insert(loc = 1, column = 'row_id' , value = speclist)
-
+        mutliplet_results.insert(loc = 1, column = 'row_id' , value = id_spectra)
 
         mutliplet_results.set_index('exp_no', inplace=True)
         mutliplet_results.to_csv(
@@ -345,8 +348,8 @@ def save_output_data(
     
     #root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)],title='Output data in pdf',progress_bar_label=[None]) 
 
-    for r in range(len(speclist)):
-
+    for r in id_spectra:
+        print(r)
         single_plot_function(
                 r, 
                 x_scale, 
@@ -432,7 +435,7 @@ def error_interface(message, critical_error=False):
 ###################################
 def create_experiments_list(user_input):
     experiment_list = []
-    for i in user_input.get('data_exp_no').split(','):
+    for i in user_input.split(','):
         if "-" in i:
             spectra = i.split('-')
             experiment_list += range(int(spectra[0]), int(spectra[1])+1)
@@ -495,7 +498,7 @@ def launch_analysis(user_input):
         if len(spec_lim)%2 != 0 and len(spec_lim) != 0:
             return error_interface("Argument : 'spectral_limits' is incomplete", critical_error=is_not_gui)
 
-        exp_list = create_experiments_list(user_input)
+        exp_list = create_experiments_list(user_input.get('data_exp_no'))
         for exp in exp_list:
             if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp)).exists():
                 return error_interface(f"Argument : experiment <{exp}> does not exist", critical_error=is_not_gui)
@@ -505,11 +508,18 @@ def launch_analysis(user_input):
         if user_input.get('analysis_type') != 'Pseudo2D' and int(user_input.get('reference_spectrum')) not in exp_list:
             return error_interface(f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in experiment list", critical_error=is_not_gui)
 
+        row_list = []
+        if user_input.get('data_row_no'):
+            row_list = create_experiments_list(user_input.get('data_row_no'))
+            if int(user_input.get('reference_spectrum')) not in row_list :
+                return error_interface(f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in row list", critical_error=is_not_gui)
+
         config = {
             'data_path'             :   user_input.get('data_path'),
             'data_folder'           :   user_input.get('data_folder'),
             'data_exp_no'           :   exp_list,
-            'data_proc_no'          :   user_input.get('data_proc_no'),####
+            'data_proc_no'          :   user_input.get('data_proc_no'),
+            'data_row_no'           :   row_list,
             'reference_spectrum'    :   user_input.get('reference_spectrum'),
             'analysis_type'         :   user_input.get('analysis_type'),
             'spectral_limits'       :   spec_lim,
@@ -519,10 +529,11 @@ def launch_analysis(user_input):
             'output_name'           :   user_input.get('output_name'),
 
         }
+
     except Exception as e:
         return error_interface(e, critical_error=is_not_gui)
-    for key, conf in config.items():
-        if not conf:
+    for key, conf in config.items():        
+        if conf is None:
             return error_interface(f"Argument : '{key}' is missing", critical_error=is_not_gui)
     if is_gui:
         tk_wdw.destroy()
@@ -650,20 +661,30 @@ def start_gui():
     img_logo_logo = tk.Label(tk_wdw,image=img_logo_)
     img_logo_logo.place(x = 300, y = 0)
 
-
-    title = ['Inputs','Analysis','Outputs','Options']
+    title = ['Inputs','Analysis','Outputs']
     i = 0
     n_row = 4 
     for label in user_input.keys():
         x = 10 + int(i / n_row) * 240
         y = 160 + int(i % n_row) * 70
-        if int(i%n_row) == 0:
-            create_label(title[int(i/n_row)], x + 50, 120)
+        if int(i/n_row) != 3:
+            if int(i%n_row) == 0:
+                create_label(title[int(i/n_row)], x + 50, 120)
         user_input[label] = create_entry(label, x, y)
         if label is 'output_name':
             i += 2
         else:
             i += 1
+
+    #CheckBox
+    check_box_1 = customtkinter.CTkCheckBox(
+        tk_wdw,
+        text="Options")
+    check_box_1.place(
+        x=850, 
+        y=120, 
+        anchor=tk.CENTER
+        )
 
     ## ----- General Buttons ----- ##
     LoadButton = customtkinter.CTkButton(

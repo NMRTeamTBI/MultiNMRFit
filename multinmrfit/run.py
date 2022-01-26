@@ -29,13 +29,13 @@ def main():
     else:
         user_input = nui.load_config_file(config_file_path=sys.argv[1])
         nui.launch_analysis(user_input)
-    
+
 def run_analysis(user_input, gui=False):
     logger.info('Loading NMR Data')
     ######################################################
     ##################### Read and Load Data #############
     ######################################################
-    intensities, x_ppm, experiments_list = nfu.retrieve_nmr_data(user_input)
+    intensities, x_ppm, experiments_list = nfu.retrieve_nmr_data(user_input) 
     logger.info('Loading -- Complete')
     #-----------------------------------------------------#    
 
@@ -102,6 +102,15 @@ def run_analysis(user_input, gui=False):
     user_picked_data = user_picked_data[user_picked_data["Selection"].values]
 
     scaling_factor = user_picked_data.Peak_Intensity.mean()
+
+    if user_input['analysis_type'] == "Pseudo2D" : 
+        if not len(user_input.get('data_row_no',[])):
+            spectra_to_fit = list(np.arange(0,len(intensities),1))
+        else:
+            spectra_to_fit = [int(i)-1 for i in user_input['data_row_no']]
+    elif user_input['analysis_type'] == '1D_Series':
+            spectra_to_fit = user_input['data_exp_no']
+
     #-----------------------------------------------------#   
     ######################################################
     #######################Fitting########################
@@ -112,7 +121,8 @@ def run_analysis(user_input, gui=False):
         ref_spec            =   idx_ref,#user_input['reference_spectrum'],
         peak_picking_data   =   user_picked_data,
         scaling_factor      =   scaling_factor,
-        analysis_type       =   user_input['analysis_type']
+        analysis_type       =   user_input['analysis_type'],
+        spectra_to_fit      =   spectra_to_fit
         
     )
     #-----------------------------------------------------#   
@@ -128,8 +138,8 @@ def run_analysis(user_input, gui=False):
         intensities         =   intensities,
         x_scale             =   x_ppm_reference_spectrum,
         Peak_Picking_data   =   user_picked_data,
-        scaling_factor      =   scaling_factor,
-        id_spectra          =   experiments_list
+        scaling_factor      =   scaling_factor
+        #id_spectra          =   experiments_list
     )
     logger.info('Full Analysis is complete')
     logger.info('####')
