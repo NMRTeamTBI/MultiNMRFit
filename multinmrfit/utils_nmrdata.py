@@ -1,7 +1,6 @@
 import numpy as np
 import nmrglue as ng
-import os
-
+from pathlib import Path 
 import tkinter as tk
 import pandas as pd
 
@@ -15,9 +14,9 @@ def read_nmr_data_bruker(
         expno_data      =   'expno_data',
         procno_data     =   'procno_data',
         ):
-    path = os.path.join(path_nmr_data,str(expno_data),'pdata',str(procno_data))
+    path = Path(path_nmr_data,str(expno_data),'pdata',str(procno_data))
     dic, data = ng.bruker.read_pdata(
-        path,
+        str(path),
         read_procs=True,
         read_acqus=False,
         scale_data = True,
@@ -113,7 +112,7 @@ def sort_peak_picking_data(peak_picking_data, n_peak_max):
 def retrieve_nmr_data(user_input):
     if user_input['analysis_type'] in ['Pseudo2D','1D']:
         [y_intensities_all, x_ppm_all] = read_nmr_data_bruker(
-                path_nmr_data   =   os.path.join(user_input['data_path'],user_input['data_folder']),
+                path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
                 expno_data      =   user_input['data_exp_no'][0],
                 procno_data     =   user_input['data_proc_no']
         )
@@ -125,7 +124,7 @@ def retrieve_nmr_data(user_input):
         experiments_list = user_input['data_exp_no']
         for n in experiments_list:
             [y_intensity, x_ppm] = read_nmr_data_bruker(
-                    path_nmr_data   =   os.path.join(user_input['data_path'],user_input['data_folder']),
+                    path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
                     expno_data      =   n,
                     procno_data     =   user_input['data_proc_no']
             )       

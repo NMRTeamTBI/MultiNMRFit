@@ -121,9 +121,9 @@ def run_analysis(user_input, gui=False):
     ######################################################
     
     nf.ui.save_output_data(
-        pdf_path            =   user_input['output_path'],
-        pdf_folder          =   user_input['output_folder'],
-        pdf_name            =   user_input['output_name'],
+        output_path         =   user_input['output_path'],
+        output_folder       =   user_input['output_folder'],
+        output_name         =   user_input['output_name'],
         fit_results         =   fit_results,
         intensities         =   intensities,
         x_scale             =   x_ppm_reference_spectrum,

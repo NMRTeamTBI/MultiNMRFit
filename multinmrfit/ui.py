@@ -11,6 +11,7 @@ import threading
 from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
+from pathlib import Path 
 
 # Import display libraries
 import tkinter as tk
@@ -234,7 +235,7 @@ def getIntegral(x_fit_, _multiplet_type_, fit_par):
     integral = np.sum(y)*(x_fit_[1]-x_fit_[0])
     return integral
 
-def single_plot_function(r, pdf, x_scale, intensities,        fit_results, x_fit, d_id, scaling_factor, id_spectra, speclist):    
+def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, id_spectra, output_path, output_folder,output_name):    
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches([11.7,8.3])
     ax.plot(
@@ -243,7 +244,7 @@ def single_plot_function(r, pdf, x_scale, intensities,        fit_results, x_fit
         color='b',
         ls='None',
         marker='o',
-        markersize=0.5
+        markersize=7
         )    
     ax.invert_xaxis()
     res = fit_results.loc[r].iloc[:].values.tolist()
@@ -259,7 +260,7 @@ def single_plot_function(r, pdf, x_scale, intensities,        fit_results, x_fit
         x_fit, 
         sim, 
         'r-', 
-        lw=0.6,
+        lw=1,
         label='fit')
     ax.text(0.05,0.9,"Spectra : " +str(id_spectra[r]),transform=ax.transAxes,fontsize=20)  
     ax.set_ylabel('Intensity')
@@ -273,14 +274,16 @@ def single_plot_function(r, pdf, x_scale, intensities,        fit_results, x_fit
         wspace = 0.3,
         hspace = 0.3,
     )
-    pdf.savefig(fig)
+    path_2_save = Path(output_path,output_folder,'plot_ind')
+    path_2_save.mkdir(parents=True,exist_ok=True)
+
+    plt.savefig(str(Path(path_2_save,output_name+'_'+str(r+1)+'.pdf')))
     plt.close(fig)
 
-
 def save_output_data(
-    pdf_path            = 'pdf_path',
-    pdf_folder          = 'pdf_folder',
-    pdf_name            = 'pdf_name',
+    output_path         = 'output_path',
+    output_folder       = 'output_folder',
+    output_name         = 'output_name',
     fit_results         = 'fit_results', 
     intensities         = 'intensities',    
     x_scale             = 'x_scale',
@@ -300,8 +303,8 @@ def save_output_data(
     Fit_results = fit_results.apply(pd.to_numeric)
     Fit_results_text= Fit_results.round(9)
     
-    if not os.path.exists(os.path.join(pdf_path,pdf_folder)):
-        os.makedirs(os.path.join(pdf_path,pdf_folder))
+    Path(output_path,output_folder).mkdir(parents=True,exist_ok=True)
+
     d_mapping, _, d_parameters = nfm.mapping_multiplets()
     for i in cluster_list:        
         col = range(d_id[i][1][0],d_id[i][1][1])
@@ -314,7 +317,7 @@ def save_output_data(
         mutliplet_results['exp_no'] = id_spectra
         mutliplet_results.set_index('exp_no', inplace=True)
         mutliplet_results.to_csv(
-            os.path.join(pdf_path,pdf_folder,pdf_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt'), 
+            str(Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt')), 
             index=True, 
             sep = '\t'
             )
@@ -326,12 +329,10 @@ def save_output_data(
     
     #root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)],title='Output data in pdf',progress_bar_label=[None]) 
 
-    with PdfPages(os.path.join(pdf_path,pdf_folder,pdf_name+'.pdf')) as pdf:   
-        matplotlib.pyplot.switch_backend('Agg') 
-        for r in range(len(speclist)):
-            single_plot_function(
+    for r in range(len(speclist)):
+
+        single_plot_function(
                 r, 
-                pdf, 
                 x_scale, 
                 intensities,        
                 fit_results, 
@@ -339,8 +340,26 @@ def save_output_data(
                 d_id, 
                 scaling_factor, 
                 id_spectra, 
-                speclist
-            )    
+                output_path,   
+                output_folder,
+                output_name   
+            )
+            
+    # with PdfPages(Path(output_path,output_folder,output_name+'.pdf')) as pdf:   
+    #     matplotlib.pyplot.switch_backend('Agg') 
+    #     for r in range(len(speclist)):
+    #         single_plot_function(
+    #             r, 
+    #             pdf, 
+    #             x_scale, 
+    #             intensities,        
+    #             fit_results, 
+    #             x_fit, 
+    #             d_id, 
+    #             scaling_factor, 
+    #             id_spectra, 
+    #             speclist
+    #         )    
 
         # threads = []
         # threads.append(MyApp_Plotting(data={
@@ -405,27 +424,26 @@ def create_experiments_list(user_input):
             experiment_list.append(int(i))
     return experiment_list
 
-def check_path(path):
-    """
-    check if 'path' exists, and create it if it doesn't exist
-    """
-    sub_path = os.path.dirname(path)
-    if not os.path.exists(sub_path):
-        check_path(sub_path)
-    if not os.path.exists(path):
-        os.mkdir(path)
+# def check_path(path):
+#     """
+#     check if 'path' exists, and create it if it doesn't exist
+#     """
+#     sub_path = os.path.dirname(path)
+#     if not os.path.exists(sub_path):
+#         check_path(sub_path)
+#     if not os.path.exists(path):
+#         os.mkdir(path)
 
 def launch_analysis(user_input):
     is_gui = (tk_wdw != None)
     is_not_gui = (tk_wdw == None)
 
     try:
-        output_dir = os.path.join(user_input.get('output_path'),user_input.get('output_folder'))
-        if not output_dir:
-            return error_interface("Argument : 'output_folder' is missing", critical_error=is_not_gui)
+        output_dir = Path(user_input.get('output_path'),user_input.get('output_folder'))
+        # if not output_dir:
+        #     return error_interface("Argument : 'output_folder' is missing", critical_error=is_not_gui)
 
-        if not Path(output_dir).exists():
-            check_path(output_dir)
+        output_dir.mkdir(parents=True,exist_ok=True)
 
         # create logger (should be root to catch builder and simulator loggers)
         # logger = logging.getLogger()
@@ -510,12 +528,12 @@ def ask_filename(config_path):
     if file_name is None:
         wdw.destroy()
     else:
-        config_file = os.path.join(config_path,str(file_name)+'.json')
+        config_file = Path(config_path,str(file_name)+'.json')
         wdw.destroy()
     return config_file
 
 def save_config_file(user_input):
-    config_path = os.path.join(user_input['output_path'], user_input['output_folder'])
+    config_path = Path(user_input['output_path'], user_input['output_folder'])
     file_name = ask_filename(config_path)
     f = open(file_name, "a")
     f.seek(0)
@@ -560,7 +578,7 @@ def load_config_file(user_input=None, config_file_path=None):
             return None
 
     try:
-        f = open(config_file_path,"r")    
+        f = open(str(Path(config_file_path)),"r")    
     except FileNotFoundError:
         error_interface('Config file not found')
         return None
@@ -604,13 +622,13 @@ def start_gui():
 
     path_image = pkg_resources.resource_filename('multinmrfit', 'data/')
     # Set bottom picture
-    img_network = Image.open(os.path.join(path_image, 'network.png'))
+    img_network = Image.open(str(Path(path_image, 'network.png')))
     img_network_ = ImageTk.PhotoImage(img_network.resize((700, 160))) 
     img_network_label = tk.Label(tk_wdw, image = img_network_)
     img_network_label.place(x = 00, y = 440)
 
     # Import Logo
-    img_logo = Image.open(os.path.join(path_image, 'logo_small.png'))
+    img_logo = Image.open(str(Path(path_image, 'logo_small.png')))
     img_logo_ = ImageTk.PhotoImage(img_logo.resize((300, 100))) 
     img_logo_logo = tk.Label(tk_wdw,image=img_logo_)
     img_logo_logo.place(x = 200, y = 0)
