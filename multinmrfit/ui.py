@@ -277,7 +277,7 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     path_2_save = Path(output_path,output_folder,'plot_ind')
     path_2_save.mkdir(parents=True,exist_ok=True)
 
-    plt.savefig(str(Path(path_2_save,output_name+'_'+str(r+1)+'.pdf')))
+    plt.savefig(str(Path(path_2_save,output_name+'_'+str(id_spectra[r])+'.pdf')))
     plt.close(fig)
 
 def save_output_data(
@@ -302,19 +302,32 @@ def save_output_data(
         id_spectra = np.arange(1,len(fit_results)+1)
     Fit_results = fit_results.apply(pd.to_numeric)
     Fit_results_text= Fit_results.round(9)
-    
-    Path(output_path,output_folder).mkdir(parents=True,exist_ok=True)
+    speclist = Fit_results.index.values.tolist()
 
+    Path(output_path,output_folder).mkdir(parents=True,exist_ok=True)
+    
     d_mapping, _, d_parameters = nfm.mapping_multiplets()
     for i in cluster_list:        
+        #Check ifoutput file exists 
+
         col = range(d_id[i][1][0],d_id[i][1][1])
         _multiplet_type_ = d_parameters[len(col)]
         _multiplet_params_ = d_mapping[_multiplet_type_]['params']
+
         mutliplet_results = Fit_results_text[Fit_results_text.columns.intersection(col)]
+  
         mutliplet_results.columns = _multiplet_params_
+
+        # mutliplet_results['exp_no'] = id_spectra
+        # mutliplet_results['row_id'] = speclist
+
         mutliplet_results["integral"] = [scaling_factor*getIntegral(x_fit, _multiplet_type_, row.tolist()) for index, row in mutliplet_results.iterrows()]
         mutliplet_results["Amp"] = scaling_factor*mutliplet_results["Amp"]
-        mutliplet_results['exp_no'] = id_spectra
+
+        mutliplet_results.insert(loc = 0, column = 'exp_no' , value = id_spectra)
+        mutliplet_results.insert(loc = 1, column = 'row_id' , value = speclist)
+
+
         mutliplet_results.set_index('exp_no', inplace=True)
         mutliplet_results.to_csv(
             str(Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt')), 
@@ -325,7 +338,6 @@ def save_output_data(
         
     logger.info('Save plot to pdf')
 
-    speclist = Fit_results.index.values.tolist()
     
     #root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)],title='Output data in pdf',progress_bar_label=[None]) 
 
@@ -617,7 +629,7 @@ def start_gui():
     global tk_wdw
     tk_wdw = tk.Tk()
     tk_wdw.title("Multinmrfit Interface")
-    tk_wdw.geometry("700x600")
+    tk_wdw.geometry("700x700")
     tk_wdw.configure(bg='#FFFFFF')
 
     path_image = pkg_resources.resource_filename('multinmrfit', 'data/')
@@ -625,7 +637,7 @@ def start_gui():
     img_network = Image.open(str(Path(path_image, 'network.png')))
     img_network_ = ImageTk.PhotoImage(img_network.resize((700, 160))) 
     img_network_label = tk.Label(tk_wdw, image = img_network_)
-    img_network_label.place(x = 00, y = 440)
+    img_network_label.place(x = 00, y = 540)
 
     # Import Logo
     img_logo = Image.open(str(Path(path_image, 'logo_small.png')))
@@ -653,7 +665,7 @@ def start_gui():
         highlightbackground = "#8B0000",
         command=lambda:load_config_file(user_input)
         )
-    LoadButton.place(x=20, y=400,width=80,height=30)
+    LoadButton.place(x=20, y=500,width=80,height=30)
     
     SaveButton = tk.Button(
         tk_wdw,
@@ -663,7 +675,7 @@ def start_gui():
         highlightbackground = "#0000FF",
         command=lambda:save_config_file({k: v.get() for k, v in user_input.items()})
         )
-    SaveButton.place(x=200, y=400,width=80,height=30)
+    SaveButton.place(x=200, y=500,width=80,height=30)
 
     RunButton = tk.Button(
         tk_wdw,
@@ -674,7 +686,7 @@ def start_gui():
         command=lambda:launch_analysis({k: v.get() for k, v in user_input.items()})
 
     )
-    RunButton.place(x=380, y=400,width=80,height=30)
+    RunButton.place(x=380, y=500,width=80,height=30)
     
     CloseButton = tk.Button(
         tk_wdw,
@@ -684,7 +696,7 @@ def start_gui():
         highlightbackground = "#0000FF",
         command=lambda:on_closing()
         )
-    CloseButton.place(x=560, y=400,width=80,height=30)
+    CloseButton.place(x=560, y=500,width=80,height=30)
     
     tk_wdw.mainloop()
 
