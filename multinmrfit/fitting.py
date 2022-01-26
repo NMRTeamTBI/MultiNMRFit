@@ -206,6 +206,7 @@ def Full_Fitting_Function(
     analysis_type       =   'analysis_type',
     spectra_to_fit      =   'spectra_to_fit'
     ): 
+    print(spectra_to_fit)
     if intensities.ndim == 1:
         n_spec = 1
     else:
@@ -218,8 +219,9 @@ def Full_Fitting_Function(
         id_spec_part1 = [spectra_to_fit[i] for i,j in enumerate(spectra_to_fit) if j > id_spec_ref]
 
     elif analysis_type == '1D_Series':
-        id_spec_part2 = [spectra_to_fit[i] for i,j in enumerate(spectra_to_fit) if i < len(spectra_to_fit)/2 and j != id_spec_ref]
-        id_spec_part1 = [spectra_to_fit[i] for i,j in enumerate(spectra_to_fit) if i >= len(spectra_to_fit)/2 and j != id_spec_ref]
+        id_spec_part2 = [i for i,j in enumerate(spectra_to_fit) if i < len(spectra_to_fit)/2 and i != id_spec_ref]
+        id_spec_part1 = [i for i,j in enumerate(spectra_to_fit) if i >= len(spectra_to_fit)/2 and i != id_spec_ref]
+    print(id_spec_part2,id_spec_part1)
 
     if intensities.ndim == 1:
         y_Spec_init_ = intensities
@@ -270,7 +272,7 @@ def Full_Fitting_Function(
             progressbar=progress_bars[0]
             ))
             logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)} -- Complete')
-
+    
         if ref_spec != spectra_to_fit[0]:
             logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)}')
             threads.append(nfui.MyApp_Fitting(data={
@@ -291,6 +293,8 @@ def Full_Fitting_Function(
 
 
         root.mainloop()
+    print(Fit_results)
+    exit()
     return Fit_results
 
 
