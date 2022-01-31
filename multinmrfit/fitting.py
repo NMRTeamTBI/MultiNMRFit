@@ -221,7 +221,8 @@ def Full_Fitting_Function(
     elif analysis_type == '1D_Series':
         id_spec_part2 = [i for i,j in enumerate(spectra_to_fit) if i < len(spectra_to_fit)/2 and i != id_spec_ref]
         id_spec_part1 = [i for i,j in enumerate(spectra_to_fit) if i >= len(spectra_to_fit)/2 and i != id_spec_ref]
-    print(id_spec_part2,id_spec_part1)
+        id_all        = id_spec_part2+id_spec_part1+[id_spec_ref]
+        id_all.sort()
 
     if intensities.ndim == 1:
         y_Spec_init_ = intensities
@@ -238,7 +239,7 @@ def Full_Fitting_Function(
     logger.info(f'Fitting Reference Spectrum (ExpNo {ref_spec}) -- Complete')
 
     Fit_results = pd.DataFrame(
-        index=spectra_to_fit,
+        index=spectra_to_fit if analysis_type == 'Pseudo2D' else id_all,
         columns=np.arange(0,len(Initial_Fit_.x.tolist()),1)
             )
 
@@ -293,8 +294,7 @@ def Full_Fitting_Function(
 
 
         root.mainloop()
-    print(Fit_results)
-    exit()
+
     return Fit_results
 
 

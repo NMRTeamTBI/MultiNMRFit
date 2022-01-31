@@ -132,9 +132,6 @@ def run_analysis(user_input, gui=False):
     
     nf.ui.save_output_data(
         user_input         =   user_input,
-        # output_folder       =   user_input['output_folder'],
-        # output_name         =   user_input['output_name'],
-        # analysis_type       =   user_input['analysis_type'],
         fit_results         =   fit_results,
         intensities         =   intensities,
         x_scale             =   x_ppm_reference_spectrum,

@@ -239,19 +239,19 @@ def getIntegral(x_fit_, _multiplet_type_, fit_par):
     integral = np.sum(y)*(x_fit_[1]-x_fit_[0])
     return integral
 
-def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, output_path, output_folder,output_name):    
+def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, analysis_type, output_path, output_folder,output_name,i=None):    
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches([11.7,8.3])
     ax.plot(
         x_scale,
-        intensities[r,:],
+        intensities[r if analysis_type == 'Pseudo2D' else i ,:],
         color='b',
         ls='None',
         marker='o',
         markersize=7
         )    
     ax.invert_xaxis()
-    res = fit_results.loc[r].iloc[:].values.tolist()
+    res = fit_results.loc[r if analysis_type == 'Pseudo2D' else i ].iloc[:].values.tolist()
 
     sim = nff.simulate_data(
         x_fit,
@@ -266,7 +266,9 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
         'r-', 
         lw=1,
         label='fit')
-    ax.text(0.05,0.9,"Spectra : " +str(r+1),transform=ax.transAxes,fontsize=20)  
+
+    res_num = r+1 if analysis_type == 'Pseudo2D' else r
+    ax.text(0.05,0.9,"Spectra : " +str(res_num),transform=ax.transAxes,fontsize=20)  
     ax.set_ylabel('Intensity')
     ax.set_xlabel(r'$^1H$ $(ppm)$')
 
@@ -281,7 +283,7 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     path_2_save = Path(output_path,output_folder,'plot_ind')
     path_2_save.mkdir(parents=True,exist_ok=True)
 
-    plt.savefig(str(Path(path_2_save,output_name+'_'+str(r+1)+'.pdf')))
+    plt.savefig(str(Path(path_2_save,output_name+'_'+str(res_num)+'.pdf')))
     plt.close(fig)
 
 def save_output_data(
@@ -300,6 +302,9 @@ def save_output_data(
     analysis_type       =   user_input['analysis_type']
     data_exp_no       =   user_input['data_exp_no']
 
+    # if analysis_type == '1D_Series':
+    #     Fit_results = Fit_results.reindex(spectra_to_fit)
+
     logger.info('Save data to text file ')
 
     x_fit = np.linspace(np.min(x_scale),np.max(x_scale),2048)
@@ -309,8 +314,7 @@ def save_output_data(
 
     Fit_results = fit_results.apply(pd.to_numeric)
     Fit_results_text= Fit_results.round(9)
-    print(Fit_results_text)
-    exit()
+
     Path(output_path,output_folder).mkdir(parents=True,exist_ok=True)
     
     d_mapping, _, d_parameters = nfm.mapping_multiplets()
@@ -325,8 +329,6 @@ def save_output_data(
   
         mutliplet_results.columns = _multiplet_params_
 
-        # mutliplet_results['exp_no'] = id_spectra
-        # mutliplet_results['row_id'] = speclist
 
         mutliplet_results["integral"] = [scaling_factor*getIntegral(x_fit, _multiplet_type_, row.tolist()) for index, row in mutliplet_results.iterrows()]
         mutliplet_results["Amp"] = scaling_factor*mutliplet_results["Amp"]
@@ -345,26 +347,29 @@ def save_output_data(
             sep = '\t'
             )
     logger.info('Save data to text file -- Complete')
-        
+
     logger.info('Save plot to pdf')
 
     
-    #root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)],title='Output data in pdf',progress_bar_label=[None]) 
+    # root, close_button, progress_bars = init_progress_bar_windows(len_progresses = [len(speclist)],title='Output data in pdf',progress_bar_label=[None]) 
 
-    # for r in spectra_to_fit:
-    #     print(r)
-    #     single_plot_function(
-    #             r, 
-    #             x_scale, 
-    #             intensities,        
-    #             fit_results, 
-    #             x_fit, 
-    #             d_id, 
-    #             scaling_factor, 
-    #             output_path,   
-    #             output_folder,
-    #             output_name   
-    #         )
+    for r in spectra_to_fit:
+        if analysis_type == '1D_Series':
+            i = spectra_to_fit.index(r)
+        single_plot_function(
+                r, 
+                x_scale, 
+                intensities,        
+                fit_results, 
+                x_fit, 
+                d_id, 
+                scaling_factor, 
+                analysis_type,
+                output_path,   
+                output_folder,
+                output_name,
+                i  
+            )
             
     # with PdfPages(Path(output_path,output_folder,output_name+'.pdf')) as pdf:   
     #     matplotlib.pyplot.switch_backend('Agg') 
