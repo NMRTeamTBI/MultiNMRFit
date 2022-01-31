@@ -13,7 +13,7 @@ import pandas as pd
 # Own Libs
 import multinmrfit as nf
 import multinmrfit.ui as nui
-
+import multinmrfit.io as nio
 import multinmrfit.utils_nmrdata as nfu
 import multinmrfit.fitting as nff
 
@@ -85,14 +85,14 @@ def run_analysis(user_input, gui=False):
 
         peak_picking_data = nfu.sort_peak_picking_data(peak_picking, 10)
 
-        fig_peak_picking_region, color_list = nf.ui.plot_picking_data(
+        fig_peak_picking_region, color_list = nui.plot_picking_data(
             x_ppm_reference_spectrum, 
             intensities_reference_spectrum, 
             threshold, 
             peak_picking_data
         )
 
-        threshold, user_picked_data = nf.ui.run_user_clustering(
+        threshold, user_picked_data = nui.run_user_clustering(
             fig_peak_picking_region,
             color_list,
             threshold,
@@ -130,8 +130,11 @@ def run_analysis(user_input, gui=False):
     #######################Output#########################
     ######################################################
     
-    nf.ui.save_output_data(
+    nio.save_output_data(
         user_input         =   user_input,
+        # output_folder       =   user_input['output_folder'],
+        # output_name         =   user_input['output_name'],
+        # analysis_type       =   user_input['analysis_type'],
         fit_results         =   fit_results,
         intensities         =   intensities,
         x_scale             =   x_ppm_reference_spectrum,
