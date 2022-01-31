@@ -300,10 +300,7 @@ def save_output_data(
     output_folder       =   user_input['output_folder']
     output_name         =   user_input['output_name']
     analysis_type       =   user_input['analysis_type']
-    data_exp_no       =   user_input['data_exp_no']
-
-    # if analysis_type == '1D_Series':
-    #     Fit_results = Fit_results.reindex(spectra_to_fit)
+    data_exp_no         =   user_input['data_exp_no']
 
     logger.info('Save data to text file ')
 
@@ -318,6 +315,7 @@ def save_output_data(
     Path(output_path,output_folder).mkdir(parents=True,exist_ok=True)
     
     d_mapping, _, d_parameters = nfm.mapping_multiplets()
+
     for i in cluster_list:        
         #Check ifoutput file exists 
 
@@ -329,12 +327,11 @@ def save_output_data(
   
         mutliplet_results.columns = _multiplet_params_
 
-
         mutliplet_results["integral"] = [scaling_factor*getIntegral(x_fit, _multiplet_type_, row.tolist()) for index, row in mutliplet_results.iterrows()]
         mutliplet_results["Amp"] = scaling_factor*mutliplet_results["Amp"]
 
         if analysis_type == 'Pseudo2D':
-            mutliplet_results.insert(loc = 0, column = 'exp_no' , value = [data_exp_no]*len(spectra_to_fit))
+            mutliplet_results.insert(loc = 0, column = 'exp_no' , value = np.array([data_exp_no]*len(spectra_to_fit)))
             mutliplet_results.insert(loc = 1, column = 'row_id' , value = spectra_to_fit)
         elif analysis_type == '1D_Series':
             mutliplet_results.insert(loc = 0, column = 'exp_no' , value = spectra_to_fit)
