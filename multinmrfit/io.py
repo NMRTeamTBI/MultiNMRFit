@@ -28,7 +28,6 @@ def getIntegral(x_fit, _multiplet_type_, fit_par):
     integral = np.sum(y)*(x_fit[1]-x_fit[0])
     return integral
     
-
 def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, analysis_type, output_path, output_folder,output_name,i=None):    
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches([11.7,8.3])
@@ -108,7 +107,6 @@ def output_txt_file(x_fit,fit_results, d_id, scaling_factor,data_exp_no,spectra_
             sep = '\t'
             )
     logger.info('Save data to text file -- Complete')
-
 
 def save_output_data(
     user_input         = 'user_input',

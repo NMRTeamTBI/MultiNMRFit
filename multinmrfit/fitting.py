@@ -182,9 +182,9 @@ def Fitting_Function(
 def run_single_fit_function(up, fit, intensities, fit_results, x_Spec, peak_picking_data, scaling_factor, analysis_type, spec_list):
     y_Spec = intensities[fit,:]
     # if analysis_type is 'Pseudo2D':
-    #     Initial_Fit_Values = list(fit_results.loc[fit-1 if up else fit+1].iloc[:].values)
+    Initial_Fit_Values = list(fit_results.loc[fit-1 if up else fit+1].iloc[:].values)
     # else:
-    Initial_Fit_Values = None
+    #     Initial_Fit_Values = None
     try:
         _1D_Fit_ = Fitting_Function(
                     x_Spec,
@@ -219,10 +219,15 @@ def Full_Fitting_Function(
         id_spec_part1 = [spectra_to_fit[i] for i,j in enumerate(spectra_to_fit) if j > id_spec_ref]
 
     elif analysis_type == '1D_Series':
-        id_spec_part2 = [i for i,j in enumerate(spectra_to_fit) if i < len(spectra_to_fit)/2 and i != id_spec_ref]
-        id_spec_part1 = [i for i,j in enumerate(spectra_to_fit) if i >= len(spectra_to_fit)/2 and i != id_spec_ref]
-        id_all        = id_spec_part2+id_spec_part1+[id_spec_ref]
-        id_all.sort()
+        id_spec_part2 = [i for i,j in enumerate(spectra_to_fit) if i < id_spec_ref]
+        id_spec_part1 = [i for i,j in enumerate(spectra_to_fit) if i > id_spec_ref]
+        print(spectra_to_fit)
+        print(id_spec_ref)
+        print(id_spec_part1,id_spec_part2)
+        # id_spec_part2 = [i for i,j in enumerate(spectra_to_fit) if i < len(spectra_to_fit)/2 and i != id_spec_ref]
+        # id_spec_part1 = [i for i,j in enumerate(spectra_to_fit) if i >= len(spectra_to_fit)/2 and i != id_spec_ref]
+        id_all        = id_spec_part2+[id_spec_ref]+id_spec_part1
+        print(id_all)
 
     if intensities.ndim == 1:
         y_Spec_init_ = intensities
@@ -291,10 +296,8 @@ def Full_Fitting_Function(
             progressbar=progress_bars[1]
             ))
             logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)} -- Complete')
-
-
+        
         root.mainloop()
-
     return Fit_results
 
 

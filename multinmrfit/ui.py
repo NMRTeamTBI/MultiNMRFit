@@ -654,4 +654,3 @@ class MyApp_Plotting(threading.Thread):
             finished = thread.finished if thread.finished == False else finished
         if finished:
             self.close_button.invoke()
-
