@@ -389,7 +389,9 @@ def ask_filename(config_path):
     return config_file
 
 def save_config_file(user_input):
+
     config_path = Path(user_input['output_path'], user_input['output_folder'])
+    config_path.mkdir(parents=True,exist_ok=True)
     file_name = ask_filename(config_path)
     f = open(file_name, "a")
     f.seek(0)

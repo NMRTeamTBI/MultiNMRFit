@@ -80,14 +80,12 @@ def Peak_Initialisation(
         x0 = np.mean(Peak_Picking_Results.Peak_Position)
         J1 = (np.abs(Peak_Picking_Results.Peak_Position.max())-np.abs(x0))
         Amp = Peak_Picking_Results.loc[:,'Peak_Intensity'].min()/scaling_factor
-        I_ratio = Peak_Picking_Results.loc[:,'Peak_Intensity'].max()/Peak_Picking_Results.loc[:,'Peak_Intensity'].min()
         Init_Val= [
                 x0, 
                 Ratio_Lorentzian_Gaussian,
                 Amp, 
                 Line_Width,
-                J1,
-                I_ratio
+                J1
                 ]
     else:
         raise ValueError("Peak type is not defined.")
@@ -179,12 +177,12 @@ def Fitting_Function(
     )
     return res_fit
 
-def run_single_fit_function(up, fit, intensities, fit_results, x_Spec, peak_picking_data, scaling_factor, analysis_type, spec_list):
+def run_single_fit_function(up, fit, intensities, fit_results, x_Spec, peak_picking_data, scaling_factor, analysis_type, spec_list,use_previous_fit=False):
     y_Spec = intensities[fit,:]
-    # if analysis_type is 'Pseudo2D':
-    Initial_Fit_Values = list(fit_results.loc[fit-1 if up else fit+1].iloc[:].values)
-    # else:
-    #     Initial_Fit_Values = None
+    if use_previous_fit :
+        Initial_Fit_Values = list(fit_results.loc[fit-1 if up else fit+1].iloc[:].values)
+    else:
+        Initial_Fit_Values = None
     try:
         _1D_Fit_ = Fitting_Function(
                     x_Spec,
@@ -206,28 +204,22 @@ def Full_Fitting_Function(
     analysis_type       =   'analysis_type',
     spectra_to_fit      =   'spectra_to_fit'
     ): 
-    print(spectra_to_fit)
+
     if intensities.ndim == 1:
         n_spec = 1
     else:
         n_spec = intensities.shape[0]
-
+    
     id_spec_ref = int(ref_spec)
 
+    id_spec_ref = int(ref_spec)
     if analysis_type == 'Pseudo2D':
         id_spec_part2 = [spectra_to_fit[i] for i,j in enumerate(spectra_to_fit) if j < id_spec_ref]
         id_spec_part1 = [spectra_to_fit[i] for i,j in enumerate(spectra_to_fit) if j > id_spec_ref]
-
     elif analysis_type == '1D_Series':
         id_spec_part2 = [i for i,j in enumerate(spectra_to_fit) if i < id_spec_ref]
         id_spec_part1 = [i for i,j in enumerate(spectra_to_fit) if i > id_spec_ref]
-        print(spectra_to_fit)
-        print(id_spec_ref)
-        print(id_spec_part1,id_spec_part2)
-        # id_spec_part2 = [i for i,j in enumerate(spectra_to_fit) if i < len(spectra_to_fit)/2 and i != id_spec_ref]
-        # id_spec_part1 = [i for i,j in enumerate(spectra_to_fit) if i >= len(spectra_to_fit)/2 and i != id_spec_ref]
         id_all        = id_spec_part2+[id_spec_ref]+id_spec_part1
-        print(id_all)
 
     if intensities.ndim == 1:
         y_Spec_init_ = intensities
@@ -247,7 +239,6 @@ def Full_Fitting_Function(
         index=spectra_to_fit if analysis_type == 'Pseudo2D' else id_all,
         columns=np.arange(0,len(Initial_Fit_.x.tolist()),1)
             )
-
     if intensities.ndim == 1:
         Fit_results.loc[0,:] = Initial_Fit_.x.tolist()
 
@@ -256,12 +247,14 @@ def Full_Fitting_Function(
         title='Data Fitting',
         progress_bar_label=(['Ascending spectra','Descending spectra'] if analysis_type is 'Pseudo2D' else ['Spectra part 1','Spectra part 2'])
         ) 
- 
+    use_previous_fit = True
+
     if intensities.ndim != 1:
         Fit_results.loc[id_spec_ref,:] = Initial_Fit_.x.tolist()
         threads = []
-
-        if ref_spec != spectra_to_fit[-1]:
+ 
+        if ref_spec != (spectra_to_fit[-1] if analysis_type == 'Pseudo2D' else id_all[-1]):
+            print('Hello')
             logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)}')
             threads.append(nfui.MyApp_Fitting(data={
                 "up"                  : True,
@@ -271,15 +264,19 @@ def Full_Fitting_Function(
                 "x_Spec"              : x_Spec,
                 "peak_picking_data"   : peak_picking_data,
                 "analysis_type"       : analysis_type,
-                "scaling_factor"      : scaling_factor
+                "scaling_factor"      : scaling_factor,
+                "use_previous_fit"    : use_previous_fit
             },
             threads=threads,
             close_button=close_button,
             progressbar=progress_bars[0]
             ))
             logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)} -- Complete')
-    
-        if ref_spec != spectra_to_fit[0]:
+        # elif:
+        #     logger.info(f'No fitting above the reference spectrum') 
+        if ref_spec != (spectra_to_fit[0] if analysis_type == 'Pseudo2D' else id_all[0]):
+            print('Hello -- 2')
+
             logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)}')
             threads.append(nfui.MyApp_Fitting(data={
                 "up"                  : False,
@@ -289,7 +286,8 @@ def Full_Fitting_Function(
                 "x_Spec"              : x_Spec,
                 "peak_picking_data"   : peak_picking_data,
                 "analysis_type"       : analysis_type,
-                "scaling_factor"      : scaling_factor
+                "scaling_factor"      : scaling_factor,
+                "use_previous_fit"    : use_previous_fit
             },
             threads=threads,
             close_button=close_button,

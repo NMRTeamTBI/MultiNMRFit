@@ -31,6 +31,7 @@ def main():
         nui.launch_analysis(user_input)
 
 def run_analysis(user_input, gui=False):
+
     logger.info('Loading NMR Data')
     ######################################################
     ##################### Read and Load Data #############
