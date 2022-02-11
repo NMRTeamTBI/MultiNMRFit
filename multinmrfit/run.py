@@ -12,7 +12,7 @@ import pandas as pd
 
 # Own Libs
 import multinmrfit as nf
-import multinmrfit.ui as nui
+import multinmrfit.ui_new as nui
 import multinmrfit.io as nio
 import multinmrfit.utils_nmrdata as nfu
 import multinmrfit.fitting as nff
@@ -23,12 +23,23 @@ logger = logging.getLogger(__name__)
 # Loading Raw Data 
 ################################################################
 
+# def main():
+#     if not len(sys.argv) == 2:
+#         nui.start_gui()
+#     else:
+#         user_input = nui.load_config_file(config_file_path=sys.argv[1])
+#         nui.launch_analysis(user_input)
+
 def main():
     if not len(sys.argv) == 2:
-        nui.start_gui()
+        print('gui')
+        app = nui.App(user_input=nio.create_user_input())
+        app.start()
     else:
-        user_input = nui.load_config_file(config_file_path=sys.argv[1])
-        nui.launch_analysis(user_input)
+        print('cli')
+        user_input = nio.load_config_file(None,config_file_path=sys.argv[1]) 
+        user_input = nio.check_input_file(user_input,None)       
+        run_analysis(user_input,None)
 
 def prepare_data(user_input):
     ######################################################
@@ -122,7 +133,7 @@ def run_analysis(user_input, gui=False):
 
     spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor = prepare_data(user_input)
     print(spectra_to_fit)
-
+    exit()
     #-----------------------------------------------------#   
     ######################################################
     #######################Fitting########################
