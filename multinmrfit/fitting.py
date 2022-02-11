@@ -11,7 +11,7 @@ import pandas as pd
 from scipy.optimize import minimize
 
 import multinmrfit.multiplets as nfm
-import multinmrfit.ui as nfui
+import multinmrfit.ui_new as nfui
 import matplotlib
 import matplotlib.pyplot as plt
 logger = logging.getLogger(__name__)
@@ -104,7 +104,6 @@ def Fitting_Function(
     return res_fit
 
 def run_single_fit_function(up, fit, intensities, fit_results, x_Spec, peak_picking_data, scaling_factor, analysis_type, spec_list,use_previous_fit=False):
-    print( fit_results)
     Initial_Fit_Values = list(fit_results.iloc[fit[1]-1 if up else fit[1]+1].values) if use_previous_fit else None
 
     try:
@@ -115,7 +114,6 @@ def run_single_fit_function(up, fit, intensities, fit_results, x_Spec, peak_pick
                     intensities[fit[0],:],
                     scaling_factor,
                     Initial_Fit_Values) 
-        print(_1D_Fit_.x.tolist())
         fit_results.loc[fit[1],:] = _1D_Fit_.x.tolist()
     
     except:
@@ -131,17 +129,7 @@ def Full_Fitting_Function(
     spectra_to_fit      =   'spectra_to_fit',
     use_previous_fit = True
     ): 
-
-    n_spec = 1 if intensities.ndim == 1 else intensities.shape[0]
-    
-    #if analysis_type == 'Pseudo2D':
-    #    id_spec_part2 = [spectra_to_fit[i] for i,j in enumerate(spectra_to_fit) if j < ref_spec]
-    #    id_spec_part1 = [spectra_to_fit[i] for i,j in enumerate(spectra_to_fit) if j > ref_spec]
-    #elif analysis_type == '1D_Series':
-    #    id_spec_part2 = [i for i,j in enumerate(spectra_to_fit) if i < ref_spec]
-    #    id_spec_part1 = [i for i,j in enumerate(spectra_to_fit) if i > ref_spec]
-    #    id_all        = id_spec_part2+[ref_spec]+id_spec_part1
-
+  
     id_spec_part2 = [i for i in spectra_to_fit if i[0] < ref_spec]
     id_spec_part1 = [i for i in spectra_to_fit if i[0] > ref_spec]
     id_ref_spec = [i for i in spectra_to_fit if i[0] == ref_spec ]
@@ -160,6 +148,7 @@ def Full_Fitting_Function(
         index=[i[1] for i in spectra_to_fit],
         columns=np.arange(0,len(Initial_Fit_.x.tolist()),1)
             )
+
     if intensities.ndim == 1:
         Fit_results.loc[0,:] = Initial_Fit_.x.tolist()
 
@@ -183,7 +172,9 @@ def Full_Fitting_Function(
         print('####',ref_spec,spectra_to_fit[0][1])
         if len(id_spec_part1):
             print('Hello')
-            logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)}')
+            
+            # logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)}')
+
             threads.append(nfui.MyApp_Fitting(data={
                 "up"                  : True,
                 "spec_list"           : id_spec_part1,
@@ -199,13 +190,13 @@ def Full_Fitting_Function(
             close_button=close_button,
             progressbar=progress_bars[0]
             ))
-            logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)} -- Complete')
+            # logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)} -- Complete')
         # elif:
         #     logger.info(f'No fitting above the reference spectrum') 
         if len(id_spec_part2):
             print('Hello -- 2')
 
-            logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)}')
+            # logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)}')
             threads.append(nfui.MyApp_Fitting(data={
                 "up"                  : False,
                 "spec_list"           : id_spec_part2[::-1],
@@ -221,7 +212,7 @@ def Full_Fitting_Function(
             close_button=close_button,
             progressbar=progress_bars[1]
             ))
-            logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)} -- Complete')
+            # logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)} -- Complete')
         
         root.mainloop()
     return Fit_results

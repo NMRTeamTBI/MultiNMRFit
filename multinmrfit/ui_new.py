@@ -11,6 +11,7 @@ import tkinter as tk
 from tkinter import simpledialog, ttk, filedialog
 from PIL import Image, ImageTk
 import logging
+import threading
 
 # Import math libraries
 import pandas as pd
@@ -23,6 +24,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import multinmrfit.io as nio
 import multinmrfit.run as nrun
+import multinmrfit.fitting as nff
 
 logger = logging.getLogger(__name__)
 # logger = logging.getLogger()
@@ -479,20 +481,21 @@ def plot_picking_data(x_spec, y_spec, peak_picking_threshold, peak_picking_data)
     for i in range(n_peak):
         colors.append('#%06X' % random.randint(0, 0xFFFFFF))
 
-    fig = plt.figure()
-    plt.plot(x_spec, y_spec, '-',color='teal')
+    figure1 = plt.Figure(figsize=(6,5), dpi=100)
+    ax1 = figure1.add_subplot(111)
+    ax1.plot(x_spec, y_spec, '-',color='teal')
     for i in range(n_peak):
-        plt.plot(
+        ax1.plot(
             peak_picking_data.Peak_Position.iloc[i],
             peak_picking_data.Peak_Intensity.iloc[i],
             c=colors[i],
             ls='none',
             marker='o'
             )
-    plt.axhline(peak_picking_threshold,c='r')
-    plt.gca().invert_xaxis()
-    plt.xlabel(r'$^1H$ $(ppm)$')
-    return fig, colors 
+    ax1.axhline(peak_picking_threshold,c='r')
+    ax1.invert_xaxis()
+    ax1.set_xlabel(r'$^1H$ $(ppm)$')
+    return figure1, colors 
 
 def run_user_clustering(figures, colors_plot, peak_picking_threshold, peak_picking_data):
 
@@ -511,3 +514,66 @@ def run_user_clustering(figures, colors_plot, peak_picking_threshold, peak_picki
 
 
 
+
+##########
+def init_progress_bar_windows(len_progresses, title, progress_bar_label):
+    root = tk.Tk()
+    root_height= len(len_progresses)*120
+    root.geometry(f'300x{root_height}')
+    root.title(title)
+
+    progress_bars = []
+    for len_progress in len_progresses:
+        pg_bar = ttk.Progressbar(
+            root,
+            orient='horizontal',
+            mode='determinate',
+            maximum=len_progress,
+            length=280
+        )
+
+        # value_label = ttk.Label(root, text=update_progress_label())
+        value_label = ttk.Label(root, text=progress_bar_label[len(progress_bars)])
+        value_label.grid(column=0, row=len(len_progresses)*len(progress_bars), columnspan=2)
+
+        pg_bar.grid(column=0, row=len(len_progresses)*len(progress_bars)+1, columnspan=2, padx=10, pady=20)
+        progress_bars.append(pg_bar)
+
+
+    close_button = tk.Button(
+        root, 
+        text="Close", 
+        fg = "black", 
+        font=("Helvetica", 20),        
+        command=lambda: progress_bar_exit(root)
+    )
+    close_button.grid(column = 1, row = len(len_progresses)+5)
+    return root, close_button, progress_bars
+
+def progress_bar_exit(root):
+    root.destroy()
+class MyApp_Fitting(threading.Thread):
+
+    def __init__(self, data, threads, close_button, progressbar):
+        self.finished = False
+        self.threads = threads
+        self.data = data
+        self.close_button = close_button
+        # self.progress_label = progress_label
+        self.progressbar = progressbar
+        threading.Thread.__init__(self)
+        self.start()
+
+    def run(self):
+        print(self.data["spec_list"])
+        
+        for fit in self.data["spec_list"]:
+            self.progressbar["value"] += 1
+            # self.progress_label["value"] +=1
+            nff.run_single_fit_function(fit=fit, **self.data)
+        self.finished = True
+        finished = True
+        for thread in self.threads:
+            finished = thread.finished if thread.finished == False else finished
+        if finished:
+            self.close_button.invoke()

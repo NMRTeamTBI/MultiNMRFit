@@ -5,7 +5,7 @@ import json
 import sys
 import warnings
 warnings.filterwarnings('ignore')
-
+import tkinter as tk
 # Other libs
 import numpy as np
 import pandas as pd
@@ -17,18 +17,17 @@ import multinmrfit.io as nio
 import multinmrfit.utils_nmrdata as nfu
 import multinmrfit.fitting as nff
 
+# Import plot libraries
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 logger = logging.getLogger(__name__)
 
 ################################################################
 # Loading Raw Data 
 ################################################################
 
-# def main():
-#     if not len(sys.argv) == 2:
-#         nui.start_gui()
-#     else:
-#         user_input = nui.load_config_file(config_file_path=sys.argv[1])
-#         nui.launch_analysis(user_input)
 
 def main():
     if not len(sys.argv) == 2:
@@ -85,6 +84,7 @@ def prepare_data(user_input):
     ######################################################
 
     threshold = user_input['threshold']
+
     while threshold:
 
         peak_picking = nfu.Peak_Picking_1D(
@@ -94,13 +94,13 @@ def prepare_data(user_input):
         )
 
         peak_picking_data = nfu.sort_peak_picking_data(peak_picking, 10)
-
+        
         fig_peak_picking_region, color_list = nui.plot_picking_data(
             x_ppm_reference_spectrum, 
             intensities_reference_spectrum, 
             threshold, 
             peak_picking_data
-        )
+            )
 
         threshold, user_picked_data = nui.run_user_clustering(
             fig_peak_picking_region,
@@ -128,12 +128,10 @@ def prepare_data(user_input):
     return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor
 
 def run_analysis(user_input, gui=False):
-
     logger.info('Loading NMR Data')
 
     spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor = prepare_data(user_input)
-    print(spectra_to_fit)
-    exit()
+
     #-----------------------------------------------------#   
     ######################################################
     #######################Fitting########################
