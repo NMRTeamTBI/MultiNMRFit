@@ -28,19 +28,19 @@ def getIntegral(x_fit, _multiplet_type_, fit_par):
     integral = np.sum(y)*(x_fit[1]-x_fit[0])
     return integral
     
-def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, analysis_type, output_path, output_folder,output_name,i=None):    
+def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, analysis_type, output_path, output_folder, output_name):    
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches([11.7,8.3])
     ax.plot(
         x_scale,
-        intensities[r if analysis_type == 'Pseudo2D' else i ,:],
+        intensities[r[0],:],
         color='b',
         ls='None',
         marker='o',
         markersize=7
         )    
     ax.invert_xaxis()
-    res = fit_results.loc[r if analysis_type == 'Pseudo2D' else i ].iloc[:].values.tolist()
+    res = fit_results.iloc[r[1],:].values.tolist()
 
     sim = nff.simulate_data(
         x_fit,
@@ -56,7 +56,7 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
         lw=1,
         label='fit')
 
-    res_num = r+1 if analysis_type == 'Pseudo2D' else r
+    res_num = r[5]
     ax.text(0.05,0.9,"Spectra : " +str(res_num),transform=ax.transAxes,fontsize=20)  
     ax.set_ylabel('Intensity')
     ax.set_xlabel(r'$^1H$ $(ppm)$')
@@ -86,42 +86,39 @@ def build_output(d_id_i, x_fit, fit_results, scaling_factor,data_exp_no,spectra_
     mutliplet_results["integral"] = [scaling_factor*getIntegral(x_fit, _multiplet_type_, row.tolist()) for index, row in mutliplet_results.iterrows()]
     mutliplet_results["Amp"] *= scaling_factor
 
-    if analysis_type == 'Pseudo2D':
-        mutliplet_results.insert(loc = 0, column = 'exp_no' , value = np.array([data_exp_no]*len(spectra_to_fit)))
-        mutliplet_results.insert(loc = 1, column = 'row_id' , value = spectra_to_fit)
-    elif analysis_type == '1D_Series':
-        mutliplet_results.insert(loc = 0, column = 'exp_no' , value = spectra_to_fit)
-        mutliplet_results.insert(loc = 1, column = 'row_id' , value = [1]*len(spectra_to_fit))
+    mutliplet_results.insert(loc = 0, column = 'exp_no' , value = [i[2] for i in spectra_to_fit])
+    mutliplet_results.insert(loc = 1, column = 'proc_no' , value = [i[3] for i in spectra_to_fit])
+    mutliplet_results.insert(loc = 2, column = 'row_id' , value = [i[4] for i in spectra_to_fit])
 
-    mutliplet_results.set_index('exp_no', inplace=True)
+    #mutliplet_results.set_index('exp_no', inplace=True)
     return _multiplet_type_, mutliplet_results
 
 def update_results(mutliplet_results, fname, analysis_type):
-    try:
-        if analysis_type == 'Pseudo2D':
-            original_data = pd.read_csv(
-                str(fname), 
-                sep="\t",
-                dtype={'row_id':np.int},index_col='row_id'
-                )
+    #try:
+    #    if analysis_type == 'Pseudo2D':
+    #        original_data = pd.read_csv(
+    #            str(fname), 
+    #            sep="\t",
+    #            dtype={'row_id':np.int},index_col='row_id'
+    #            )
 
-        elif analysis_type == '1D_Series':
-            original_data = pd.read_csv(
-                str(fname), 
-                sep="\t",
-                dtype={'exp_no':np.int},index_col='exp_no'
-                )
+    #    elif analysis_type == '1D_Series':
+    #        original_data = pd.read_csv(
+    #            str(fname), 
+    #            sep="\t",
+    #            dtype={'exp_no':np.int},index_col='exp_no'
+    #            )
 
-    except:
-        logger.error("error when opening existing reults file")
-    print(original_data)
-    print(mutliplet_results)
-    if analysis_type == 'Pseudo2D':
-        mutliplet_results.set_index('row_id')
+    #except:
+    #    logger.error("error when opening existing reults file")
+    #print(original_data)
+    #print(mutliplet_results)
+    #if analysis_type == 'Pseudo2D':
+    #    mutliplet_results.set_index('row_id')
 
-    original_data.loc[mutliplet_results.index,:] = mutliplet_results[:]
+    #original_data.loc[mutliplet_results.index,:] = mutliplet_results[:]
 
-    return original_data
+    return mutliplet_results
 
 def output_txt_file(x_fit,fit_results, d_id, scaling_factor,data_exp_no,spectra_to_fit,analysis_type,output_path, output_folder,output_name):
     
@@ -160,7 +157,7 @@ def save_output_data(
     d_id = nff.Initial_Values(Peak_Picking_data, x_fit, scaling_factor)[0]
 
     fit_results = fit_results.apply(pd.to_numeric)
-
+    print(fit_results)
     Path(output_path,output_folder).mkdir(parents=True,exist_ok=True)
 
     logger.info('Save data to text file ') 
@@ -169,9 +166,6 @@ def save_output_data(
 
     logger.info('Save plot to pdf')
     for r in spectra_to_fit:
-        i = None 
-        if analysis_type == '1D_Series':
-            i = spectra_to_fit.index(r)
         single_plot_function(
                 r, 
                 x_scale, 
@@ -183,8 +177,7 @@ def save_output_data(
                 analysis_type,
                 output_path,   
                 output_folder,
-                output_name,
-                i  
+                output_name
             )
 
     logger.info('Save plot to pdf -- Complete')

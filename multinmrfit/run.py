@@ -30,9 +30,7 @@ def main():
         user_input = nui.load_config_file(config_file_path=sys.argv[1])
         nui.launch_analysis(user_input)
 
-def run_analysis(user_input, gui=False):
-
-    logger.info('Loading NMR Data')
+def prepare_data(user_input):
     ######################################################
     ##################### Read and Load Data #############
     ######################################################
@@ -104,13 +102,26 @@ def run_analysis(user_input, gui=False):
 
     scaling_factor = user_picked_data.Peak_Intensity.mean()
 
+    # (id, expno, procno, rowno, output_name)
     if user_input['analysis_type'] == "Pseudo2D" : 
         if not len(user_input.get('data_row_no',[])):
-            spectra_to_fit = list(np.arange(0,len(intensities),1))
-        else:
-            spectra_to_fit = [int(i)-1 for i in user_input['data_row_no']]
+            user_input['data_row_no'] = np.arange(1,len(intensities)+1,1)
+            #spectra_to_fit = list(np.arange(0,len(intensities),1))
+        #    spectra_to_fit = [(user_input['data_exp_no'][0], user_input['data_proc_no'], i, i) for i in np.arange(0,len(intensities),1)]
+        #else:
+        #    #spectra_to_fit = [int(i)-1 for i in user_input['data_row_no']]
+        spectra_to_fit = [(j-1, i, user_input['data_exp_no'][0], user_input['data_proc_no'], j, j) for i,j in enumerate(user_input['data_row_no'])]
     elif user_input['analysis_type'] == '1D_Series':
-            spectra_to_fit = user_input['data_exp_no']
+            spectra_to_fit = [(i, i, j, user_input['data_proc_no'], 1, j) for i, j in enumerate(user_input['data_exp_no'])]
+
+    return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor
+
+def run_analysis(user_input, gui=False):
+
+    logger.info('Loading NMR Data')
+
+    spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor = prepare_data(user_input)
+    print(spectra_to_fit)
 
     #-----------------------------------------------------#   
     ######################################################
@@ -119,7 +130,7 @@ def run_analysis(user_input, gui=False):
     fit_results = nff.Full_Fitting_Function(
         intensities         =   intensities,
         x_Spec              =   x_ppm_reference_spectrum,
-        ref_spec            =   idx_ref,#user_input['reference_spectrum'],
+        ref_spec            =   idx_ref,
         peak_picking_data   =   user_picked_data,
         scaling_factor      =   scaling_factor,
         analysis_type       =   user_input['analysis_type'],
@@ -132,10 +143,7 @@ def run_analysis(user_input, gui=False):
     ######################################################
     
     nio.save_output_data(
-        user_input         =   user_input,
-        # output_folder       =   user_input['output_folder'],
-        # output_name         =   user_input['output_name'],
-        # analysis_type       =   user_input['analysis_type'],
+        user_input          =   user_input,
         fit_results         =   fit_results,
         intensities         =   intensities,
         x_scale             =   x_ppm_reference_spectrum,

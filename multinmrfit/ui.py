@@ -347,7 +347,7 @@ def launch_analysis(user_input):
             'data_path'             :   user_input.get('data_path'),
             'data_folder'           :   user_input.get('data_folder'),
             'data_exp_no'           :   exp_list,
-            'data_proc_no'          :   user_input.get('data_proc_no'),
+            'data_proc_no'          :   int(user_input.get('data_proc_no')),
             'data_row_no'           :   row_list,
             'reference_spectrum'    :   user_input.get('reference_spectrum'),
             'analysis_type'         :   user_input.get('analysis_type'),
@@ -624,6 +624,8 @@ class MyApp_Fitting(threading.Thread):
         self.start()
 
     def run(self):
+        print(self.data["spec_list"])
+        
         for fit in self.data["spec_list"]:
             self.progressbar["value"] += 1
             # self.progress_label["value"] +=1

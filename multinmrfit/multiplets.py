@@ -1,6 +1,6 @@
 ﻿# This script contains all the information for mulitplets definition
 import numpy as np
-
+import pandas as pd
 
 def Singlet( x, x0, a, h_s, lw ):
     #Lorentzian + Gaussian    
@@ -45,12 +45,12 @@ def Triplet( x, x0, a, h_s, lw, J1):
 #    - constraints on coupling constants are sufficient
 #    - error check on multiple peaks (duplicates lines in panda)
 def mapping_multiplets():
-    lw_constraints = (1e-6,1e-2)
+    lw_constraints = (1e-3,1e-2)
     x0_constraints = (1e-6,12)
     a_constraints = (1e-3,1)
     Amp_constraints = (1e-6,np.inf)
     dH_constraints= (0, np.inf)
-    J_constraints = (1e-2,0.25)
+    J_constraints = (2.5e-3,0.25)
     d_mapping = {
         "Singlet":{"f_function":Singlet,"n_peaks" : "1", "option":"", "params":['x0','a','Amp','lw'],"n_params" : 4, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints]},
         "Doublet":{"f_function":Doublet,"n_peaks" : "2", "option":"","params":['x0','a','Amp','lw','J1'],"n_params" : 5, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints,J_constraints]},
@@ -64,3 +64,79 @@ def mapping_multiplets():
     d_parameters = {d_mapping[k]["n_params"]:k for k in d_mapping.keys()}
     
     return d_mapping, d_clustering, d_parameters
+
+def Peak_Initialisation(
+    Peak_Type='Peak_Type',
+    Peak_Picking_Results = 'Peak_Picking_Results',
+    scaling_factor=None
+    ):
+    Line_Width = 0.001
+    Ratio_Lorentzian_Gaussian = 0.5
+
+    Peak_Picking_Results[["Peak_Position", "Peak_Intensity"]] = Peak_Picking_Results[["Peak_Position", "Peak_Intensity"]].apply(pd.to_numeric)
+
+    if Peak_Type == 'Singlet':
+        Init_Val= [
+        Peak_Picking_Results.Peak_Position.values[0], 
+        Ratio_Lorentzian_Gaussian,
+        Peak_Picking_Results.Peak_Intensity.values[0]/scaling_factor, 
+        Line_Width
+        ]
+
+    elif Peak_Type =='Doublet':
+        x0 = np.mean(Peak_Picking_Results.Peak_Position)
+        J1 = 2*(np.abs(Peak_Picking_Results.Peak_Position.max())-np.abs(x0))
+        Amp = np.mean(Peak_Picking_Results.loc[:,'Peak_Intensity'])/scaling_factor
+
+        Init_Val= [
+                x0, 
+                Ratio_Lorentzian_Gaussian,
+                Amp, 
+                Line_Width,
+                J1
+                ]
+    #print(Init_Val);exit()
+    elif Peak_Type =='DoubletofDoublet':
+
+        x0_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Position'])
+        J_small = Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position.diff().iloc[1]
+        J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'Peak_Position').Peak_Position)-np.mean(Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position))
+        Amp_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Intensity'])/scaling_factor
+        Init_Val= [
+                x0_init, 
+                Ratio_Lorentzian_Gaussian,
+                Amp_init, 
+                Line_Width,
+                J_small,
+                J_large
+                ]
+    elif Peak_Type =='DoubletofDoubletAsymetric':
+
+        x0_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Position'])
+        J_small = Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position.diff().iloc[1]
+        J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'Peak_Position').Peak_Position)-np.mean(Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position))
+        Amp_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Intensity'])/scaling_factor
+        Init_Val= [
+                x0_init, 
+                Ratio_Lorentzian_Gaussian,
+                Amp_init, 
+                Line_Width,
+                J_small,
+                J_large,
+                0
+                ]
+    elif Peak_Type =='Triplet':
+        x0 = np.mean(Peak_Picking_Results.Peak_Position)
+        J1 = (np.abs(Peak_Picking_Results.Peak_Position.max())-np.abs(x0))
+        Amp = Peak_Picking_Results.loc[:,'Peak_Intensity'].min()/scaling_factor
+        Init_Val= [
+                x0, 
+                Ratio_Lorentzian_Gaussian,
+                Amp, 
+                Line_Width,
+                J1
+                ]
+    else:
+        raise ValueError("Peak type is not defined.")
+    return Init_Val
+
