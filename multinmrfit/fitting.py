@@ -88,7 +88,7 @@ def run_single_fit_function(up,
                             x_spectrum_fit, 
                             peak_picking_data, 
                             scaling_factor,
-                            use_previous_fit=False,
+                            use_previous_fit,
                             writing_to_file=True
                             ):
 
@@ -126,7 +126,7 @@ def full_fitting_procedure(
     peak_picking_data   =   'peak_picking_data',
     scaling_factor      =    None,
     spectra_to_fit      =   'spectra_to_fit',
-    use_previous_fit    =    True
+    use_previous_fit    =   'use_previous_fit'
     ): 
     
     # Handling spectra list for multi-threading
@@ -140,10 +140,11 @@ def full_fitting_procedure(
         None, # No need of up or down here
         id_ref_spec[0],
         intensities,
-        None, #Don't 
+        None,  
         x_spec, 
         peak_picking_data,  
         scaling_factor,
+        False,
         writing_to_file=False
         ) 
     logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]}) -- Complete')

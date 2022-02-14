@@ -59,7 +59,7 @@ def load_config_file(self=None, user_input=None, config_file_path=None):
 
         if self and self.winfo_exists():
             for label in user_input.keys():                
-                if label in ['rows_pseudo2D','time_series']:
+                if label in ['data_row_no','time_series']:
                     if label not in config.keys():
                         pass
                     else:
@@ -152,8 +152,8 @@ def check_input_file(user_input,self=None):
             return error_handling(self,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in experiment list", critical_error=is_not_gui)
 
         row_list = []
-        if user_input.get('rows_pseudo2D'):
-            row_list = create_experiments_list(user_input.get('rows_pseudo2D'))
+        if user_input.get('data_row_no'):
+            row_list = create_experiments_list(user_input.get('data_row_no'))
             if int(user_input.get('reference_spectrum')) not in row_list :
                 return error_handling(self,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in row list", critical_error=is_not_gui)
 
@@ -170,15 +170,23 @@ def check_input_file(user_input,self=None):
             'output_path'           :   user_input.get('output_path'),
             'output_folder'         :   user_input.get('output_folder'),
             'output_name'           :   user_input.get('output_name'),
-            'rows_pseudo2D'         :   row_list,
+            'data_row_no'           :   row_list,
             'time_series'           :   user_input.get('time_series')
 
         }
+
     except Exception as e:
         return error_handling(self,e, critical_error=is_not_gui)
 
+    if config['analysis_type'] != 'Pseudo2D': 
+        config.pop("data_row_no")
+    if config['analysis_type'] == 'Pseudo2D': 
+        config.pop("time_series")
+        if config['data_row_no'] == []:
+           config.pop("data_row_no") 
+
     for key, conf in config.items():        
-        if key not in ['time_series','rows_pseudo2D'] and conf is None:
+        if key not in ['time_series','data_row_no'] and conf is None:
             return error_handling(self,f"Argument : '{key}' is missing", critical_error=is_not_gui)
     if is_gui:
         self.destroy()

@@ -82,56 +82,58 @@ def prepare_data(user_input):
     ######################################################
     ####################Peak Picking######################
     ######################################################
-
     threshold = user_input['threshold']
-
     while threshold:
-
         peak_picking = nfu.Peak_Picking_1D(
             x_data          =   x_ppm_reference_spectrum, 
             y_data          =   intensities_reference_spectrum, 
             threshold       =   threshold,
         )
-
-        peak_picking_data = nfu.sort_peak_picking_data(peak_picking, 10)
-        
+        peak_picking_data = nfu.sort_peak_picking_data(peak_picking, 10)        
         fig_peak_picking_region, color_list = nui.plot_picking_data(
             x_ppm_reference_spectrum, 
             intensities_reference_spectrum, 
             threshold, 
             peak_picking_data
             )
-
         threshold, user_picked_data = nui.run_user_clustering(
             fig_peak_picking_region,
             color_list,
             threshold,
             peak_picking_data
         )
-
     user_picked_data = user_picked_data[user_picked_data["Selection"].values]
-
     scaling_factor = user_picked_data.Peak_Intensity.mean()
 
+    ######################################################
+    #Prepare spectral list with all required indices##
+    ######################################################
     # (id, expno, procno, rowno, output_name)
     if user_input['analysis_type'] == "Pseudo2D" : 
         if not len(user_input.get('data_row_no',[])):
             user_input['data_row_no'] = np.arange(1,len(intensities)+1,1)
-            #spectra_to_fit = list(np.arange(0,len(intensities),1))
-        #    spectra_to_fit = [(user_input['data_exp_no'][0], user_input['data_proc_no'], i, i) for i in np.arange(0,len(intensities),1)]
-        #else:
-        #    #spectra_to_fit = [int(i)-1 for i in user_input['data_row_no']]
         spectra_to_fit = [(j-1, i, user_input['data_exp_no'][0], user_input['data_proc_no'], j, j) for i,j in enumerate(user_input['data_row_no'])]
     elif user_input['analysis_type'] == '1D_Series':
             spectra_to_fit = [(i, i, j, user_input['data_proc_no'], 1, j) for i, j in enumerate(user_input['data_exp_no'])]
 
-    return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor
+    ######################################################
+    #Check to use the previpous fit as initial values for fitting##
+    ######################################################
+    if user_input['analysis_type'] == 'Pseudo2D':
+        use_previous_fit = True
+    elif user_input['analysis_type'] == '1D_Series':
+        if user_input['time_series'] is None or user_input['time_series'] == 0:
+            use_previous_fit = False
+        else:
+            use_previous_fit = True
+
+
+    return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit
 
 def run_analysis(user_input, gui=False):
     logger.info('Loading NMR Data')
 
-    spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor = prepare_data(user_input)
-
+    spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit = prepare_data(user_input)
     #-----------------------------------------------------#   
     ######################################################
     #######################Fitting########################
@@ -142,8 +144,8 @@ def run_analysis(user_input, gui=False):
         ref_spec            =   idx_ref,
         peak_picking_data   =   user_picked_data,
         scaling_factor      =   scaling_factor,
-        spectra_to_fit      =   spectra_to_fit
-        
+        spectra_to_fit      =   spectra_to_fit,
+        use_previous_fit    =   use_previous_fit   
     )
     #-----------------------------------------------------#   
     ######################################################

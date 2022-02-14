@@ -294,7 +294,7 @@ class App(customtkinter.CTk):
                                             textvariable=self.input_raws,
                                             corner_radius=8)
         input_entry.place(relx=0.1, rely=0.47, width=200, anchor=tkinter.W)
-        user_input['rows_pseudo2D'] = self.input_raws
+        user_input['data_row_no'] = self.input_raws
 
     def App_Run(self, user_input):
         user_input = nio.check_input_file({k: v.get() for k, v in user_input.items()},self)
@@ -337,7 +337,6 @@ class App(customtkinter.CTk):
 
     def start(self):
         self.mainloop()
-
 
 def save_info_clustering(dic, Res):
     Res.Peak_Intensity = dic['Peak Intensity']
@@ -510,8 +509,6 @@ def run_user_clustering(figures, colors_plot, peak_picking_threshold, peak_picki
 
     clustering_results = filter_multiple_clusters(clustering_results)
     return refreshed_threshold, clustering_results
-
-
 
 
 ##########
