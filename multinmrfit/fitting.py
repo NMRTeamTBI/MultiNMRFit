@@ -135,6 +135,8 @@ def full_fitting_procedure(
     id_ref_spec = [i for i in spectra_to_fit if i[0] == ref_spec ]
     id_all        = id_spec_part2+id_ref_spec+id_spec_part1
 
+    print(id_ref_spec)
+    exit()
     #Fitting of the reference 1D spectrum -- This function can be used for 1D spectrum alone
     logger.info(f'Fitting Reference Spectrum (ExpNo {ref_spec})')
     res_fit_reference_spectrum = run_single_fit_function(
