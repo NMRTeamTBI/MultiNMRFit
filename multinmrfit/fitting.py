@@ -26,7 +26,7 @@ def update_position(constraints, x_fit_):
     constraints[0] = (np.min(x_fit_), np.max(x_fit_))
     return constraints
 
-def Initial_Values(
+def get_fitting_parameters(
     peakpicking_data,
     x_fit_,
     scaling_factor
@@ -80,109 +80,104 @@ def fit_objective(
     rmsd = np.sqrt(np.mean((sim_intensity - y_fit_)**2))
     return rmsd
 
-def Fitting_Function(
-    x_fit_,
-    peakpicking_data,
-    y_fit_,
-    scaling_factor,
-    Initial_Val=None):
+def run_single_fit_function(up, 
+                            fit, 
+                            intensities, 
+                            fit_results, 
+                            x_spectrum_fit, 
+                            peak_picking_data, 
+                            scaling_factor,
+                            use_previous_fit=False,
+                            writing_to_file=True
+                            ):
 
-    if Initial_Val is not None:        
-        init_ = Initial_Val
+    # up is usef for the multithreading 
+    if use_previous_fit :
+        initial_fit_values = list(fit_results.iloc[fit[1]-1 if up else fit[1]+1].values)
     else:
-        init_= Initial_Values(peakpicking_data, x_fit_, scaling_factor)[1]
-    #bounds_fit_ = Initial_Values(peakpicking_data, x_fit_, d_clustering, d_mapping)[2]
-    d_id, _, bounds_fit_ = Initial_Values(peakpicking_data, x_fit_, scaling_factor)
-    res_fit = minimize(
-                fit_objective,
-                x0=init_,                
-                bounds=bounds_fit_,
-                method='L-BFGS-B',
-                #options={'ftol': 1e-6},#,'maxiter':0},
-                args=(x_fit_,peakpicking_data,y_fit_, d_id, scaling_factor),
-    )
-    return res_fit
+        initial_fit_values= get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor)[1]
+    d_id, _, bounds_fit = get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor)
 
-def run_single_fit_function(up, fit, intensities, fit_results, x_Spec, peak_picking_data, scaling_factor, analysis_type, spec_list,use_previous_fit=False):
-    Initial_Fit_Values = list(fit_results.iloc[fit[1]-1 if up else fit[1]+1].values) if use_previous_fit else None
 
     try:
+        res_fit = minimize(
+            fit_objective,
+            x0=initial_fit_values,                
+            bounds=bounds_fit,
+            method='L-BFGS-B',
+            #options={'ftol': 1e-6},#,'maxiter':0},
+            args=(x_spectrum_fit,peak_picking_data,intensities[fit[0],:], d_id, scaling_factor),
+            )
 
-        _1D_Fit_ = Fitting_Function(
-                    x_Spec,
-                    peak_picking_data,
-                    intensities[fit[0],:],
-                    scaling_factor,
-                    Initial_Fit_Values) 
-        fit_results.loc[fit[1],:] = _1D_Fit_.x.tolist()
+        if writing_to_file is False:
+            print('########################')
+            return res_fit
+        else:
+            fit_results.loc[fit[1],:] = res_fit.x.tolist()
     
     except:
         logger.error('Error: '+str(fit[1]))
 
-def Full_Fitting_Function(   
+
+def full_fitting_procedure(   
     intensities         =   'intensities',
-    x_Spec              =   'x_Spec',
+    x_spec              =   'x_Spec',
     ref_spec            =   'ref_spec',
     peak_picking_data   =   'peak_picking_data',
     scaling_factor      =    None,
-    analysis_type       =   'analysis_type',
     spectra_to_fit      =   'spectra_to_fit',
-    use_previous_fit = True
+    use_previous_fit    =    True
     ): 
-  
+    
+    # Handling spectra list for multi-threading
     id_spec_part2 = [i for i in spectra_to_fit if i[0] < ref_spec]
     id_spec_part1 = [i for i in spectra_to_fit if i[0] > ref_spec]
     id_ref_spec = [i for i in spectra_to_fit if i[0] == ref_spec ]
     id_all        = id_spec_part2+id_ref_spec+id_spec_part1
 
-    y_Spec_init_ = intensities if intensities.ndim == 1 else intensities[ref_spec,:]
-
     #Fitting of the reference 1D spectrum -- This function can be used for 1D spectrum alone
     logger.info(f'Fitting Reference Spectrum (ExpNo {ref_spec})')
-
-    Initial_Fit_ = Fitting_Function(x_Spec, peak_picking_data, y_Spec_init_, scaling_factor)
-
+    res_fit_reference_spectrum = run_single_fit_function(
+        None, # No need of up or down here
+        id_ref_spec[0],
+        intensities,
+        None, #Don't 
+        x_spec, 
+        peak_picking_data,  
+        scaling_factor,
+        writing_to_file=False
+        ) 
     logger.info(f'Fitting Reference Spectrum (ExpNo {ref_spec}) -- Complete')
 
-    Fit_results = pd.DataFrame(
+    #Creation of the data frame containing all the results from the fitting
+    fit_results_table = pd.DataFrame(
         index=[i[1] for i in spectra_to_fit],
-        columns=np.arange(0,len(Initial_Fit_.x.tolist()),1)
+        columns=np.arange(0,len(res_fit_reference_spectrum.x.tolist()),1)
             )
-
-    if intensities.ndim == 1:
-        Fit_results.loc[0,:] = Initial_Fit_.x.tolist()
+    # Filling the dataframe for the reference spectrum 
+    fit_results_table.loc[id_ref_spec[0][1],:] = res_fit_reference_spectrum.x.tolist()
 
     root, close_button, progress_bars = nfui.init_progress_bar_windows(
         len_progresses = [len(id_spec_part1), len(id_spec_part2)],
         title='Data Fitting',
         progress_bar_label=['Spectra part 1','Spectra part 2']
         ) 
-    
-    print("test")
-    print(f"spectra to fit: {spectra_to_fit}")
-    print(f"id_spec_part2: {id_spec_part2}")
-    print(f"id_spec_part1: {id_spec_part1}")
-    print(f"id_ref_spec: {id_ref_spec}")
-    print(f"id_all: {id_all}")
-    print(f"ref_spec: {ref_spec}")
-    if intensities.ndim != 1:
-        Fit_results.loc[id_ref_spec[0][1],:] = Initial_Fit_.x.tolist()
 
+    if intensities.ndim == 1:
+        pass
+    else:
         threads = []
-        print('####',ref_spec,spectra_to_fit[0][1])
+
         if len(id_spec_part1):
-            print('Hello')
-            
             # logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)}')
 
             threads.append(nfui.MyApp_Fitting(data={
                 "up"                  : True,
                 "spec_list"           : id_spec_part1,
                 "intensities"         : intensities,
-                "fit_results"         : Fit_results,
-                "x_Spec"              : x_Spec,
+                "fit_results"         : fit_results_table,
+                "x_spectrum_fit"      : x_spec,
                 "peak_picking_data"   : peak_picking_data,
-                "analysis_type"       : analysis_type,
                 "scaling_factor"      : scaling_factor,
                 "use_previous_fit"    : use_previous_fit
             },
@@ -191,20 +186,19 @@ def Full_Fitting_Function(
             progressbar=progress_bars[0]
             ))
             # logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)} -- Complete')
-        # elif:
-        #     logger.info(f'No fitting above the reference spectrum') 
+        # # elif:
+        # #     logger.info(f'No fitting above the reference spectrum') 
         if len(id_spec_part2):
             print('Hello -- 2')
 
-            # logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)}')
+        #     # logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)}')
             threads.append(nfui.MyApp_Fitting(data={
                 "up"                  : False,
                 "spec_list"           : id_spec_part2[::-1],
                 "intensities"         : intensities,
-                "fit_results"         : Fit_results,
-                "x_Spec"              : x_Spec,
+                "fit_results"         : fit_results_table,
+                "x_spectrum_fit"      : x_spec,
                 "peak_picking_data"   : peak_picking_data,
-                "analysis_type"       : analysis_type,
                 "scaling_factor"      : scaling_factor,
                 "use_previous_fit"    : use_previous_fit
             },
@@ -212,9 +206,9 @@ def Full_Fitting_Function(
             close_button=close_button,
             progressbar=progress_bars[1]
             ))
-            # logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)} -- Complete')
+        #     # logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)} -- Complete')
         
         root.mainloop()
-    return Fit_results
+    return fit_results_table
 
 

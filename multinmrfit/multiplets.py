@@ -95,7 +95,7 @@ def Peak_Initialisation(
                 Line_Width,
                 J1
                 ]
-    #print(Init_Val);exit()
+
     elif Peak_Type =='DoubletofDoublet':
 
         x0_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Position'])
@@ -138,5 +138,6 @@ def Peak_Initialisation(
                 ]
     else:
         raise ValueError("Peak type is not defined.")
+
     return Init_Val
 

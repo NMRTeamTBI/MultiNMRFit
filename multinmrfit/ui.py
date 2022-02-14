@@ -226,9 +226,6 @@ def run_user_clustering(figures, colors_plot, peak_picking_threshold, peak_picki
 ###################################
 # Final Plots
 ###################################
-
-
-
     
 ###################################
 # Error interface

@@ -131,18 +131,18 @@ def run_analysis(user_input, gui=False):
     logger.info('Loading NMR Data')
 
     spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor = prepare_data(user_input)
-
+    # print(user_input)
+    # exit()
     #-----------------------------------------------------#   
     ######################################################
     #######################Fitting########################
     ######################################################
-    fit_results = nff.Full_Fitting_Function(
+    fit_results = nff.full_fitting_procedure(
         intensities         =   intensities,
-        x_Spec              =   x_ppm_reference_spectrum,
+        x_spec              =   x_ppm_reference_spectrum,
         ref_spec            =   idx_ref,
         peak_picking_data   =   user_picked_data,
         scaling_factor      =   scaling_factor,
-        analysis_type       =   user_input['analysis_type'],
         spectra_to_fit      =   spectra_to_fit
         
     )
@@ -150,7 +150,7 @@ def run_analysis(user_input, gui=False):
     ######################################################
     #######################Output#########################
     ######################################################
-    
+    exit()
     nio.save_output_data(
         user_input          =   user_input,
         fit_results         =   fit_results,

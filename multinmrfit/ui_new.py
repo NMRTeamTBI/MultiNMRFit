@@ -552,6 +552,8 @@ def init_progress_bar_windows(len_progresses, title, progress_bar_label):
 
 def progress_bar_exit(root):
     root.destroy()
+
+
 class MyApp_Fitting(threading.Thread):
 
     def __init__(self, data, threads, close_button, progressbar):
@@ -565,11 +567,11 @@ class MyApp_Fitting(threading.Thread):
         self.start()
 
     def run(self):
-        print(self.data["spec_list"])
-        
-        for fit in self.data["spec_list"]:
+        spec_list = self.data.pop("spec_list")
+  
+        for fit in spec_list:
+            print(fit)
             self.progressbar["value"] += 1
-            # self.progress_label["value"] +=1
             nff.run_single_fit_function(fit=fit, **self.data)
         self.finished = True
         finished = True
