@@ -298,8 +298,9 @@ class App(customtkinter.CTk):
 
     def App_Run(self, user_input):
         user_input = nio.check_input_file({k: v.get() for k, v in user_input.items()},self)
+        self.destroy()
         nrun.run_analysis(user_input,self)
-        self.close()
+        
 
 
     def ask_filename(self,config_path, event=0):
