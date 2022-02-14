@@ -305,15 +305,7 @@ def output_txt_file(x_fit,fit_results, d_id, scaling_factor,data_exp_no,spectra_
             )
     logger.info('Save data to text file -- Complete')
 
-def save_output_data(
-    user_input         = 'user_input',
-    fit_results         = 'fit_results', 
-    intensities         = 'intensities',    
-    x_scale             = 'x_scale',
-    spectra_to_fit      =  'spectra_to_fit',
-    Peak_Picking_data   =  None,
-    scaling_factor      =  None
-        ):
+def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_fit, peak_picking_data, scaling_factor):
 
     output_path         =   user_input['output_path']
     output_folder       =   user_input['output_folder']
@@ -323,10 +315,9 @@ def save_output_data(
 
 
     x_fit = np.linspace(np.min(x_scale),np.max(x_scale),2048)
-    d_id = nff.Initial_Values(Peak_Picking_data, x_fit, scaling_factor)[0]
+    d_id = nff.get_fitting_parameters(peak_picking_data, x_fit, scaling_factor)[0]
 
     fit_results = fit_results.apply(pd.to_numeric)
-    print(fit_results)
     Path(output_path,output_folder).mkdir(parents=True,exist_ok=True)
 
     logger.info('Save data to text file ') 

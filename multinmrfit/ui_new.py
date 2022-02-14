@@ -11,7 +11,6 @@ import tkinter as tk
 from tkinter import simpledialog, ttk, filedialog
 from PIL import Image, ImageTk
 import logging
-import threading
 
 # Import math libraries
 import pandas as pd
@@ -554,28 +553,3 @@ def progress_bar_exit(root):
     root.destroy()
 
 
-class MyApp_Fitting(threading.Thread):
-
-    def __init__(self, data, threads, close_button, progressbar):
-        self.finished = False
-        self.threads = threads
-        self.data = data
-        self.close_button = close_button
-        # self.progress_label = progress_label
-        self.progressbar = progressbar
-        threading.Thread.__init__(self)
-        self.start()
-
-    def run(self):
-        spec_list = self.data.pop("spec_list")
-  
-        for fit in spec_list:
-            print(fit)
-            self.progressbar["value"] += 1
-            nff.run_single_fit_function(fit=fit, **self.data)
-        self.finished = True
-        finished = True
-        for thread in self.threads:
-            finished = thread.finished if thread.finished == False else finished
-        if finished:
-            self.close_button.invoke()

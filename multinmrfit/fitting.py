@@ -2,6 +2,7 @@
 import warnings
 import logging
 import random
+import threading
 
 warnings.filterwarnings('ignore')
 import tkinter as tk
@@ -118,7 +119,6 @@ def run_single_fit_function(up,
     except:
         logger.error('Error: '+str(fit[1]))
 
-
 def full_fitting_procedure(   
     intensities         =   'intensities',
     x_spec              =   'x_Spec',
@@ -133,12 +133,9 @@ def full_fitting_procedure(
     id_spec_part2 = [i for i in spectra_to_fit if i[0] < ref_spec]
     id_spec_part1 = [i for i in spectra_to_fit if i[0] > ref_spec]
     id_ref_spec = [i for i in spectra_to_fit if i[0] == ref_spec ]
-    id_all        = id_spec_part2+id_ref_spec+id_spec_part1
 
-    print(id_ref_spec)
-    exit()
     #Fitting of the reference 1D spectrum -- This function can be used for 1D spectrum alone
-    logger.info(f'Fitting Reference Spectrum (ExpNo {ref_spec})')
+    logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]})')
     res_fit_reference_spectrum = run_single_fit_function(
         None, # No need of up or down here
         id_ref_spec[0],
@@ -149,7 +146,7 @@ def full_fitting_procedure(
         scaling_factor,
         writing_to_file=False
         ) 
-    logger.info(f'Fitting Reference Spectrum (ExpNo {ref_spec}) -- Complete')
+    logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]}) -- Complete')
 
     #Creation of the data frame containing all the results from the fitting
     fit_results_table = pd.DataFrame(
@@ -171,9 +168,8 @@ def full_fitting_procedure(
         threads = []
 
         if len(id_spec_part1):
-            # logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)}')
-
-            threads.append(nfui.MyApp_Fitting(data={
+            logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {np.max(id_spec_part1[-1][5])}')
+            threads.append(MyApp_Fitting(data={
                 "up"                  : True,
                 "spec_list"           : id_spec_part1,
                 "intensities"         : intensities,
@@ -187,14 +183,13 @@ def full_fitting_procedure(
             close_button=close_button,
             progressbar=progress_bars[0]
             ))
-            # logger.info(f'Fitting from ExpNo {ref_spec} to {np.max(id_spec_part1)} -- Complete')
-        # # elif:
-        # #     logger.info(f'No fitting above the reference spectrum') 
-        if len(id_spec_part2):
-            print('Hello -- 2')
+            logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {id_spec_part1[-1][5]} -- Complete')
+        else:
+            logger.info(f'No fitting above the reference spectrum') 
 
-        #     # logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)}')
-            threads.append(nfui.MyApp_Fitting(data={
+        if len(id_spec_part2):
+            logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]}')
+            threads.append(MyApp_Fitting(data={
                 "up"                  : False,
                 "spec_list"           : id_spec_part2[::-1],
                 "intensities"         : intensities,
@@ -208,9 +203,34 @@ def full_fitting_procedure(
             close_button=close_button,
             progressbar=progress_bars[1]
             ))
-        #     # logger.info(f'Fitting from ExpNo {np.min(id_spec_part2)} to {np.max(id_spec_part2)} -- Complete')
-        
+            logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]} -- Complete')
+        else:
+            logger.info(f'No fitting below the reference spectrum') 
+
         root.mainloop()
+    
     return fit_results_table
 
+class MyApp_Fitting(threading.Thread):
 
+    def __init__(self, data, threads, close_button, progressbar):
+        self.finished = False
+        self.threads = threads
+        self.data = data
+        self.close_button = close_button
+        # self.progress_label = progress_label
+        self.progressbar = progressbar
+        threading.Thread.__init__(self)
+        self.start()
+
+    def run(self):
+        spec_list = self.data.pop("spec_list")
+        for fit in spec_list:
+            self.progressbar["value"] += 1
+            run_single_fit_function(fit=fit, **self.data)
+        self.finished = True
+        finished = True
+        for thread in self.threads:
+            finished = thread.finished if thread.finished == False else finished
+        if finished:
+            self.close_button.invoke()
