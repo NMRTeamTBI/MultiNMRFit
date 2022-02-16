@@ -339,28 +339,6 @@ class App(customtkinter.CTk):
     def start(self):
         self.mainloop()
 
-def save_info_clustering(dic, Res):
-    Res.Peak_Intensity = dic['Peak Intensity']
-    Res.Peak_Position = dic['Peak Position']
-    Res.Options = [i.get() for i in dic["Options"]]
-    Res.Cluster = [i.get() for i in dic["Cluster ID"]]
-    Res.Selection = [True if i.get() != '' else False for i in dic["Cluster ID"]]
-    tk_wdw.destroy()
-    plt.close()
-
-def refresh_ui(refreshed_threshold, threshold_entry):
-    refreshed_threshold["th"] = threshold_entry.get()
-    tk_wdw.destroy()
-    plt.close()
-
-def Exit():
-    if tk.messagebox.askokcancel("quit",'Do you want to quit?'):
-        tk_wdw.destroy()
-        plt.close()
-        exit()
-
-# class App_Clustering()
-
 class App_Clustering(customtkinter.CTk):
 
     APP_NAME = "Peak Picking Visualisation and Clustering"
@@ -561,6 +539,9 @@ class App_Clustering(customtkinter.CTk):
         clustering_table.Options = [i.get() for i in clustering_information["Options"]]
         clustering_table.Cluster = [i.get() for i in clustering_information["Cluster ID"]]
         clustering_table.Selection = [True if i.get() != '' else False for i in clustering_information["Cluster ID"]]
+        
+        clustering_table = filter_multiple_clusters(clustering_table)
+
         self.destroy()
 
                 # Cleaning ~~~~~~~~~~~~~~~~~~~~~~~~~~
