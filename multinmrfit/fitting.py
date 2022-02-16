@@ -42,7 +42,9 @@ def get_fitting_parameters(
         id_cluster = str(len(_cluster_)) + "".join(i for i in set(_cluster_.Options.values.tolist()))
         _multiplet_type_ = d_clustering[id_cluster]
         _multiplet_type_function = d_mapping[_multiplet_type_]["f_function"]
-
+        print(d_clustering)
+        print(id_cluster)
+        print(_multiplet_type_)
         Init_Val = nfm.Peak_Initialisation(_multiplet_type_,Peak_Picking_Results=_cluster_,scaling_factor=scaling_factor)
         #Init_Cons = Constraints_Initialisation(_multiplet_type_)
         d_id[n] = (_multiplet_type_function, [len(ini_params),len(ini_params)+len(Init_Val)])

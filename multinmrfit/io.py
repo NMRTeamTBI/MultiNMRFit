@@ -256,7 +256,8 @@ def build_output(d_id_i, x_fit, fit_results, scaling_factor,data_exp_no,spectra_
     d_mapping, _, d_parameters = nfm.mapping_multiplets()
     col = range(d_id_i[1][0],d_id_i[1][1])
     _multiplet_type_ = d_parameters[len(col)]
-
+    print(d_parameters)
+    print(_multiplet_type_)
     mutliplet_results = fit_results[fit_results.columns.intersection(col)]
     mutliplet_results.columns = d_mapping[_multiplet_type_]['params']
 

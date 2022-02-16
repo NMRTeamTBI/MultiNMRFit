@@ -1,6 +1,5 @@
 import tkinter
 import tkinter.messagebox
-import customtkinter
 import pkg_resources
 import random
 
@@ -29,279 +28,315 @@ import multinmrfit.utils_nmrdata as nfu
 logger = logging.getLogger(__name__)
 # logger = logging.getLogger()
 
-customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
-customtkinter.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
-
  
+# class App_Error(customtkinter.CTk):
+#     APP_NAME = "Error"
+#     WIDTH = 500
+#     HEIGHT = 100
+#     def __init__(root, message, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         root.title(App_Error.APP_NAME)
+#         root.geometry(str(App_Error.WIDTH) + "x" + str(App_Error.HEIGHT))
+#         root.minsize(App_Error.WIDTH, App_Error.HEIGHT)
+#         root.protocol("WM_DELETE_WINDOW", root.on_closing)
+#         root.toplevel = None
+#         root.label = customtkinter.CTkLabel(
+#                             root, 
+#                             text=message, 
+#                             width= App_Error.WIDTH,
+#                             height=App_Error.HEIGHT,
+#                             )
+#         root.label.pack()
+#     def on_closing(root, event=0):
+#             root.destroy()
+#     def start(root):
+#             root.mainloop()
 
-class App_Error(customtkinter.CTk):
-    APP_NAME = "Error"
-    WIDTH = 500
-    HEIGHT = 100
-    def __init__(root, message, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        root.title(App_Error.APP_NAME)
-        root.geometry(str(App_Error.WIDTH) + "x" + str(App_Error.HEIGHT))
-        root.minsize(App_Error.WIDTH, App_Error.HEIGHT)
-        root.protocol("WM_DELETE_WINDOW", root.on_closing)
-        root.toplevel = None
-        root.label = customtkinter.CTkLabel(
-                            root, 
-                            text=message, 
-                            width= App_Error.WIDTH,
-                            height=App_Error.HEIGHT,
-                            )
-        root.label.pack()
-    def on_closing(root, event=0):
-            root.destroy()
-    def start(root):
-            root.mainloop()
-
-class App(customtkinter.CTk):
-
-    APP_NAME = "Multinmrfit Interface (v2.0)"
-    WIDTH = 1200
-    HEIGHT = 600
-    
-    MAIN_COLOR = "#5EA880"
-    ENTRY_COLOR = "#3c78d8"
-    OPTION_COLOR = "#001933"
-    BUTTON_COLOR = "#1c4587"
-    MAIN_HOVER = "#458577"
+class App:
 
     def __init__(self, user_input, *args, **kwargs):
+        APP_NAME = "Multinmrfit Interface (v2.0)"
+        WIDTH = 1200
+        HEIGHT = 600
+        
+        MAIN_COLOR = "#5EA880"
+        OPTION_COLOR = "#001933"
+        BUTTON_COLOR = "#1c4587"
+
+        ENTRY_COLOR = "#3a8eba"
+        MAIN_HOVER = "#3a8eba"
+        FRAME_COLOR = '#708090'
+
         super().__init__(*args, **kwargs)
-
-        self.title(App.APP_NAME)
-        self.geometry(str(App.WIDTH) + "x" + str(App.HEIGHT))
-        self.minsize(App.WIDTH, App.HEIGHT)
-
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        master = tk.Tk()
+        self.master = master
+        master.title(APP_NAME)
+        master.geometry(str(WIDTH) + "x" + str(HEIGHT))
+        master.minsize(WIDTH, HEIGHT)
+        master.configure(bg='#2F4F4F')
+        master.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # self.configure("TCombobox", fieldbackground= "orange", background= "white")
         self.toplevel = None
         if sys.platform == "darwin":
-            self.bind("<Command-q>", self.on_closing)
-            self.bind("<Command-w>", self.on_closing)
-            self.createcommand('tk::mac::Quit', self.on_closing)
+            master.bind("<Command-q>", self.on_closing)
+            master.bind("<Command-w>", self.on_closing)
         
-
         # ============ create CTkFrames ============
-        self.frame_inputs = customtkinter.CTkFrame(master=self,
-                                                 width=250,
-                                                 height=App.HEIGHT-250,
-                                                 corner_radius=10)
+        self.frame_inputs = tk.Frame(master,
+                                    width=250,
+                                    height=HEIGHT-250,
+                                    bg=FRAME_COLOR
+                                    )
         self.frame_inputs.place(relx=0.02, rely=0.1, anchor=tkinter.NW)
 
-        self.frame_analysis = customtkinter.CTkFrame(master=self,
-                                                  width=250,
-                                                  height=App.HEIGHT-250,
-                                                  corner_radius=10)
+        self.frame_analysis = tk.Frame(master,
+                                    width=250,
+                                    height=HEIGHT-250,
+                                    bg=FRAME_COLOR
+                                    )
         self.frame_analysis.place(relx=0.25, rely=0.1, anchor=tkinter.NW)
 
-        self.frame_output = customtkinter.CTkFrame(master=self,
-                                                  width=250,
-                                                  height=App.HEIGHT-250,
-                                                  corner_radius=10)
+        self.frame_output = tk.Frame(master,
+                                    width=250,
+                                    height=HEIGHT-250,
+                                    bg=FRAME_COLOR
+                                    )
         self.frame_output.place(relx=0.48, rely=0.1, anchor=tkinter.NW)
 
-        self.frame_options_Pseudo2D = customtkinter.CTkFrame(master=self,
-                                                  width=250,
-                                                  height=150,
-                                                  corner_radius=10,
-                                                  fg_color=("white", "gray18"))
+        self.frame_options_Pseudo2D = tk.Frame(master,
+                                                width=250,
+                                                height=150,
+                                                bg=FRAME_COLOR
+                                                # fg_color=("white", "gray18")
+                                                )
         self.frame_options_Pseudo2D.place(relx=0.71, rely=0.1, anchor=tkinter.NW)
 
-        self.frame_options_1DSeries = customtkinter.CTkFrame(master=self,
-                                                  width=250,
-                                                  height=150,
-                                                  corner_radius=10,
-                                                  fg_color=("white", "gray18"))
+        self.frame_options_1DSeries = tk.Frame(master,
+                                                width=250,
+                                                height=150,
+                                                bg=FRAME_COLOR
+                                                # fg_color=("white", "gray18")
+                                                )
         self.frame_options_1DSeries.place(relx=0.71, rely=0.4, anchor=tkinter.NW)
 
          # ============ create CTkFrames ============
         # Set bottom picture
-        path_image = Path('../../../git/MultiNMRFit/multinmrfit/data')
+        path_image = pkg_resources.resource_filename('multinmrfit', 'data/')
         img_network = Image.open(str(Path(path_image, 'network.png')))
         self.img_network = ImageTk.PhotoImage(img_network.resize((800, 200)),Image.ANTIALIAS) 
-        self.img_network_label = tkinter.Label(master=self, image = self.img_network)
+        self.img_network_label = tkinter.Label(master, image = self.img_network)
         self.img_network_label.place(relx = 0.02, rely = 0.7)
-
 
         # ============ create Labels and entries ============
         title = ['Inputs','Analysis','Outputs']
         for i in range(len(title)):
-            customtkinter.CTkLabel(
-                self,
+            tk.Label(
+                master,
                 text=title[i].replace("_", " ").capitalize() ,
-                corner_radius=8,
-                width=150,
+                font=("Helvetica", 18, 'normal'),
+                bg=MAIN_HOVER,
+                fg='white',
+                width=10,
                 borderwidth=0,
-                fg_color=App.MAIN_COLOR
-                #justify=tk.CENTER
+                justify=tk.CENTER
             ).place(relx=0.02+i*0.23, rely=0.1, anchor=tkinter.W)
 
 
         inputs=['data_path','data_folder','data_exp_no','data_proc_no']
         for i in range(len(inputs)):
-            customtkinter.CTkLabel(
-                                self.frame_inputs,
-                                width=150,
-                                text=inputs[i].replace("_", " ").capitalize()  ,
-                                corner_radius=8,
-                                borderwidth=0,
-                                fg_color=App.ENTRY_COLOR
-                #justify=tk.CENTER
-            ).place(relx=0.2, rely=0.1+i*0.2, anchor=tkinter.W)
+            tk.Label(
+                self.frame_inputs,
+                width=10,
+                text=inputs[i].replace("_", " ").capitalize(),
+                font=("Helvetica", 14, 'normal'),
+                borderwidth=0,
+                fg='white',
+                bg=FRAME_COLOR,
+                justify=tk.CENTER
+            ).place(relx=0.5, rely=0.1+i*0.2, anchor="center")
 
             self.input_var = tk.StringVar() 
-            self.input_entry = customtkinter.CTkEntry(
-                                                self.frame_inputs,
-                                                textvariable=self.input_var,
-                                                corner_radius=8)
+            self.input_entry = tk.Entry(
+                                    self.frame_inputs,
+                                    textvariable=self.input_var,
+                                    bg='white',
+                                    fg='black',
+                                    borderwidth=0,
+                                    )
             self.input_entry.place(relx=0.1, rely=0.2+i*0.2, width=200, anchor=tkinter.W)
             user_input[inputs[i]]  = self.input_var
 
 
-            # user_input[inputs[i]] = self.create_entry(self.frame_inputs,inputs[i], 0.25, 0.1+i*0.2,"#5743bb")
-
         analysis_info = ['analysis_type','reference_spectrum','spectral_limits','threshold']
+
+        style= ttk.Style()
+        style.theme_use('clam')
+        # style.configure("TCombobox", fieldbackground= "blue", background= "white")
+
         for i in range(len(analysis_info)):
-            customtkinter.CTkLabel(
+            tk.Label(
                 self.frame_analysis,
                 text=analysis_info[i].replace("_", " ").capitalize(),
-                corner_radius=8,
-                width=150,
+                font=("Helvetica", 14, 'normal'),
+                width=20,
                 borderwidth=0,
-                fg_color=App.ENTRY_COLOR
+                fg='white',
+                bg=FRAME_COLOR,
                 #justify=tk.CENTER
-            ).place(relx=0.2, rely=0.1+i*0.2, anchor=tkinter.W)
+            ).place(relx=0.5, rely=0.1+i*0.2, anchor="center")
 
             if analysis_info[i] == 'analysis_type':
                 self.analysis_info_var = tk.StringVar()
                 ttk.Combobox(
-                    self.frame_analysis,
-                    textvariable=self.analysis_info_var, 
-                    values=['1D','Pseudo2D','1D_Series'], 
-                    state="readonly"
+                            self.frame_analysis,
+                            textvariable=self.analysis_info_var, 
+                            values=['1D','Pseudo2D','1D_Series'], 
+                            state="readonly",
+                            # bg='white',
+                            # fg='black',
                 ).place(relx=0.1, rely=0.2+i*0.2, width=200, anchor=tkinter.W)
                 user_input[analysis_info[i]]  = self.analysis_info_var
 
             else:
                 self.analysis_info_var = tk.StringVar()
-                analysis_info_entry = customtkinter.CTkEntry(
-                                                    self.frame_analysis,
-                                                    textvariable=self.analysis_info_var,
-                                                    corner_radius=8)
+                analysis_info_entry = tk.Entry(
+                                        self.frame_analysis,
+                                        textvariable=self.analysis_info_var,   
+                                        bg='white',
+                                        fg='black',
+                                        borderwidth=0,
+                                        )
                 analysis_info_entry.place(relx=0.1, rely=0.2+i*0.2, width=200, anchor=tkinter.W)
                 user_input[analysis_info[i]]  = self.analysis_info_var
 
 
         outputs = ['output_path','output_folder','output_name']
         for i in range(len(outputs)):
-            customtkinter.CTkLabel(
+            tk.Label(
                 self.frame_output,
                 text=outputs[i].replace("_", " ").capitalize() if not 'Options' in outputs[i] else outputs[i].replace("_", " ") ,
-                corner_radius=8,
+                font=("Helvetica", 14, 'normal'),
+                width=20,
                 borderwidth=0,
-                width=150,                
-                fg_color=App.ENTRY_COLOR
+                fg='white',
+                bg=FRAME_COLOR,
                 #justify=tk.CENTER
-            ).place(relx=0.2, rely=0.1+i*0.2, anchor=tkinter.W)
+            ).place(relx=0.5, rely=0.1+i*0.2, anchor="center")
 
             self.outputs_var = tk.StringVar()
-            outputs_entry = customtkinter.CTkEntry(
-                                                self.frame_output,
-                                                textvariable=self.outputs_var,
-                                                corner_radius=8)
+            outputs_entry = tk.Entry(
+                                self.frame_output,
+                                textvariable=self.outputs_var,
+                                bg='white',
+                                fg='black',
+                                borderwidth=0
+                                )
             outputs_entry.place(relx=0.1, rely=0.2+i*0.2, width=200, anchor=tkinter.W)
             user_input[outputs[i]]  = self.outputs_var
 
 
         # ============ create Buttons ============
-        self.load_button = customtkinter.CTkButton(master=self,
+        self.load_button = tk.Button(master,
                                             text=" Load ",
-                                            corner_radius=10,
-                                            fg_color=App.BUTTON_COLOR,
-                                            command=lambda:nio.load_config_file(self,user_input))
-        self.load_button.place(relx=0.74, rely=0.70,width=80,height=50)
+                                            highlightbackground =FRAME_COLOR,
+                                            fg='black',
+                                            borderwidth=0,
+                                            font=("Helvetica", 20, 'normal'),
+                                            command=lambda:nio.load_config_file(self.master,user_input))
+        self.load_button.place(relx=0.74, rely=0.70,width=80,height=30)
 
-        self.save_button = customtkinter.CTkButton(master=self,
+        self.save_button = tk.Button(master,
                                             text=" Save ",
-                                            corner_radius=10,
-                                            fg_color=App.BUTTON_COLOR,
+                                            highlightbackground =FRAME_COLOR,
+                                            fg='black',
+                                            borderwidth=0,
+                                            font=("Helvetica", 20, 'normal'),
                                             command=lambda:self.save_config_file({k: v.get() for k, v in user_input.items()}))
-        self.save_button.place(relx=0.81, rely=0.70,width=80,height=50)
+        self.save_button.place(relx=0.81, rely=0.70,width=80,height=30)
 
-        self.run_button = customtkinter.CTkButton(master=self,
+        self.run_button = tk.Button(master,
                                             text=" Run ",
-                                            corner_radius=10,
-                                            fg_color=App.BUTTON_COLOR,
+                                            highlightbackground =FRAME_COLOR,
+                                            fg='black',
+                                            borderwidth=0,
+                                            font=("Helvetica", 20, 'normal'),
                                             command=lambda:self.App_Run(user_input))
-        self.run_button.place(relx=0.74, rely=0.80,width=80,height=50)
+        self.run_button.place(relx=0.74, rely=0.80,width=80,height=30)
 
-        self.close_button = customtkinter.CTkButton(master=self,
+        self.close_button = tk.Button(master,
                                             text=" Close ",
-                                            corner_radius=10,
-                                            fg_color=App.BUTTON_COLOR,
+                                            highlightbackground =FRAME_COLOR,
+                                            fg='black',
+                                            borderwidth=0,
+                                            font=("Helvetica", 20, 'normal'),
                                             command=lambda:self.on_closing())
-        self.close_button.place(relx=0.81, rely=0.80,width=80,height=50)
+        self.close_button.place(relx=0.81, rely=0.80,width=80,height=30)
 
         # # ============ Options ============
-        option_list = []
-        customtkinter.CTkLabel(
-            self,
-            text='Options: Pseudo2D',
-            corner_radius=8,
-            width=200,
-            borderwidth=0,
-            fg_color=App.OPTION_COLOR
-            #justify=tk.CENTER
+        # option_list = []
+        tk.Label(
+                master,
+                text='Options: Pseudo2D',
+                width=20,
+                font=("Helvetica", 18, 'normal'),
+                bg=MAIN_HOVER,
+                fg='white',
+                borderwidth=0,
+                justify=tk.CENTER
         ).place(relx=0.02+3*0.23, rely=0.1, anchor=tkinter.W)
 
-        customtkinter.CTkLabel(
-            self,
-            text='Options: 1DSeries',
-            corner_radius=8,
-            width=200,
-            borderwidth=0,
-            fg_color=App.OPTION_COLOR
-            #justify=tk.CENTER
+        tk.Label(
+                master,
+                text='Options: 1DSeries',
+                width=20,
+                font=("Helvetica", 18, 'normal'),
+                bg=MAIN_HOVER,
+                fg='white',
+                borderwidth=0,
+                justify=tk.CENTER
         ).place(relx=0.02+3*0.23, rely=0.4, anchor=tkinter.W)
 
 
         self.TimeSeries = tk.IntVar()
-        self.check_box_1 = customtkinter.CTkCheckBox(
-                                            self.frame_options_1DSeries,
-                                            text="Time Series",
-                                            variable=self.TimeSeries
-                                            )
+        self.check_box_1 = tk.Checkbutton(
+                                self.frame_options_1DSeries,
+                                text="Time Series",
+                                font=("Helvetica", 14, 'normal'),
+                                variable=self.TimeSeries,
+                                highlightthickness=0,
+                                bd=0,
+                                bg=FRAME_COLOR
+                                )
         self.check_box_1.place(relx=0.25, rely=0.2, anchor=tkinter.W)
         user_input['time_series'] = self.TimeSeries
 
-        customtkinter.CTkLabel(
+        tk.Label(
             self.frame_options_Pseudo2D,
             text='raw ids',
-            corner_radius=8,
-            width=200,
-            borderwidth=0,
-            fg_color=App.OPTION_COLOR
-            #justify=tk.CENTER
-        ).place(relx=0.1, rely=0.25, anchor=tkinter.W)
-        
+                width=20,
+                font=("Helvetica", 14, 'normal'),
+                borderwidth=0,
+                fg='white',
+                bg=FRAME_COLOR,
+                justify=tk.CENTER
+             ).place(relx=0.5, rely=0.25, anchor="center")
+       
         self.input_raws = tk.StringVar()
-        input_entry = customtkinter.CTkEntry(
-                                            self.frame_options_Pseudo2D,
-                                            textvariable=self.input_raws,
-                                            corner_radius=8)
+        input_entry = tk.Entry(
+                            self.frame_options_Pseudo2D,
+                            textvariable=self.input_raws,
+                            bg='white',
+                            fg='black',
+                            borderwidth=0
+                            )
         input_entry.place(relx=0.1, rely=0.47, width=200, anchor=tkinter.W)
         user_input['data_row_no'] = self.input_raws
 
     def App_Run(self, user_input):
-        user_input = nio.check_input_file({k: v.get() for k, v in user_input.items()},self)
+        user_input = nio.check_input_file({k: v.get() for k, v in user_input.items()},self.master)
         nrun.run_analysis(user_input,self)
-        self.destroy()        
-
+        #self.destroy()        
 
     def ask_filename(self,config_path, event=0):
         wdw = tk.Tk()
@@ -331,15 +366,13 @@ class App(customtkinter.CTk):
             f.write(json.dumps(user_input, indent=4))
             f.close()  
 
-    
-
     def on_closing(self, event=0):
-        self.destroy()
+        self.master.destroy()
 
     def start(self):
-        self.mainloop()
+        self.master.mainloop()
 
-class App_Clustering(customtkinter.CTk):
+class App_Clustering():
 
     APP_NAME = "Peak Picking Visualisation and Clustering"
     WIDTH = 1200
@@ -383,7 +416,7 @@ class App_Clustering(customtkinter.CTk):
         self.threshold.place(relx=0.02, rely=0.82, anchor=tkinter.NW)
 
         self.frame_peak_Table = customtkinter.CTkFrame(master=self,
-                                                 width=600,
+                                                 width=620,
                                                  height=App.HEIGHT-150,
                                                  corner_radius=10)
         self.frame_peak_Table.place(relx=0.47, rely=0.03, anchor=tkinter.NW)
@@ -392,7 +425,6 @@ class App_Clustering(customtkinter.CTk):
         peak_picking_data = self.peak_picking(x_spec, y_spec, peak_picking_threshold)
         self.create_plot(x_spec, y_spec, peak_picking_threshold,peak_picking_data)
         clustering_information = self.create_table(peak_picking_data) 
-        
 
         # ============ Labels ============
         customtkinter.CTkLabel(
@@ -462,6 +494,12 @@ class App_Clustering(customtkinter.CTk):
         }
 
         options = ['Roof'] # options
+        # self.frame_peak_Table.grid_forget()
+        # self.frame_peak_Table = customtkinter.CTkFrame(master=self,
+        #                                         width=620,
+        #                                         #height=App.HEIGHT-150,
+        #                                         corner_radius=10)
+        # self.frame_peak_Table.place(relx=0.47, rely=0.03, anchor=tkinter.NW)
 
         customtkinter.CTkLabel(
             self.frame_peak_Table,
@@ -473,7 +511,9 @@ class App_Clustering(customtkinter.CTk):
             #justify=tk.CENTER
         ).grid(column=0, row=0)
         # ).place(relx=0.02, rely=0.04, anchor=tkinter.W)
+        print(self.frame_peak_Table.winfo_children())
 
+        
         if not n_peak:
             customtkinter.CTkLabel(
                 self.refresh_th, 
@@ -531,6 +571,8 @@ class App_Clustering(customtkinter.CTk):
                         cc = 1
                     self.entry_c.insert(0, round(data,3))
                     self.entry_c.grid(column=cc+1,row=i+3)
+        
+
         return clustering_information
 
     def save_info_clustering(self, clustering_information, clustering_table):
@@ -539,10 +581,8 @@ class App_Clustering(customtkinter.CTk):
         clustering_table.Options = [i.get() for i in clustering_information["Options"]]
         clustering_table.Cluster = [i.get() for i in clustering_information["Cluster ID"]]
         clustering_table.Selection = [True if i.get() != '' else False for i in clustering_information["Cluster ID"]]
-        
-        clustering_table = filter_multiple_clusters(clustering_table)
-
         self.destroy()
+        
 
                 # Cleaning ~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # # if int(peak_label.grid_info()["row"]) > n_peak+2:
@@ -594,15 +634,23 @@ class App_Clustering(customtkinter.CTk):
         self.graph_canvas = self.graph.get_tk_widget()
         self.graph_canvas.place(relx=0.0,rely=0.0,width=500,height=App.HEIGHT-150)
 
-        print(colors)
+        return colors
 
     def refresh_ui(self, x_spec, y_spec, threshold):
         peak_picking = self.peak_picking(x_spec, y_spec, float(threshold))
         self.create_plot(x_spec, y_spec, threshold, peak_picking)
+        self.clear_frame()
         self.create_table(peak_picking)
+
+    def clear_frame(self):
+        for widgets in self.frame_peak_Table.winfo_children():
+            print(widgets)
+            widgets.destroy()
+        
 
     def on_closing(self, event=0):
         self.destroy()
+        exit()
 
     def start(self):
         self.mainloop()
@@ -719,46 +767,6 @@ def filter_multiple_clusters(Res):
                 Res = Res.append(new_pk, ignore_index = True)
             Res = Res.drop(Res.index[i])
     return Res
-
-def plot_picking_data(x_spec, y_spec, peak_picking_threshold, peak_picking_data):
-    n_peak = len(peak_picking_data)
-
-    # Create a list of colors
-    colors = []
-    for i in range(n_peak):
-        colors.append('#%06X' % random.randint(0, 0xFFFFFF))
-
-    figure1 = plt.Figure(figsize=(6,5), dpi=100)
-    ax1 = figure1.add_subplot(111)
-    ax1.plot(x_spec, y_spec, '-',color='teal')
-    for i in range(n_peak):
-        ax1.plot(
-            peak_picking_data.Peak_Position.iloc[i],
-            peak_picking_data.Peak_Intensity.iloc[i],
-            c=colors[i],
-            ls='none',
-            marker='o'
-            )
-    ax1.axhline(peak_picking_threshold,c='r')
-    ax1.invert_xaxis()
-    ax1.set_xlabel(r'$^1H$ $(ppm)$')
-    return figure1, colors 
-
-def run_user_clustering(figures, colors_plot, peak_picking_threshold, peak_picking_data):
-
-    clustering_results = pd.DataFrame(columns=['Peak_Position','Peak_Intensity','Selection','Cluster','Options'])
-
-    refreshed_threshold = user_clustering_gui(
-        peak_picking_threshold,
-        peak_picking_data, 
-        figures,
-        colors_plot,
-        clustering_results
-    )
-
-    clustering_results = filter_multiple_clusters(clustering_results)
-    return refreshed_threshold, clustering_results
-
 
 ##########
 def init_progress_bar_windows(len_progresses, title, progress_bar_label):
