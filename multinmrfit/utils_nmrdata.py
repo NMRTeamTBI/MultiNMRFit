@@ -78,13 +78,13 @@ def Peak_Picking_1D(
     y_data          =   'y_data', 
     threshold       =   'threshold',
     ):
-    
     try: 
         peak_table = ng.peakpick.pick(
             y_data, 
             pthres=threshold, 
             algorithm='downward',
             )
+
         # Find peak locations in ppm
         peak_locations_ppm = []
         for i in range(len(peak_table['X_AXIS'])):
@@ -100,7 +100,7 @@ def Peak_Picking_1D(
         results = results.sort_values(by='Peak_Position', ascending=True)
     except:
         results = pd.DataFrame(columns=['Peak_Position','Peak_Intensity'],index=[])
-
+    
     return results
 
 def sort_peak_picking_data(peak_picking_data, n_peak_max):

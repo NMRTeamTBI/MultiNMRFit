@@ -83,26 +83,35 @@ def prepare_data(user_input):
     ####################Peak Picking######################
     ######################################################
     threshold = user_input['threshold']
-    while threshold:
-        peak_picking = nfu.Peak_Picking_1D(
-            x_data          =   x_ppm_reference_spectrum, 
-            y_data          =   intensities_reference_spectrum, 
-            threshold       =   threshold,
+        # peak_picking = nfu.Peak_Picking_1D(
+        #     x_data          =   x_ppm_reference_spectrum, 
+        #     y_data          =   intensities_reference_spectrum, 
+        #     threshold       =   threshold,
+        # )
+        # peak_picking_data = nfu.sort_peak_picking_data(peak_picking, 10)        
+        # fig_peak_picking_region, color_list = nui.plot_picking_data(
+        #     x_ppm_reference_spectrum, 
+        #     intensities_reference_spectrum, 
+        #     threshold, 
+        #     peak_picking_data
+        #     )
+
+    clustering_results = pd.DataFrame(columns=['Peak_Position','Peak_Intensity','Selection','Cluster','Options'])
+    app_clustering = nui.App_Clustering(
+        x_spec = x_ppm_reference_spectrum,
+        y_spec = intensities_reference_spectrum,
+        #peak_picking_data = peak_picking_data,
+        peak_picking_threshold = threshold,
+        clustering_table = clustering_results
         )
-        peak_picking_data = nfu.sort_peak_picking_data(peak_picking, 10)        
-        fig_peak_picking_region, color_list = nui.plot_picking_data(
-            x_ppm_reference_spectrum, 
-            intensities_reference_spectrum, 
-            threshold, 
-            peak_picking_data
-            )
-        threshold, user_picked_data = nui.run_user_clustering(
-            fig_peak_picking_region,
-            color_list,
-            threshold,
-            peak_picking_data
-        )
-    user_picked_data = user_picked_data[user_picked_data["Selection"].values]
+    app_clustering.start()
+        # threshold, user_picked_data = nui.run_user_clustering(
+        #     fig_peak_picking_region,
+        #     color_list,
+        #     threshold,
+        #     peak_picking_data
+        # )
+    user_picked_data = clustering_results[clustering_results["Selection"].values]
     scaling_factor = user_picked_data.Peak_Intensity.mean()
 
     ######################################################

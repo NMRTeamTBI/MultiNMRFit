@@ -1,0 +1,22 @@
+2022-02-14 16:15:22 - root - INFO - {
+    "data_path": "/Users/cyrilcharlier/Documents/Research/nmrData",
+    "data_folder": "8Carbios_ICCGwt_FLC060921",
+    "data_exp_no": [
+        2
+    ],
+    "data_proc_no": "2",
+    "reference_spectrum": "5",
+    "analysis_type": "Pseudo2D",
+    "spectral_limits": [
+        3.69,
+        3.67
+    ],
+    "threshold": 20000.0,
+    "output_path": "/Users/cyrilcharlier/Documents/Research/Data_Analysis/",
+    "output_folder": "ICCG_Active_EG",
+    "output_name": "First_Test"
+}
+2022-02-14 16:15:22 - multinmrfit.run - INFO - Loading NMR Data
+2022-02-14 16:15:23 - multinmrfit.run - INFO - Loading -- Complete
+2022-02-14 16:15:23 - multinmrfit.run - INFO - Extraction of NMR Data
+2022-02-14 16:15:23 - multinmrfit.run - INFO - Extraction -- Complete
