@@ -6,7 +6,7 @@ from tkinter import simpledialog, ttk, filedialog
 import pandas as pd
 import numpy as np
 import json
-
+import os
 # Import plot libraries
 import matplotlib
 import matplotlib.pyplot as plt
@@ -17,6 +17,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 import multinmrfit.fitting as nff
 import multinmrfit.multiplets as nfm
 import multinmrfit.ui_new as nui
+
+import natsort 
+from PyPDF2 import PdfFileMerger
 
 logger = logging.getLogger()
 
@@ -205,7 +208,7 @@ def getIntegral(x_fit, _multiplet_type_, fit_par):
     integral = np.sum(y)*(x_fit[1]-x_fit[0])
     return integral
     
-def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, analysis_type, output_path, output_folder, output_name):    
+def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, output_path, output_folder, output_name):    
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches([11.7,8.3])
     ax.plot(
@@ -252,7 +255,7 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     plt.savefig(str(Path(path_2_save,output_name+'_'+str(res_num)+'.pdf')))
     plt.close(fig)
 
-def build_output(d_id_i, x_fit, fit_results, scaling_factor,data_exp_no,spectra_to_fit,analysis_type):
+def build_output(d_id_i, x_fit, fit_results, scaling_factor,spectra_to_fit):
     d_mapping, _, d_parameters = nfm.mapping_multiplets()
     col = range(d_id_i[1][0],d_id_i[1][1])
     _multiplet_type_ = d_parameters[len(col)]
@@ -265,54 +268,61 @@ def build_output(d_id_i, x_fit, fit_results, scaling_factor,data_exp_no,spectra_
     mutliplet_results["Amp"] *= scaling_factor
 
     mutliplet_results.insert(loc = 0, column = 'exp_no' , value = [i[2] for i in spectra_to_fit])
-    mutliplet_results.insert(loc = 1, column = 'proc_no' , value = [i[3] for i in spectra_to_fit])
+    mutliplet_results.insert(loc = 1, column = 'proc_no' , value = [int(i[3]) for i in spectra_to_fit])
     mutliplet_results.insert(loc = 2, column = 'row_id' , value = [i[4] for i in spectra_to_fit])
 
     #mutliplet_results.set_index('exp_no', inplace=True)
     return _multiplet_type_, mutliplet_results
 
-def update_results(mutliplet_results, fname, analysis_type):
-    #try:
-    #    if analysis_type == 'Pseudo2D':
-    #        original_data = pd.read_csv(
-    #            str(fname), 
-    #            sep="\t",
-    #            dtype={'row_id':np.int},index_col='row_id'
-    #            )
+def update_results(mutliplet_results, fname):
+    try:
+        original_data = pd.read_csv(str(fname), sep="\t")
+    except:
+        logger.error("error when opening existing results file")
+    condition = ((original_data['exp_no'].isin(mutliplet_results['exp_no'])) & (original_data['proc_no'].isin(mutliplet_results['proc_no'])) & (original_data['row_id'].isin(mutliplet_results['row_id'])))
+    tmp = original_data.loc[[not x for x in condition],:]
 
-    #    elif analysis_type == '1D_Series':
-    #        original_data = pd.read_csv(
-    #            str(fname), 
-    #            sep="\t",
-    #            dtype={'exp_no':np.int},index_col='exp_no'
-    #            )
+    return pd.concat([tmp, mutliplet_results])
 
-    #except:
-    #    logger.error("error when opening existing reults file")
-    #print(original_data)
-    #print(mutliplet_results)
-    #if analysis_type == 'Pseudo2D':
-    #    mutliplet_results.set_index('row_id')
 
-    #original_data.loc[mutliplet_results.index,:] = mutliplet_results[:]
-
-    return mutliplet_results
-
-def output_txt_file(x_fit,fit_results, d_id, scaling_factor,data_exp_no,spectra_to_fit,analysis_type,output_path, output_folder,output_name):
+def output_txt_file(x_fit,fit_results, d_id, scaling_factor,spectra_to_fit,output_path, output_folder,output_name):
     
     cluster_list = getList(d_id)
     #fit_results = fit_results.round(9)
     for i in cluster_list:        
-        _multiplet_type_, mutliplet_results = build_output(d_id[i], x_fit, fit_results, scaling_factor,data_exp_no,spectra_to_fit,analysis_type)
+        _multiplet_type_, mutliplet_results = build_output(d_id[i], x_fit, fit_results, scaling_factor,spectra_to_fit)
         fname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt')
         if fname.is_file():
-            mutliplet_results = update_results(mutliplet_results, fname, analysis_type)
+            mutliplet_results = update_results(mutliplet_results, fname)
+        mutliplet_results = mutliplet_results.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
         mutliplet_results.to_csv(
             str(fname), 
-            index=True, 
+            index=False, 
             sep = '\t'
             )
     logger.info('Save data to text file -- Complete')
+
+def merge_pdf(output_path,output_folder,output_name):
+    path_individual_plots = Path(output_path,output_folder,'plot_ind')
+    path_final_plot = Path(output_path,output_folder)
+
+    # read all pdf in directory and sort them
+    pdfs = os.listdir(path_individual_plots)
+    pdfs_clear = []
+    for pdf in pdfs:
+        if pdf.startswith(output_name):
+            pdfs_clear.append(pdf)
+    pdfs_clear = natsort.natsorted(pdfs_clear,reverse=False)
+
+    # merge all pdfs and create a single one 
+    merger = PdfFileMerger()
+    for pdf in pdfs_clear:
+        if pdf.startswith(output_name):
+            merger.append(str(Path(path_individual_plots,pdf)))
+    
+    output_pdf = str(Path(path_final_plot,output_name+'_'+'Spectra_Full.pdf'))
+    merger.write(output_pdf)
+    merger.close()
 
 def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_fit, peak_picking_data, scaling_factor):
 
@@ -322,7 +332,6 @@ def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_f
     analysis_type       =   user_input['analysis_type']
     data_exp_no         =   user_input['data_exp_no']
 
-
     x_fit = np.linspace(np.min(x_scale),np.max(x_scale),2048)
     d_id = nff.get_fitting_parameters(peak_picking_data, x_fit, scaling_factor)[0]
 
@@ -330,7 +339,7 @@ def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_f
     Path(output_path,output_folder).mkdir(parents=True,exist_ok=True)
 
     logger.info('Save data to text file ') 
-    output_txt_file(x_fit,fit_results, d_id, scaling_factor,data_exp_no,spectra_to_fit,analysis_type,output_path, output_folder,output_name)
+    output_txt_file(x_fit,fit_results, d_id, scaling_factor,spectra_to_fit,output_path, output_folder,output_name)
     logger.info('Save data to text file -- Complete')
 
     logger.info('Save plot to pdf')
@@ -343,10 +352,9 @@ def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_f
                 x_fit, 
                 d_id, 
                 scaling_factor, 
-                analysis_type,
                 output_path,   
                 output_folder,
                 output_name
             )
-
+    merge_pdf(output_path,output_folder,output_name)
     logger.info('Save plot to pdf -- Complete')
