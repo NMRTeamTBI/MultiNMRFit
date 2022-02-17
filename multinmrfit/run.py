@@ -84,7 +84,7 @@ def prepare_data(user_input):
     threshold = user_input['threshold']
 
     clustering_results = pd.DataFrame(columns=['Peak_Position','Peak_Intensity','Selection','Cluster','Options'])
-    exit()
+
     app_clustering = nui.App_Clustering(
         x_spec = x_ppm_reference_spectrum,
         y_spec = intensities_reference_spectrum,

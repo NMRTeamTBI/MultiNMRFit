@@ -3,6 +3,10 @@ import tkinter.messagebox
 import pkg_resources
 import random
 
+import customtkinter
+customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
+customtkinter.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
+
 import sys
 import json
 from pathlib import Path 
@@ -29,28 +33,28 @@ logger = logging.getLogger(__name__)
 # logger = logging.getLogger()
 
  
-# class App_Error(customtkinter.CTk):
-#     APP_NAME = "Error"
-#     WIDTH = 500
-#     HEIGHT = 100
-#     def __init__(root, message, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         root.title(App_Error.APP_NAME)
-#         root.geometry(str(App_Error.WIDTH) + "x" + str(App_Error.HEIGHT))
-#         root.minsize(App_Error.WIDTH, App_Error.HEIGHT)
-#         root.protocol("WM_DELETE_WINDOW", root.on_closing)
-#         root.toplevel = None
-#         root.label = customtkinter.CTkLabel(
-#                             root, 
-#                             text=message, 
-#                             width= App_Error.WIDTH,
-#                             height=App_Error.HEIGHT,
-#                             )
-#         root.label.pack()
-#     def on_closing(root, event=0):
-#             root.destroy()
-#     def start(root):
-#             root.mainloop()
+class App_Error(customtkinter.CTk):
+    APP_NAME = "Error"
+    WIDTH = 500
+    HEIGHT = 100
+    def __init__(root, message, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        root.title(App_Error.APP_NAME)
+        root.geometry(str(App_Error.WIDTH) + "x" + str(App_Error.HEIGHT))
+        root.minsize(App_Error.WIDTH, App_Error.HEIGHT)
+        root.protocol("WM_DELETE_WINDOW", root.on_closing)
+        root.toplevel = None
+        root.label = customtkinter.CTkLabel(
+                            root, 
+                            text=message, 
+                            width= App_Error.WIDTH,
+                            height=App_Error.HEIGHT,
+                            )
+        root.label.pack()
+    def on_closing(root, event=0):
+            root.destroy()
+    def start(root):
+            root.mainloop()
 
 class App:
 
@@ -372,7 +376,7 @@ class App:
     def start(self):
         self.master.mainloop()
 
-class App_Clustering():
+class App_Clustering(customtkinter.CTk):
 
     APP_NAME = "Peak Picking Visualisation and Clustering"
     WIDTH = 1200
@@ -405,19 +409,19 @@ class App_Clustering():
         # ============ create CTkFrames ============
         self.frame_graph = customtkinter.CTkFrame(master=self,
                                                  width=500,
-                                                 height=App.HEIGHT-150,
+                                                 height=App_Clustering.HEIGHT-150,
                                                  corner_radius=10)
         self.frame_graph.place(relx=0.02, rely=0.03, anchor=tkinter.NW)
 
         self.threshold = customtkinter.CTkFrame(master=self,
                                                  width=500,
-                                                 height=App.HEIGHT-520,
+                                                 height=App_Clustering.HEIGHT-520,
                                                  corner_radius=10)
         self.threshold.place(relx=0.02, rely=0.82, anchor=tkinter.NW)
 
         self.frame_peak_Table = customtkinter.CTkFrame(master=self,
                                                  width=620,
-                                                 height=App.HEIGHT-150,
+                                                 height=App_Clustering.HEIGHT-150,
                                                  corner_radius=10)
         self.frame_peak_Table.place(relx=0.47, rely=0.03, anchor=tkinter.NW)
 
@@ -433,7 +437,7 @@ class App_Clustering():
             corner_radius=8,
             width=150,
             borderwidth=0,
-            fg_color=App.ENTRY_COLOR
+            fg_color=App_Clustering.ENTRY_COLOR
             #justify=tk.CENTER
         ).place(relx=0.02, rely=0.2, anchor=tkinter.W)
 
@@ -454,7 +458,7 @@ class App_Clustering():
         self.refresh_th = customtkinter.CTkButton(master=self,
                                             text=" Refresh & Close ",
                                             corner_radius=10,
-                                            fg_color=App.BUTTON_COLOR,
+                                            fg_color=App_Clustering.BUTTON_COLOR,
                                             command=lambda:self.refresh_ui(x_spec, y_spec, self.threshold_entry.get())
                                             )
         self.refresh_th.place(relx=0.54, rely=0.90,width=200,height=50)
@@ -462,7 +466,7 @@ class App_Clustering():
         self.run = customtkinter.CTkButton(master=self,
                                             text=" Run fitting ",
                                             corner_radius=10,
-                                            fg_color=App.BUTTON_COLOR,
+                                            fg_color=App_Clustering.BUTTON_COLOR,
                                             command=lambda:self.save_info_clustering(clustering_information, clustering_table)
                                             )
         self.run.place(relx=0.71, rely=0.90,width=200,height=50)
@@ -470,7 +474,7 @@ class App_Clustering():
         self.close_button = customtkinter.CTkButton(master=self,
                                             text=" Close ",
                                             corner_radius=10,
-                                            fg_color=App.BUTTON_COLOR,
+                                            fg_color=App_Clustering.BUTTON_COLOR,
                                             command=lambda:self.on_closing())
         self.close_button.place(relx=0.88, rely=0.90,width=80,height=50)
 
@@ -507,7 +511,7 @@ class App_Clustering():
             corner_radius=8,
             width=100,
             borderwidth=0,
-            fg_color=App.ENTRY_COLOR
+            fg_color=App_Clustering.ENTRY_COLOR
             #justify=tk.CENTER
         ).grid(column=0, row=0)
         # ).place(relx=0.02, rely=0.04, anchor=tkinter.W)
@@ -632,7 +636,7 @@ class App_Clustering():
 
         self.graph = FigureCanvasTkAgg(fig, self.frame_graph)
         self.graph_canvas = self.graph.get_tk_widget()
-        self.graph_canvas.place(relx=0.0,rely=0.0,width=500,height=App.HEIGHT-150)
+        self.graph_canvas.place(relx=0.0,rely=0.0,width=500,height=App_Clustering.HEIGHT-150)
 
         return colors
 
