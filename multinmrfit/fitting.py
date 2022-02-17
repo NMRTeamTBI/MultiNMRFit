@@ -37,17 +37,15 @@ def get_fitting_parameters(
     d_id = {k:[] for k in cluster_list}
     d_mapping, d_clustering, _ = nfm.mapping_multiplets()
     Initial_offset = 0
+
     for n in cluster_list:
         _cluster_ = peakpicking_data.loc[peakpicking_data.Cluster==n]
         id_cluster = str(len(_cluster_)) + "".join(i for i in set(_cluster_.Options.values.tolist()))
         _multiplet_type_ = d_clustering[id_cluster]
         _multiplet_type_function = d_mapping[_multiplet_type_]["f_function"]
-        print(d_clustering)
-        print(id_cluster)
-        print(_multiplet_type_)
         Init_Val = nfm.Peak_Initialisation(_multiplet_type_,Peak_Picking_Results=_cluster_,scaling_factor=scaling_factor)
         #Init_Cons = Constraints_Initialisation(_multiplet_type_)
-        d_id[n] = (_multiplet_type_function, [len(ini_params),len(ini_params)+len(Init_Val)])
+        d_id[n] = (_multiplet_type_function, [len(ini_params),len(ini_params)+len(Init_Val)],_multiplet_type_)
         ini_params.extend(Init_Val)
         upd_cons = update_resolution(d_mapping[_multiplet_type_]["constraints"], x_fit_)
         upd_cons = update_position(d_mapping[_multiplet_type_]["constraints"], x_fit_)
@@ -74,7 +72,6 @@ def simulate_data(x_fit_, fit_par, d_id, scaling_factor):
 def fit_objective(
     fit_par,
     x_fit_,
-    peakpicking_data,
     y_fit_,
     d_id,
     scaling_factor
@@ -109,11 +106,10 @@ def run_single_fit_function(up,
             bounds=bounds_fit,
             method='L-BFGS-B',
             #options={'ftol': 1e-6},#,'maxiter':0},
-            args=(x_spectrum_fit,peak_picking_data,intensities[fit[0],:], d_id, scaling_factor),
+            args=(x_spectrum_fit,intensities[fit[0],:], d_id, scaling_factor),
             )
 
         if writing_to_file is False:
-            print('########################')
             return res_fit
         else:
             fit_results.loc[fit[1],:] = res_fit.x.tolist()

@@ -258,9 +258,7 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
 def build_output(d_id_i, x_fit, fit_results, scaling_factor,spectra_to_fit):
     d_mapping, _, d_parameters = nfm.mapping_multiplets()
     col = range(d_id_i[1][0],d_id_i[1][1])
-    _multiplet_type_ = d_parameters[len(col)]
-    print(d_parameters)
-    print(_multiplet_type_)
+    _multiplet_type_ = d_id_i[2]
     mutliplet_results = fit_results[fit_results.columns.intersection(col)]
     mutliplet_results.columns = d_mapping[_multiplet_type_]['params']
 
@@ -283,7 +281,6 @@ def update_results(mutliplet_results, fname):
     tmp = original_data.loc[[not x for x in condition],:]
 
     return pd.concat([tmp, mutliplet_results])
-
 
 def output_txt_file(x_fit,fit_results, d_id, scaling_factor,spectra_to_fit,output_path, output_folder,output_name):
     
