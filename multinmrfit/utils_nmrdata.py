@@ -109,6 +109,23 @@ def sort_peak_picking_data(peak_picking_data, n_peak_max):
         peak_picking_data = peak_picking_data.sort_values(by='Peak_Position', ascending=True)
     return peak_picking_data
 
+def filter_multiple_clusters(Res):
+    for i,j in enumerate(Res.Cluster):
+        cluster_num = j.split(',')
+        if len(cluster_num) > 1:
+            for k in cluster_num:
+                new_pk = {
+                    'Peak_Position': Res.iloc[i].Peak_Position,
+                    'Peak_Intensity': Res.iloc[i].Peak_Intensity,
+                    'Selection': Res.iloc[i].Selection,
+                    'Options': Res.iloc[i].Options,
+                    'Cluster': k
+
+                    }
+                Res = Res.append(new_pk, ignore_index = True)
+            Res = Res.drop(Res.index[i])
+    return Res
+
 def retrieve_nmr_data(user_input):
     if user_input['analysis_type'] in ['Pseudo2D','1D']:
         [y_intensities_all, x_ppm_all] = read_nmr_data_bruker(
