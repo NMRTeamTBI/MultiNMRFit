@@ -16,7 +16,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 # Import our own libraries
 import multinmrfit.fitting as nff
 import multinmrfit.multiplets as nfm
-import multinmrfit.ui_new as nui
+import multinmrfit.ui as nui
 
 import natsort 
 from PyPDF2 import PdfFileMerger
@@ -84,7 +84,6 @@ def create_experiments_list(user_input):
     return experiment_list
 
 def error_handling(self,message, critical_error=False):
-    print(critical_error)
     if self and self.winfo_exists():
         app_err = nui.App_Error(message)
         app_err.start()
@@ -326,8 +325,6 @@ def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_f
     output_path         =   user_input['output_path']
     output_folder       =   user_input['output_folder']
     output_name         =   user_input['output_name']
-    analysis_type       =   user_input['analysis_type']
-    data_exp_no         =   user_input['data_exp_no']
 
     x_fit = np.linspace(np.min(x_scale),np.max(x_scale),2048)
     d_id = nff.get_fitting_parameters(peak_picking_data, x_fit, scaling_factor)[0]

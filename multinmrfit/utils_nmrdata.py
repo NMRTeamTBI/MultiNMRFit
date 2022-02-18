@@ -1,7 +1,6 @@
 import numpy as np
 import nmrglue as ng
 from pathlib import Path 
-import tkinter as tk
 import pandas as pd
 
 def find_nearest(array, value):

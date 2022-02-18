@@ -12,7 +12,7 @@ import pandas as pd
 
 # Own Libs
 import multinmrfit as nf
-import multinmrfit.ui_new as nui
+import multinmrfit.ui as nui
 import multinmrfit.io as nio
 import multinmrfit.utils_nmrdata as nfu
 import multinmrfit.fitting as nff
@@ -34,7 +34,6 @@ def main():
         app = nui.App(user_input=nio.create_user_input())
         app.start()
     else:
-        print('cli')
         user_input = nio.load_config_file(None,config_file_path=sys.argv[1]) 
         user_input = nio.check_input_file(user_input,None)       
         run_analysis(user_input,None)
@@ -93,7 +92,6 @@ def prepare_data(user_input):
         )
     app_clustering.start()
     user_picked_data = clustering_results[clustering_results["Selection"].values]
-
     user_picked_data = nfu.filter_multiple_clusters(user_picked_data)
     scaling_factor = user_picked_data.Peak_Intensity.mean()
 
@@ -143,6 +141,7 @@ def run_analysis(user_input, gui=False):
     ######################################################
     #######################Output#########################
     ######################################################
+
     nio.save_output_data(
         user_input          ,
         fit_results_table   ,
@@ -155,5 +154,6 @@ def run_analysis(user_input, gui=False):
     )
     logger.info('Full Analysis is complete')
     logger.info('####')
+    exit()
 
-    return 
+     

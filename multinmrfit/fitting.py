@@ -12,7 +12,7 @@ import pandas as pd
 from scipy.optimize import minimize
 
 import multinmrfit.multiplets as nfm
-import multinmrfit.ui_new as nfui
+import multinmrfit.ui as nfui
 import matplotlib
 import matplotlib.pyplot as plt
 logger = logging.getLogger(__name__)

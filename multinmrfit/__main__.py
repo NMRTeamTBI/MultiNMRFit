@@ -1,5 +1,5 @@
 import sys
-import multinmrfit.ui_new as nui
+import multinmrfit.ui as nui
 import multinmrfit.io as nio
 import multinmrfit.run as nrun
 # # start CLI if arguments provided, otherwise switch to GUI
