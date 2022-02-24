@@ -1,3 +1,4 @@
+from re import L
 import tkinter
 import tkinter.messagebox
 import pkg_resources
@@ -115,21 +116,21 @@ class App:
                                     )
         self.frame_output.place(relx=0.48, rely=0.1, anchor=tkinter.NW)
 
-        self.frame_options_Pseudo2D = tk.Frame(master,
-                                                width=250,
-                                                height=150,
+        self.frame_options = tk.Frame(master,
+                                                width=330,
+                                                height=HEIGHT-250,
                                                 bg=FRAME_COLOR
                                                 # fg_color=("white", "gray18")
                                                 )
-        self.frame_options_Pseudo2D.place(relx=0.71, rely=0.1, anchor=tkinter.NW)
+        self.frame_options.place(relx=0.71, rely=0.1, anchor=tkinter.NW)
 
-        self.frame_options_1DSeries = tk.Frame(master,
-                                                width=250,
-                                                height=150,
-                                                bg=FRAME_COLOR
-                                                # fg_color=("white", "gray18")
-                                                )
-        self.frame_options_1DSeries.place(relx=0.71, rely=0.4, anchor=tkinter.NW)
+        # self.frame_options_1DSeries = tk.Frame(master,
+        #                                         width=250,
+        #                                         height=150,
+        #                                         bg=FRAME_COLOR
+        #                                         # fg_color=("white", "gray18")
+        #                                         )
+        # self.frame_options_1DSeries.place(relx=0.71, rely=0.4, anchor=tkinter.NW)
 
          # ============ create CTkFrames ============
         # Set bottom picture
@@ -140,7 +141,7 @@ class App:
         self.img_network_label.place(relx = 0.02, rely = 0.7)
 
         # ============ create Labels and entries ============
-        title = ['Inputs','Analysis','Outputs']
+        title = ['Inputs','Analysis','Outputs', 'Options']
         for i in range(len(title)):
             tk.Label(
                 master,
@@ -285,64 +286,81 @@ class App:
         self.close_button.place(relx=0.81, rely=0.80,width=80,height=30)
 
         # # ============ Options ============
-        # option_list = []
-        tk.Label(
-                master,
-                text='Options: Pseudo2D',
-                width=20,
-                font=("Helvetica", 18, 'normal'),
-                bg=MAIN_HOVER,
-                fg='white',
-                borderwidth=0,
-                justify=tk.CENTER
-        ).place(relx=0.02+3*0.23, rely=0.1, anchor=tkinter.W)
+        # raw ids for Pseudo2S
+        self.PartialPseudo2D = tk.IntVar()
+        self.check_box_opt1 = tk.Checkbutton(
+                                        self.frame_options,
+                                        text='Data raw no (* partial analysis of Pseudo 2D)',
+                                        variable=self.PartialPseudo2D,
+                                        width=20,
+                                        font=("Helvetica", 14, 'normal'),
+                                        borderwidth=0,
+                                        fg='white',
+                                        bg=FRAME_COLOR,
+                                        justify=tk.CENTER,
+                                        command=self.activateCheck
+             )
+        self.check_box_opt1.place(relx=0.05, rely=0.1, width=310, anchor=tkinter.W)
 
-        tk.Label(
-                master,
-                text='Options: 1DSeries',
-                width=20,
-                font=("Helvetica", 18, 'normal'),
-                bg=MAIN_HOVER,
-                fg='white',
-                borderwidth=0,
-                justify=tk.CENTER
-        ).place(relx=0.02+3*0.23, rely=0.4, anchor=tkinter.W)
+        self.input_raws = tk.StringVar()
+        self.input_entry = tk.Entry(
+                            self.frame_options,
+                            textvariable=self.input_raws,
+                            bg='white',
+                            fg='black',
+                            borderwidth=0,
+                            state='disabled' if user_input['analysis_type'] == '1D_Series' else 'normal'
+                            )
+        self.input_entry.place(relx=0.1, rely=0.2, width=200, anchor=tkinter.W)
+        user_input['option_data_daw_no'] = self.input_raws
 
+        # # if user_input['analysis_type'] == '1D_Series':
+        # #     self.input_entry.config(state='disabled')
+        # #     self.check_box_opt1.config(state='disabled')
 
+        # Use previous Fit dor starting parameters
         self.TimeSeries = tk.IntVar()
-        self.check_box_1 = tk.Checkbutton(
-                                self.frame_options_1DSeries,
-                                text="Time Series",
+        self.check_box_opt2 = tk.Checkbutton(
+                                self.frame_options,
+                                text="Use previous fit (* 1D only)",
                                 font=("Helvetica", 14, 'normal'),
                                 variable=self.TimeSeries,
                                 highlightthickness=0,
                                 bd=0,
+                                bg=FRAME_COLOR,
+                                # state='disabled'
+                                )
+        self.check_box_opt2.place(relx=0.05, rely=0.3, anchor=tkinter.W)
+        user_input['option_previous_fit'] = self.TimeSeries
+
+        # Use Offset in Fitting
+        self.Offset = tk.IntVar()
+        self.check_box_opt3 = tk.Checkbutton(
+                                self.frame_options,
+                                text="Offset",
+                                font=("Helvetica", 14, 'normal'),
+                                variable=self.Offset,
+                                highlightthickness=0,
+                                bd=0,
                                 bg=FRAME_COLOR
                                 )
-        self.check_box_1.place(relx=0.25, rely=0.2, anchor=tkinter.W)
-        user_input['time_series'] = self.TimeSeries
+        self.check_box_opt3.place(relx=0.05, rely=0.4, anchor=tkinter.W)
+        user_input['option_offset'] = self.Offset
 
-        tk.Label(
-            self.frame_options_Pseudo2D,
-            text='raw ids',
-                width=20,
-                font=("Helvetica", 14, 'normal'),
-                borderwidth=0,
-                fg='white',
-                bg=FRAME_COLOR,
-                justify=tk.CENTER
-             ).place(relx=0.5, rely=0.25, anchor="center")
-       
-        self.input_raws = tk.StringVar()
-        input_entry = tk.Entry(
-                            self.frame_options_Pseudo2D,
-                            textvariable=self.input_raws,
-                            bg='white',
-                            fg='black',
-                            borderwidth=0
-                            )
-        input_entry.place(relx=0.1, rely=0.47, width=200, anchor=tkinter.W)
-        user_input['data_row_no'] = self.input_raws
+        # # Verbose Log
+        self.VerboseLog = tk.IntVar()
+        self.check_box_opt4 = tk.Checkbutton(
+                                self.frame_options,
+                                text="Verbose log",
+                                font=("Helvetica", 14, 'normal'),
+                                variable=self.VerboseLog,
+                                highlightthickness=0,
+                                bd=0,
+                                bg=FRAME_COLOR
+                                )
+        self.check_box_opt4.place(relx=0.05, rely=0.5, anchor=tkinter.W)
+        user_input['option_verbose_log'] = self.VerboseLog
+
 
     def App_Run(self, user_input):
         user_input = nio.check_input_file({k: v.get() for k, v in user_input.items()},self.master)
@@ -380,6 +398,12 @@ class App:
             f.truncate()
             f.write(json.dumps(user_input, indent=4))
             f.close()  
+
+    def activateCheck(self):
+        if  self.PartialPseudo2D.get() == 1:          #whenever checked
+            self.input_entry.config(state='normal')
+        elif  self.PartialPseudo2D.get() == 0:        #whenever unchecked
+            self.input_entry.config(state='disabled')
 
     def on_closing(self, event=0):
         self.master.destroy()

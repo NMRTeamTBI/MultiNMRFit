@@ -110,7 +110,7 @@ def prepare_data(user_input):
     if user_input['analysis_type'] == 'Pseudo2D':
         use_previous_fit = True
     elif user_input['analysis_type'] == '1D_Series':
-        if user_input['time_series'] is None or user_input['time_series'] == 0:
+        if user_input['previous_fit'] is None or user_input['previous_fit'] == 0:
             use_previous_fit = False
         else:
             use_previous_fit = True

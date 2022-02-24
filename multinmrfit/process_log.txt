@@ -1,22 +1,21 @@
-2022-02-14 16:15:22 - root - INFO - {
+2022-02-24 17:12:15 - root - INFO - {
     "data_path": "/Users/cyrilcharlier/Documents/Research/nmrData",
-    "data_folder": "8Carbios_ICCGwt_FLC060921",
+    "data_folder": "8Carbios_ICCG_P_image4",
     "data_exp_no": [
-        2
+        36,
+        38
     ],
-    "data_proc_no": "2",
-    "reference_spectrum": "5",
-    "analysis_type": "Pseudo2D",
+    "data_proc_no": "101",
+    "reference_spectrum": "38",
+    "analysis_type": "1D_Series",
     "spectral_limits": [
-        3.69,
-        3.67
+        8.2,
+        8.0
     ],
-    "threshold": 20000.0,
+    "threshold": 600000000.0,
     "output_path": "/Users/cyrilcharlier/Documents/Research/Data_Analysis/",
-    "output_folder": "ICCG_Active_EG",
-    "output_name": "First_Test"
+    "output_folder": "Guy_pH_Imaging",
+    "output_name": "Img4",
+    "time_series": 0
 }
-2022-02-14 16:15:22 - multinmrfit.run - INFO - Loading NMR Data
-2022-02-14 16:15:23 - multinmrfit.run - INFO - Loading -- Complete
-2022-02-14 16:15:23 - multinmrfit.run - INFO - Extraction of NMR Data
-2022-02-14 16:15:23 - multinmrfit.run - INFO - Extraction -- Complete
+2022-02-24 17:12:15 - multinmrfit.run - INFO - Loading NMR Data

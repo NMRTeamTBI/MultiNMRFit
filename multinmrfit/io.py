@@ -61,8 +61,9 @@ def load_config_file(self=None, user_input=None, config_file_path=None):
             return None
 
         if self and self.winfo_exists():
+            options_list = ['option_data_daw_no','option_previous_fit','option_offset','option_verbose_log']
             for label in user_input.keys():                
-                if label in ['data_row_no','time_series']:
+                if label in options_list:
                     if label not in config.keys():
                         pass
                     else:
@@ -93,6 +94,7 @@ def error_handling(self,message, critical_error=False):
         exit()
   
 def check_input_file(user_input,self=None):
+
     if self and self.winfo_exists():
         is_gui = True
         is_not_gui = False
@@ -154,8 +156,8 @@ def check_input_file(user_input,self=None):
             return error_handling(self,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in experiment list", critical_error=is_not_gui)
 
         row_list = []
-        if user_input.get('data_row_no'):
-            row_list = create_experiments_list(user_input.get('data_row_no'))
+        if user_input.get('option_data_daw_no'):
+            row_list = create_experiments_list(user_input.get('option_data_daw_no'))
             if int(user_input.get('reference_spectrum')) not in row_list :
                 return error_handling(self,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in row list", critical_error=is_not_gui)
 
@@ -164,7 +166,6 @@ def check_input_file(user_input,self=None):
             'data_folder'           :   user_input.get('data_folder'),
             'data_exp_no'           :   exp_list,
             'data_proc_no'          :   user_input.get('data_proc_no'),
-            'data_row_no'           :   row_list,
             'reference_spectrum'    :   user_input.get('reference_spectrum'),
             'analysis_type'         :   user_input.get('analysis_type'),
             'spectral_limits'       :   spec_lim,
@@ -172,23 +173,29 @@ def check_input_file(user_input,self=None):
             'output_path'           :   user_input.get('output_path'),
             'output_folder'         :   user_input.get('output_folder'),
             'output_name'           :   user_input.get('output_name'),
-            'data_row_no'           :   row_list,
-            'time_series'           :   user_input.get('time_series')
+            'data_daw_no'           :   row_list,
+            'previous_fit'          :   user_input.get('time_series'),
+            'offset'                :   user_input.get('option_offset'),
+            'verbose_log'           :   user_input.get('option_verbose_log')
 
         }
 
     except Exception as e:
         return error_handling(self,e, critical_error=is_not_gui)
 
-    if config['analysis_type'] != 'Pseudo2D': 
-        config.pop("data_row_no")
-    if config['analysis_type'] == 'Pseudo2D': 
-        config.pop("time_series")
-        if config['data_row_no'] == []:
-           config.pop("data_row_no") 
+    # Options
+    options_list = ['data_daw_no','previous_fit','offset','verbose_log']
 
+    if config['analysis_type'] != 'Pseudo2D': 
+        config.pop("data_daw_no")
+    if config['analysis_type'] == 'Pseudo2D': 
+        config.pop("previous_fit")
+        if config['data_daw_no'] == []:
+           config.pop("data_daw_no") 
+
+    
     for key, conf in config.items():        
-        if key not in ['time_series','data_row_no'] and conf is None:
+        if key not in options_list and conf is None:
             return error_handling(self,f"Argument : '{key}' is missing", critical_error=is_not_gui)
     if is_gui:
         self.destroy()
