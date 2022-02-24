@@ -100,17 +100,14 @@ def run_single_fit_function(up,
 
 
     try:
-        if len(intensities.shape) == 1:
-            intens = intensities
-        else:
-            intens = intensities[fit[0],:]
+        intensities = intensities[fit[0],:]
         res_fit = minimize(
             fit_objective,
             x0=initial_fit_values,                
             bounds=bounds_fit,
             method='L-BFGS-B',
             #options={'ftol': 1e-6},#,'maxiter':0},
-            args=(x_spectrum_fit,intens, d_id, scaling_factor),
+            args=(x_spectrum_fit, intensities, d_id, scaling_factor),
             )
 
         if writing_to_file is False:
@@ -164,8 +161,9 @@ def full_fitting_procedure(
         title='Data Fitting',
         progress_bar_label=['Spectra part 1','Spectra part 2']
         ) 
+    n_spec = intensities.shape[0]
 
-    if intensities.ndim == 1:
+    if n_spec == 1:
         pass
     else:
         threads = []

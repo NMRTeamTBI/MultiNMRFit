@@ -42,8 +42,9 @@ def prepare_data(user_input):
     ######################################################
     ##################### Read and Load Data #############
     ######################################################
-    intensities, x_ppm, experiments_list = nfu.retrieve_nmr_data(user_input) 
+    intensities, x_ppm = nfu.retrieve_nmr_data(user_input) 
     logger.info('Loading -- Complete')
+    print(intensities.shape)
     #-----------------------------------------------------#    
 
     ######################################################
@@ -70,15 +71,8 @@ def prepare_data(user_input):
         intensities_reference_spectrum = intensities[idx_ref,:]
         x_ppm_reference_spectrum = x_ppm
     elif user_input['analysis_type'] == '1D_Series':
-        if len(intensities.shape) == 1:
-            intensities_reference_spectrum = intensities
-            x_ppm_reference_spectrum = x_ppm
-        else:
-            intensities_reference_spectrum = intensities[idx_ref,:]
-            x_ppm_reference_spectrum = x_ppm[idx_ref,:]
-    elif user_input['analysis_type'] == '1D':
-        intensities_reference_spectrum = intensities
-        x_ppm_reference_spectrum = x_ppm
+        intensities_reference_spectrum = intensities[idx_ref,:]
+        x_ppm_reference_spectrum = x_ppm[idx_ref,:]
     #-----------------------------------------------------#   
 
     ######################################################

@@ -202,7 +202,7 @@ class App:
                 ttk.Combobox(
                             self.frame_analysis,
                             textvariable=self.analysis_info_var, 
-                            values=['1D','Pseudo2D','1D_Series'], 
+                            values=['Pseudo2D','1D_Series'], 
                             state="readonly",
                             # bg='white',
                             # fg='black',

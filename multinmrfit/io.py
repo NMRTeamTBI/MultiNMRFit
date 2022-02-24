@@ -210,13 +210,10 @@ def getIntegral(x_fit, _multiplet_type_, fit_par):
 def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, output_path, output_folder, output_name):    
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches([11.7,8.3])
-    if len(intensities.shape) == 1:
-        intens = intensities
-    else:
-        intens = intensities[r[0],:]
+
     ax.plot(
         x_scale,
-        intens,
+        intensities[r[0],:],
         color='b',
         ls='None',
         marker='o',
