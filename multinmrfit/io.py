@@ -1,11 +1,12 @@
 # Import system libraries
 from pathlib import Path 
 import logging
-
+from tkinter import simpledialog, ttk, filedialog
 # Import math libraries
 import pandas as pd
 import numpy as np
-
+import json
+import os
 # Import plot libraries
 import matplotlib
 import matplotlib.pyplot as plt
@@ -15,9 +16,187 @@ from matplotlib.backends.backend_pdf import PdfPages
 # Import our own libraries
 import multinmrfit.fitting as nff
 import multinmrfit.multiplets as nfm
+import multinmrfit.ui as nui
+
+import natsort 
+from PyPDF2 import PdfFileMerger
 
 logger = logging.getLogger()
 
+#############Input
+def create_user_input():
+    user_input = {
+    'data_path':            None,
+    'data_folder':          None,
+    'data_exp_no':          None,
+    'data_proc_no':         None,
+    'analysis_type':        None,
+    'reference_spectrum':   None,    
+    'spectral_limits':      None,
+    'threshold':            None,
+    'output_path':          None,
+    'output_folder':        None,    
+    'output_name':          None,
+    }
+    return user_input  
+
+def load_config_file(self=None, user_input=None, config_file_path=None):
+        if self and self.winfo_exists():
+            config_file_path = filedialog.askopenfilename(filetypes=[("All Files", "*.json")])
+            if not config_file_path:
+                return None
+        try:
+            f = open(str(Path(config_file_path)),"r")    
+        except FileNotFoundError:
+            error_handling(self,'Config file not found')
+            return None
+
+        try:
+            config = json.loads(f.read())
+        except json.decoder.JSONDecodeError as e:
+            error_handling(self,'Json config file must be reformated')
+            return None
+        except UnicodeDecodeError as e:
+            error_handling('Wrong config file type (not a json file, see example)')
+            return None
+
+        if self and self.winfo_exists():
+            for label in user_input.keys():                
+                if label in ['data_row_no','time_series']:
+                    if label not in config.keys():
+                        pass
+                    else:
+                        user_input[label].set(config.get(label, ''))
+                else:
+                    user_input[label].set(config.get(label, ''))
+            return user_input
+        else:
+            return config
+
+def create_experiments_list(user_input):
+    experiment_list = []
+    for i in user_input.split(','):
+        if "-" in i:
+            spectra = i.split('-')
+            experiment_list += range(int(spectra[0]), int(spectra[1])+1)
+        else:
+            experiment_list.append(int(i))
+    return experiment_list
+
+def error_handling(self,message, critical_error=False):
+    if self and self.winfo_exists():
+        app_err = nui.App_Error(message)
+        app_err.start()
+    elif logger:
+        logger.error(message)    
+    if critical_error is True:
+        exit()
+  
+def check_input_file(user_input,self=None):
+    if self and self.winfo_exists():
+        is_gui = True
+        is_not_gui = False
+    else:
+        is_gui = False
+        is_not_gui = True
+
+    try:
+        print('------')
+        output_dir = Path(user_input.get('output_path'),user_input.get('output_folder'))
+        if not output_dir:
+            return error_handling("Argument : 'output_folder' is missing", critical_error=is_not_gui)
+        output_dir.mkdir(parents=True,exist_ok=True)
+
+        # create logger (should be root to catch builder and simulator loggers)
+        logger = logging.getLogger()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', "%Y-%m-%d %H:%M:%S")
+        # sends logging output to 'process_log.txt' file
+        file_handler = logging.FileHandler(str(Path(output_dir, "process_log.txt")), mode='w+')
+        file_handler.setFormatter(formatter)
+        # sends logging output to sys.stderr
+        strm_handler = logging.StreamHandler()
+        strm_handler.setFormatter(formatter)
+        # add handlers to logger
+        logger.addHandler(strm_handler)
+        logger.addHandler(file_handler)
+        logger.setLevel(logging.INFO)
+
+        if not Path(user_input.get('data_path')).exists():
+            return error_handling(self,"Argument : 'data_path' does not exist", critical_error=is_not_gui)
+
+        # if not Path(user_input.get('data_path'),user_input.get('data_folder')).exists():
+        #     print('hello')
+        #     return error_handling(self,"Argument : 'data_folder' does not exist", critical_error=is_not_gui)
+
+        if float(user_input.get('threshold', 1)) <= float(0):
+            return error_handling(self,"Argument : 'threshold' is too low (should be > 0)", critical_error=is_not_gui)
+
+        if user_input.get('analysis_type') not in ['Pseudo2D', '1D', '1D_Series']:
+            return error_handling(self,"Argument : 'analysis_type' expected as 'Pseudo2D','1D' or '1D_Series", critical_error=is_not_gui)
+
+        if not user_input.get('spectral_limits'):
+            return error_handling(self,"Argument : 'spectral_limits' is missing" , critical_error=is_not_gui)
+
+        spec_lim = [float(i) for i in user_input.get('spectral_limits').split(',')]
+
+        if len(spec_lim)%2 != 0 and len(spec_lim) != 0:
+            return error_handling(self,"Argument : 'spectral_limits' is incomplete", critical_error=is_not_gui)
+
+        exp_list = create_experiments_list(user_input.get('data_exp_no'))
+        for exp in exp_list:
+            if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp)).exists():
+                return error_handling(self,f"Argument : experiment <{exp}> does not exist", critical_error=is_not_gui)
+            else:
+                if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp),'pdata',user_input.get('data_proc_no')).exists():
+                    return error_handling(self,f"Argument : experiment/procno <{exp}/{user_input.get('data_proc_no')}> does not exist", critical_error=is_not_gui)
+
+        if user_input.get('analysis_type') != 'Pseudo2D' and int(user_input.get('reference_spectrum')) not in exp_list:
+            return error_handling(self,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in experiment list", critical_error=is_not_gui)
+
+        row_list = []
+        if user_input.get('data_row_no'):
+            row_list = create_experiments_list(user_input.get('data_row_no'))
+            if int(user_input.get('reference_spectrum')) not in row_list :
+                return error_handling(self,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in row list", critical_error=is_not_gui)
+
+        config = {
+            'data_path'             :   user_input.get('data_path'),
+            'data_folder'           :   user_input.get('data_folder'),
+            'data_exp_no'           :   exp_list,
+            'data_proc_no'          :   user_input.get('data_proc_no'),
+            'data_row_no'           :   row_list,
+            'reference_spectrum'    :   user_input.get('reference_spectrum'),
+            'analysis_type'         :   user_input.get('analysis_type'),
+            'spectral_limits'       :   spec_lim,
+            'threshold'             :   float(user_input.get('threshold', 0)),
+            'output_path'           :   user_input.get('output_path'),
+            'output_folder'         :   user_input.get('output_folder'),
+            'output_name'           :   user_input.get('output_name'),
+            'data_row_no'           :   row_list,
+            'time_series'           :   user_input.get('time_series')
+
+        }
+
+    except Exception as e:
+        return error_handling(self,e, critical_error=is_not_gui)
+
+    if config['analysis_type'] != 'Pseudo2D': 
+        config.pop("data_row_no")
+    if config['analysis_type'] == 'Pseudo2D': 
+        config.pop("time_series")
+        if config['data_row_no'] == []:
+           config.pop("data_row_no") 
+
+    for key, conf in config.items():        
+        if key not in ['time_series','data_row_no'] and conf is None:
+            return error_handling(self,f"Argument : '{key}' is missing", critical_error=is_not_gui)
+    if is_gui:
+        self.destroy()
+    logger.info(json.dumps(config,indent=4))
+
+    return config
+
+#############Output
 def getList(dict):
     return [k for k in dict.keys()]
 
@@ -28,12 +207,16 @@ def getIntegral(x_fit, _multiplet_type_, fit_par):
     integral = np.sum(y)*(x_fit[1]-x_fit[0])
     return integral
     
-def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, analysis_type, output_path, output_folder, output_name):    
+def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, output_path, output_folder, output_name):    
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches([11.7,8.3])
+    if len(intensities.shape) == 1:
+        intens = intensities
+    else:
+        intens = intensities[r[0],:]
     ax.plot(
         x_scale,
-        intensities[r[0],:],
+        intens,
         color='b',
         ls='None',
         marker='o',
@@ -75,11 +258,10 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     plt.savefig(str(Path(path_2_save,output_name+'_'+str(res_num)+'.pdf')))
     plt.close(fig)
 
-def build_output(d_id_i, x_fit, fit_results, scaling_factor,data_exp_no,spectra_to_fit,analysis_type):
-    d_mapping, _, d_parameters = nfm.mapping_multiplets()
+def build_output(d_id_i, x_fit, fit_results, scaling_factor,spectra_to_fit):
+    d_mapping, _ = nfm.mapping_multiplets()
     col = range(d_id_i[1][0],d_id_i[1][1])
-    _multiplet_type_ = d_parameters[len(col)]
-
+    _multiplet_type_ = d_id_i[2]
     mutliplet_results = fit_results[fit_results.columns.intersection(col)]
     mutliplet_results.columns = d_mapping[_multiplet_type_]['params']
 
@@ -87,81 +269,75 @@ def build_output(d_id_i, x_fit, fit_results, scaling_factor,data_exp_no,spectra_
     mutliplet_results["Amp"] *= scaling_factor
 
     mutliplet_results.insert(loc = 0, column = 'exp_no' , value = [i[2] for i in spectra_to_fit])
-    mutliplet_results.insert(loc = 1, column = 'proc_no' , value = [i[3] for i in spectra_to_fit])
+    mutliplet_results.insert(loc = 1, column = 'proc_no' , value = [int(i[3]) for i in spectra_to_fit])
     mutliplet_results.insert(loc = 2, column = 'row_id' , value = [i[4] for i in spectra_to_fit])
 
     #mutliplet_results.set_index('exp_no', inplace=True)
     return _multiplet_type_, mutliplet_results
 
-def update_results(mutliplet_results, fname, analysis_type):
-    #try:
-    #    if analysis_type == 'Pseudo2D':
-    #        original_data = pd.read_csv(
-    #            str(fname), 
-    #            sep="\t",
-    #            dtype={'row_id':np.int},index_col='row_id'
-    #            )
+def update_results(mutliplet_results, fname):
+    try:
+        original_data = pd.read_csv(str(fname), sep="\t")
+    except:
+        logger.error("error when opening existing results file")
+    condition = ((original_data['exp_no'].isin(mutliplet_results['exp_no'])) & (original_data['proc_no'].isin(mutliplet_results['proc_no'])) & (original_data['row_id'].isin(mutliplet_results['row_id'])))
+    tmp = original_data.loc[[not x for x in condition],:]
 
-    #    elif analysis_type == '1D_Series':
-    #        original_data = pd.read_csv(
-    #            str(fname), 
-    #            sep="\t",
-    #            dtype={'exp_no':np.int},index_col='exp_no'
-    #            )
+    return pd.concat([tmp, mutliplet_results])
 
-    #except:
-    #    logger.error("error when opening existing reults file")
-    #print(original_data)
-    #print(mutliplet_results)
-    #if analysis_type == 'Pseudo2D':
-    #    mutliplet_results.set_index('row_id')
-
-    #original_data.loc[mutliplet_results.index,:] = mutliplet_results[:]
-
-    return mutliplet_results
-
-def output_txt_file(x_fit,fit_results, d_id, scaling_factor,data_exp_no,spectra_to_fit,analysis_type,output_path, output_folder,output_name):
+def output_txt_file(x_fit,fit_results, d_id, scaling_factor,spectra_to_fit,output_path, output_folder,output_name):
     
     cluster_list = getList(d_id)
     #fit_results = fit_results.round(9)
     for i in cluster_list:        
-        _multiplet_type_, mutliplet_results = build_output(d_id[i], x_fit, fit_results, scaling_factor,data_exp_no,spectra_to_fit,analysis_type)
+        _multiplet_type_, mutliplet_results = build_output(d_id[i], x_fit, fit_results, scaling_factor,spectra_to_fit)
         fname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt')
         if fname.is_file():
-            mutliplet_results = update_results(mutliplet_results, fname, analysis_type)
+            mutliplet_results = update_results(mutliplet_results, fname)
+        mutliplet_results = mutliplet_results.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
         mutliplet_results.to_csv(
             str(fname), 
-            index=True, 
+            index=False, 
             sep = '\t'
             )
     logger.info('Save data to text file -- Complete')
 
-def save_output_data(
-    user_input         = 'user_input',
-    fit_results         = 'fit_results', 
-    intensities         = 'intensities',    
-    x_scale             = 'x_scale',
-    spectra_to_fit      =  'spectra_to_fit',
-    Peak_Picking_data   =  None,
-    scaling_factor      =  None
-        ):
+def merge_pdf(output_path,output_folder,output_name):
+    path_individual_plots = Path(output_path,output_folder,'plot_ind')
+    path_final_plot = Path(output_path,output_folder)
+
+    # read all pdf in directory and sort them
+    pdfs = os.listdir(path_individual_plots)
+    pdfs_clear = []
+    for pdf in pdfs:
+        if pdf.startswith(output_name):
+            pdfs_clear.append(pdf)
+    pdfs_clear = natsort.natsorted(pdfs_clear,reverse=False)
+
+    # merge all pdfs and create a single one 
+    merger = PdfFileMerger()
+    for pdf in pdfs_clear:
+        if pdf.startswith(output_name):
+            merger.append(str(Path(path_individual_plots,pdf)))
+    
+    output_pdf = str(Path(path_final_plot,output_name+'_'+'Spectra_Full.pdf'))
+    merger.write(output_pdf)
+    merger.close()
+
+def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_fit, peak_picking_data, scaling_factor):
 
     output_path         =   user_input['output_path']
     output_folder       =   user_input['output_folder']
     output_name         =   user_input['output_name']
-    analysis_type       =   user_input['analysis_type']
-    data_exp_no         =   user_input['data_exp_no']
-
 
     x_fit = np.linspace(np.min(x_scale),np.max(x_scale),2048)
-    d_id = nff.Initial_Values(Peak_Picking_data, x_fit, scaling_factor)[0]
+    d_id = nff.get_fitting_parameters(peak_picking_data, x_fit, scaling_factor)[0]
 
     fit_results = fit_results.apply(pd.to_numeric)
-    print(fit_results)
     Path(output_path,output_folder).mkdir(parents=True,exist_ok=True)
 
     logger.info('Save data to text file ') 
-    output_txt_file(x_fit,fit_results, d_id, scaling_factor,data_exp_no,spectra_to_fit,analysis_type,output_path, output_folder,output_name)
+    output_txt_file(x_fit,fit_results, d_id, scaling_factor,spectra_to_fit,output_path, output_folder,output_name)
     logger.info('Save data to text file -- Complete')
 
     logger.info('Save plot to pdf')
@@ -174,10 +350,9 @@ def save_output_data(
                 x_fit, 
                 d_id, 
                 scaling_factor, 
-                analysis_type,
                 output_path,   
                 output_folder,
                 output_name
             )
-
+    merge_pdf(output_path,output_folder,output_name)
     logger.info('Save plot to pdf -- Complete')

@@ -1,0 +1,13 @@
+{
+    "data_path":            "C:/Bruker/TopSpin4.0.7/data/",
+    "data_folder":          "8Carbios_ICCG_P_image4",
+    "data_exp_no":          "48,50",
+    "data_proc_no":         "101",
+    "analysis_type":        "1D_Series",
+    "reference_spectrum":   "48",    
+    "spectral_limits":      "8.2,7.7",
+    "threshold":            "2000000000",
+    "output_path":          "C:/Users/millard/Documents/GIT/multinmrfit/MultiNMRFit/test_1D_series/",
+    "output_folder":        "Test_Guy",    
+    "output_name":          "test"
+}

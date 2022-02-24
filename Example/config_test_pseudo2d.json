@@ -1,0 +1,14 @@
+{
+    "data_path":            "C:/Bruker/TopSpin4.0.7/data/",
+    "data_folder":          "8PR2021_SuivipH-ReactionEnzymatique",
+    "data_exp_no":          "6",
+    "data_proc_no":         "1",
+    "analysis_type":        "Pseudo2D",
+    "reference_spectrum":   "25",    
+    "spectral_limits":      "6.5,6",
+    "threshold":            "200000",
+    "output_path":          "C:/Users/millard/Documents/GIT/multinmrfit/MultiNMRFit/test_pseudo2d/",
+    "output_folder":        "Test_Guy",    
+    "output_name":          "test",
+    "data_row_no":          "23-27"
+}

@@ -1,7 +1,6 @@
 import numpy as np
 import nmrglue as ng
 from pathlib import Path 
-import tkinter as tk
 import pandas as pd
 
 def find_nearest(array, value):
@@ -78,13 +77,13 @@ def Peak_Picking_1D(
     y_data          =   'y_data', 
     threshold       =   'threshold',
     ):
-    
     try: 
         peak_table = ng.peakpick.pick(
             y_data, 
             pthres=threshold, 
             algorithm='downward',
             )
+
         # Find peak locations in ppm
         peak_locations_ppm = []
         for i in range(len(peak_table['X_AXIS'])):
@@ -100,7 +99,7 @@ def Peak_Picking_1D(
         results = results.sort_values(by='Peak_Position', ascending=True)
     except:
         results = pd.DataFrame(columns=['Peak_Position','Peak_Intensity'],index=[])
-
+    
     return results
 
 def sort_peak_picking_data(peak_picking_data, n_peak_max):
@@ -108,6 +107,23 @@ def sort_peak_picking_data(peak_picking_data, n_peak_max):
         peak_picking_data = peak_picking_data.sort_values(by='Peak_Intensity', ascending=False).head(n_peak_max)
         peak_picking_data = peak_picking_data.sort_values(by='Peak_Position', ascending=True)
     return peak_picking_data
+
+def filter_multiple_clusters(Res):
+    for i,j in enumerate(Res.Cluster):
+        cluster_num = j.split(',')
+        if len(cluster_num) > 1:
+            for k in cluster_num:
+                new_pk = {
+                    'Peak_Position': Res.iloc[i].Peak_Position,
+                    'Peak_Intensity': Res.iloc[i].Peak_Intensity,
+                    'Selection': Res.iloc[i].Selection,
+                    'Options': Res.iloc[i].Options,
+                    'Cluster': k
+
+                    }
+                Res = Res.append(new_pk, ignore_index = True)
+            Res = Res.drop(Res.index[i])
+    return Res
 
 def retrieve_nmr_data(user_input):
     if user_input['analysis_type'] in ['Pseudo2D','1D']:
