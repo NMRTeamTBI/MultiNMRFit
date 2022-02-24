@@ -44,13 +44,7 @@ def Triplet( x, x0, a, h_s, lw, J1):
 # to be checked:
 #    - constraints on coupling constants are sufficient
 #    - error check on multiple peaks (duplicates lines in panda)
-def mapping_multiplets():
-    lw_constraints = (1e-3,1e-2)
-    x0_constraints = (1e-6,12)
-    a_constraints = (1e-3,1)
-    Amp_constraints = (1e-6,np.inf)
-    dH_constraints= (0, np.inf)
-    J_constraints = (2.5e-3,0.25)
+def mapping_multiplets(lw_constraints = (1e-3,1e-2), x0_constraints = (1e-6,12), a_constraints = (1e-3,1), Amp_constraints = (1e-6,np.inf), dH_constraints= (0, np.inf), J_constraints = (2.5e-3,0.25)):
     d_mapping = {
         "Singlet":{"f_function":Singlet,"n_peaks" : "1", "option":"", "params":['x0','a','Amp','lw'],"n_params" : 4, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints]},
         "Doublet":{"f_function":Doublet,"n_peaks" : "2", "option":"","params":['x0','a','Amp','lw','J1'],"n_params" : 5, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints,J_constraints]},
@@ -60,10 +54,7 @@ def mapping_multiplets():
         }
     # add id to d_mapping, and create d_clustering with id as keys
     d_clustering = {(d_mapping[k]["n_peaks"]+d_mapping[k]["option"]):k for k in d_mapping.keys()}
-    
-    d_parameters = {d_mapping[k]["n_params"]:k for k in d_mapping.keys()}
-    
-    return d_mapping, d_clustering, d_parameters
+    return d_mapping, d_clustering
 
 def Peak_Initialisation(
     Peak_Type='Peak_Type',

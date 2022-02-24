@@ -35,7 +35,7 @@ def get_fitting_parameters(
     ini_params, ini_constraints = [], []
     cluster_list =  peakpicking_data.Cluster.unique()
     d_id = {k:[] for k in cluster_list}
-    d_mapping, d_clustering, _ = nfm.mapping_multiplets()
+    d_mapping, d_clustering = nfm.mapping_multiplets()
     Initial_offset = 0
 
     for n in cluster_list:
@@ -100,13 +100,17 @@ def run_single_fit_function(up,
 
 
     try:
+        if len(intensities.shape) == 1:
+            intens = intensities
+        else:
+            intens = intensities[fit[0],:]
         res_fit = minimize(
             fit_objective,
             x0=initial_fit_values,                
             bounds=bounds_fit,
             method='L-BFGS-B',
             #options={'ftol': 1e-6},#,'maxiter':0},
-            args=(x_spectrum_fit,intensities[fit[0],:], d_id, scaling_factor),
+            args=(x_spectrum_fit,intens, d_id, scaling_factor),
             )
 
         if writing_to_file is False:

@@ -70,8 +70,12 @@ def prepare_data(user_input):
         intensities_reference_spectrum = intensities[idx_ref,:]
         x_ppm_reference_spectrum = x_ppm
     elif user_input['analysis_type'] == '1D_Series':
-        intensities_reference_spectrum = intensities[idx_ref,:]
-        x_ppm_reference_spectrum = x_ppm[idx_ref,:]
+        if len(intensities.shape) == 1:
+            intensities_reference_spectrum = intensities
+            x_ppm_reference_spectrum = x_ppm
+        else:
+            intensities_reference_spectrum = intensities[idx_ref,:]
+            x_ppm_reference_spectrum = x_ppm[idx_ref,:]
     elif user_input['analysis_type'] == '1D':
         intensities_reference_spectrum = intensities
         x_ppm_reference_spectrum = x_ppm

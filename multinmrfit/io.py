@@ -210,9 +210,13 @@ def getIntegral(x_fit, _multiplet_type_, fit_par):
 def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, output_path, output_folder, output_name):    
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches([11.7,8.3])
+    if len(intensities.shape) == 1:
+        intens = intensities
+    else:
+        intens = intensities[r[0],:]
     ax.plot(
         x_scale,
-        intensities[r[0],:],
+        intens,
         color='b',
         ls='None',
         marker='o',
@@ -255,7 +259,7 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     plt.close(fig)
 
 def build_output(d_id_i, x_fit, fit_results, scaling_factor,spectra_to_fit):
-    d_mapping, _, d_parameters = nfm.mapping_multiplets()
+    d_mapping, _ = nfm.mapping_multiplets()
     col = range(d_id_i[1][0],d_id_i[1][1])
     _multiplet_type_ = d_id_i[2]
     mutliplet_results = fit_results[fit_results.columns.intersection(col)]
