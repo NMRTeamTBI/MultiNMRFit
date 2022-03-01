@@ -36,7 +36,7 @@ setuptools.setup(
             'multinmrfit = multinmrfit.run:main' 
         ],
         'gui_scripts': [
-            'multinmrfit ' 
+            'multinmrfit = multinmrfit.run:main' 
         ]
     }
 )

@@ -1,22 +1,16 @@
-﻿from tkinter.constants import ANCHOR
-import warnings
+﻿import warnings
 import logging
-import random
 import threading
 
 warnings.filterwarnings('ignore')
-import tkinter as tk
-from tkinter import ttk
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
 
 import multinmrfit.multiplets as nfm
 import multinmrfit.ui as nfui
-import matplotlib
-import matplotlib.pyplot as plt
+
 logger = logging.getLogger(__name__)
-# Set Initial Values for fitting
 
 def update_resolution(constraints, x_fit_):
     delta = abs(x_fit_[1]-x_fit_[0])
@@ -32,27 +26,26 @@ def get_fitting_parameters(
     x_fit_,
     scaling_factor
     ):
-    ini_params, ini_constraints = [], []
+    ini_params, ini_constraints, name_parameters = [], [], []
     cluster_list =  peakpicking_data.Cluster.unique()
     d_id = {k:[] for k in cluster_list}
     d_mapping, d_clustering = nfm.mapping_multiplets()
     Initial_offset = 0
-
     for n in cluster_list:
         _cluster_ = peakpicking_data.loc[peakpicking_data.Cluster==n]
         id_cluster = str(len(_cluster_)) + "".join(i for i in set(_cluster_.Options.values.tolist()))
         _multiplet_type_ = d_clustering[id_cluster]
         _multiplet_type_function = d_mapping[_multiplet_type_]["f_function"]
         Init_Val = nfm.Peak_Initialisation(_multiplet_type_,Peak_Picking_Results=_cluster_,scaling_factor=scaling_factor)
-        #Init_Cons = Constraints_Initialisation(_multiplet_type_)
-        d_id[n] = (_multiplet_type_function, [len(ini_params),len(ini_params)+len(Init_Val)],_multiplet_type_)
+        d_id[n] = (_multiplet_type_function, [len(ini_params), len(ini_params)+len(Init_Val)], _multiplet_type_)
         ini_params.extend(Init_Val)
-        upd_cons = update_resolution(d_mapping[_multiplet_type_]["constraints"], x_fit_)
-        upd_cons = update_position(d_mapping[_multiplet_type_]["constraints"], x_fit_)
+        upd_cons = update_resolution(d_mapping[_multiplet_type_]['constraints'], x_fit_)
+        upd_cons = update_position(upd_cons, x_fit_)
         ini_constraints.extend(upd_cons)
+        name_parameters.extend(d_mapping[_multiplet_type_]['params'])
     ini_params.extend([Initial_offset])
     ini_constraints.extend([(-0.1, 0.1)])
-    return d_id, ini_params, ini_constraints
+    return d_id, ini_params, ini_constraints, name_parameters
 
 def simulate_data(x_fit_, fit_par, d_id, scaling_factor):
     # initialize simulated spectrum at 0
@@ -80,6 +73,18 @@ def fit_objective(
     rmsd = np.sqrt(np.mean((sim_intensity - y_fit_)**2))
     return rmsd
 
+def refine_constraints(initial_fit_values, bounds_fit, name_parameters):
+    logger.debug(f"old bounds: {bounds_fit}")
+    # update parameters based on dict(k, v) where k is a string used to identify the parameter, and v is the relative parameter window
+    relative_window = {"J":0.2, "lw":0.3}
+    for k, v in relative_window.items():
+        idx = [i for i,j in enumerate(name_parameters) if k in j]
+        for i in idx:
+            ini_val = initial_fit_values[i]
+            bounds_fit[i] = (ini_val*(1-v), ini_val*(1+v))
+    logger.debug(f"new bounds: {bounds_fit}")
+    return bounds_fit
+
 def run_single_fit_function(up, 
                             fit, 
                             intensities, 
@@ -91,14 +96,11 @@ def run_single_fit_function(up,
                             writing_to_file=True
                             ):
 
-    # up is usef for the multithreading 
+    d_id, initial_fit_values, bounds_fit, name_parameters = get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor)
     if use_previous_fit :
         initial_fit_values = list(fit_results.iloc[fit[1]-1 if up else fit[1]+1].values)
-    else:
-        initial_fit_values= get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor)[1]
-    d_id, _, bounds_fit = get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor)
-
-
+        bounds_fit = refine_constraints(initial_fit_values, bounds_fit, name_parameters)
+    
     try:
         intensities = intensities[fit[0],:]
         res_fit = minimize(
@@ -158,7 +160,7 @@ def full_fitting_procedure(
 
     root, close_button, progress_bars = nfui.init_progress_bar_windows(
         len_progresses = [len(id_spec_part1), len(id_spec_part2)],
-        title='Data Fitting',
+        title='Fitting in progress...',
         progress_bar_label=['Spectra part 1','Spectra part 2']
         ) 
     n_spec = intensities.shape[0]
@@ -186,7 +188,7 @@ def full_fitting_procedure(
             ))
             logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {id_spec_part1[-1][5]} -- Complete')
         else:
-            logger.info(f'No fitting above the reference spectrum') 
+            logger.info(f'No spectra to fit above the reference spectrum') 
 
         if len(id_spec_part2):
             logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]}')
@@ -206,7 +208,7 @@ def full_fitting_procedure(
             ))
             logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]} -- Complete')
         else:
-            logger.info(f'No fitting below the reference spectrum') 
+            logger.info(f'No spectra to fit below the reference spectrum') 
 
         root.mainloop()
     

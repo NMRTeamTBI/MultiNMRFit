@@ -121,7 +121,9 @@ def check_input_file(user_input,self=None):
         # add handlers to logger
         logger.addHandler(strm_handler)
         logger.addHandler(file_handler)
-        logger.setLevel(logging.INFO)
+        # set log level
+        log_level = logging.DEBUG if user_input.get('verbose_log') else logging.INFO
+        logger.setLevel(log_level)
 
         if not Path(user_input.get('data_path')).exists():
             return error_handling(self,"Argument : 'data_path' does not exist", critical_error=is_not_gui)
