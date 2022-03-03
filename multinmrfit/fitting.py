@@ -24,7 +24,8 @@ def update_position(constraints, x_fit_):
 def get_fitting_parameters(
     peakpicking_data,
     x_fit_,
-    scaling_factor
+    scaling_factor,
+    offset=False
     ):
     ini_params, ini_constraints, name_parameters = [], [], []
     cluster_list =  peakpicking_data.Cluster.unique()
@@ -43,11 +44,12 @@ def get_fitting_parameters(
         upd_cons = update_position(upd_cons, x_fit_)
         ini_constraints.extend(upd_cons)
         name_parameters.extend(d_mapping[_multiplet_type_]['params'])
-    ini_params.extend([Initial_offset])
-    ini_constraints.extend([(-0.1, 0.1)])
+    if offset:
+        ini_params.extend([Initial_offset])
+        ini_constraints.extend([(-0.1, 0.1)])
     return d_id, ini_params, ini_constraints, name_parameters
 
-def simulate_data(x_fit_, fit_par, d_id, scaling_factor):
+def simulate_data(x_fit_, fit_par, d_id, scaling_factor, offset=False):
     # initialize simulated spectrum at 0
     sim_intensity = np.zeros(len(x_fit_))
     # add subspectrum of each spin system
@@ -57,7 +59,8 @@ def simulate_data(x_fit_, fit_par, d_id, scaling_factor):
         # simulate and add corresponding subspectrum
         sim_intensity += d_id[n][0](x_fit_, *params)
     # add offset (corresponds to 0-order baseline correction)
-    sim_intensity += fit_par[-1]
+    if offset:
+        sim_intensity += fit_par[-1]
     # multiply by scaling factor (required for stable minimization)
     sim_intensity *= scaling_factor
     return sim_intensity
@@ -67,15 +70,16 @@ def fit_objective(
     x_fit_,
     y_fit_,
     d_id,
-    scaling_factor
+    scaling_factor,
+    offset=False
     ):
-    sim_intensity = simulate_data(x_fit_,fit_par, d_id, scaling_factor)
+    sim_intensity = simulate_data(x_fit_,fit_par, d_id, scaling_factor, offset=offset)
     rmsd = np.sqrt(np.mean((sim_intensity - y_fit_)**2))
     return rmsd
 
 def refine_constraints(initial_fit_values, bounds_fit, name_parameters):
     logger.debug(f"old bounds: {bounds_fit}")
-    # update parameters based on dict(k, v) where k is a string used to identify the parameter, and v is the relative parameter window
+    # update parameters based on dict(k, v) where k is a string used to identify the parameter, and v is the allowed (relative) parameter window
     relative_window = {"J":0.2, "lw":0.3}
     for k, v in relative_window.items():
         idx = [i for i,j in enumerate(name_parameters) if k in j]
@@ -93,10 +97,11 @@ def run_single_fit_function(up,
                             peak_picking_data, 
                             scaling_factor,
                             use_previous_fit,
-                            writing_to_file=True
+                            writing_to_file=True,
+                            offset=False
                             ):
 
-    d_id, initial_fit_values, bounds_fit, name_parameters = get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor)
+    d_id, initial_fit_values, bounds_fit, name_parameters = get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor, offset=offset)
     if use_previous_fit :
         initial_fit_values = list(fit_results.iloc[fit[1]-1 if up else fit[1]+1].values)
         bounds_fit = refine_constraints(initial_fit_values, bounds_fit, name_parameters)
@@ -108,8 +113,8 @@ def run_single_fit_function(up,
             x0=initial_fit_values,                
             bounds=bounds_fit,
             method='L-BFGS-B',
-            #options={'ftol': 1e-6},#,'maxiter':0},
-            args=(x_spectrum_fit, intensities, d_id, scaling_factor),
+            options={'maxcor': 30},
+            args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset),
             )
 
         if writing_to_file is False:
@@ -118,7 +123,7 @@ def run_single_fit_function(up,
             fit_results.loc[fit[1],:] = res_fit.x.tolist()
     
     except:
-        logger.error('Error: '+str(fit[1]))
+        logger.error('An unknown error has occured when fitting spectra: '+str(fit[1]))
 
 def full_fitting_procedure(   
     intensities         =   'intensities',
@@ -127,7 +132,8 @@ def full_fitting_procedure(
     peak_picking_data   =   'peak_picking_data',
     scaling_factor      =    None,
     spectra_to_fit      =   'spectra_to_fit',
-    use_previous_fit    =   'use_previous_fit'
+    use_previous_fit    =   'use_previous_fit',
+    offset=False
     ): 
     
     # Handling spectra list for multi-threading
@@ -135,7 +141,7 @@ def full_fitting_procedure(
     id_spec_part1 = [i for i in spectra_to_fit if i[0] > ref_spec]
     id_ref_spec = [i for i in spectra_to_fit if i[0] == ref_spec ]
 
-    #Fitting of the reference 1D spectrum -- This function can be used for 1D spectrum alone
+    # Fitting the reference 1D spectrum -- This function can be used for 1D spectrum alone
     logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]})')
     res_fit_reference_spectrum = run_single_fit_function(
         None, # No need of up or down here
@@ -146,11 +152,12 @@ def full_fitting_procedure(
         peak_picking_data,  
         scaling_factor,
         False,
-        writing_to_file=False
+        writing_to_file=False,
+        offset=offset
         ) 
     logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]}) -- Complete')
 
-    #Creation of the data frame containing all the results from the fitting
+    # Creation of the data frame containing fitting results
     fit_results_table = pd.DataFrame(
         index=[i[1] for i in spectra_to_fit],
         columns=np.arange(0,len(res_fit_reference_spectrum.x.tolist()),1)
@@ -180,7 +187,8 @@ def full_fitting_procedure(
                 "x_spectrum_fit"      : x_spec,
                 "peak_picking_data"   : peak_picking_data,
                 "scaling_factor"      : scaling_factor,
-                "use_previous_fit"    : use_previous_fit
+                "use_previous_fit"    : use_previous_fit,
+                "offset"              : offset
             },
             threads=threads,
             close_button=close_button,
@@ -200,7 +208,8 @@ def full_fitting_procedure(
                 "x_spectrum_fit"      : x_spec,
                 "peak_picking_data"   : peak_picking_data,
                 "scaling_factor"      : scaling_factor,
-                "use_previous_fit"    : use_previous_fit
+                "use_previous_fit"    : use_previous_fit,
+                "offset"              : offset
             },
             threads=threads,
             close_button=close_button,

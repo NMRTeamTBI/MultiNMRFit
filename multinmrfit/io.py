@@ -8,10 +8,7 @@ import numpy as np
 import json
 import os
 # Import plot libraries
-import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.backends.backend_pdf import PdfPages
 
 # Import our own libraries
 import multinmrfit.fitting as nff
@@ -216,7 +213,7 @@ def getIntegral(x_fit, _multiplet_type_, fit_par):
     integral = np.sum(y)*(x_fit[1]-x_fit[0])
     return integral
     
-def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, output_path, output_folder, output_name):    
+def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, output_path, output_folder, output_name, offset=False):    
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches([11.7,8.3])
 
@@ -235,7 +232,8 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
         x_fit,
         res,
         d_id,
-        scaling_factor
+        scaling_factor,
+        offset=offset
         )
 
     ax.plot(
@@ -285,7 +283,7 @@ def update_results(mutliplet_results, fname):
     try:
         original_data = pd.read_csv(str(fname), sep="\t")
     except:
-        logger.error("error when opening existing results file")
+        logger.error("Error when opening existing results file")
     condition = ((original_data['exp_no'].isin(mutliplet_results['exp_no'])) & (original_data['proc_no'].isin(mutliplet_results['proc_no'])) & (original_data['row_id'].isin(mutliplet_results['row_id'])))
     tmp = original_data.loc[[not x for x in condition],:]
 
@@ -330,7 +328,7 @@ def merge_pdf(output_path,output_folder,output_name):
     merger.write(output_pdf)
     merger.close()
 
-def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_fit, peak_picking_data, scaling_factor):
+def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_fit, peak_picking_data, scaling_factor, offset=False):
 
     output_path         =   user_input['output_path']
     output_folder       =   user_input['output_folder']
@@ -358,7 +356,8 @@ def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_f
                 scaling_factor, 
                 output_path,   
                 output_folder,
-                output_name
+                output_name,
+                offset=offset
             )
     merge_pdf(output_path,output_folder,output_name)
     logger.info('Save plot to pdf -- Complete')

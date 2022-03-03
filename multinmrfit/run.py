@@ -1,26 +1,16 @@
 ﻿# System Libraries
-import os
 import logging
-import json
 import sys
 import warnings
 warnings.filterwarnings('ignore')
-import tkinter as tk
-# Other libs
 import numpy as np
 import pandas as pd
 
 # Own Libs
-import multinmrfit as nf
 import multinmrfit.ui as nui
 import multinmrfit.io as nio
 import multinmrfit.utils_nmrdata as nfu
 import multinmrfit.fitting as nff
-
-# Import plot libraries
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 logger = logging.getLogger(__name__)
 
@@ -115,17 +105,20 @@ def prepare_data(user_input):
         else:
             use_previous_fit = True
 
+    # TO BE UPDATED (must be defined from json and gui)
+    offset = False
 
-    return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit
+    return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset
 
 def run_analysis(user_input, gui=False):
     logger.info('Loading NMR Data')
 
-    spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit = prepare_data(user_input)
+    spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset = prepare_data(user_input)
     #-----------------------------------------------------#   
     ######################################################
     #######################Fitting########################
     ######################################################
+    logger.info('Fit spectra')
     fit_results_table = nff.full_fitting_procedure(
         intensities         =   intensities,
         x_spec              =   x_ppm_reference_spectrum,
@@ -133,12 +126,14 @@ def run_analysis(user_input, gui=False):
         peak_picking_data   =   user_picked_data,
         scaling_factor      =   scaling_factor,
         spectra_to_fit      =   spectra_to_fit,
-        use_previous_fit    =   use_previous_fit   
+        use_previous_fit    =   use_previous_fit,
+        offset              =   offset
     )
     #-----------------------------------------------------#   
     ######################################################
     #######################Output#########################
     ######################################################
+    logger.info('Save results')
 
     nio.save_output_data(
         user_input          ,
@@ -147,11 +142,10 @@ def run_analysis(user_input, gui=False):
         x_ppm_reference_spectrum,
         spectra_to_fit,
         user_picked_data,
-        scaling_factor
-
+        scaling_factor,
+        offset=offset
     )
     logger.info('Full Analysis is complete')
-    logger.info('####')
     exit()
 
      
