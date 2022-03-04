@@ -34,7 +34,6 @@ def prepare_data(user_input):
     ######################################################
     intensities, x_ppm = nfu.retrieve_nmr_data(user_input) 
     logger.info('Loading -- Complete')
-    print(intensities.shape)
     #-----------------------------------------------------#    
 
     ######################################################

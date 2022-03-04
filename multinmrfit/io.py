@@ -72,11 +72,11 @@ def load_config_file(self=None, user_input=None, config_file_path=None):
         else:
             return config
 
-def create_experiments_list(user_input):
+def create_spectra_list(user_input):
     # check for allowed characters
     allowed = set(string.digits + ',' + '-')
     if not set(user_input) <= allowed:
-        # TO BE UPDATED: DISPLAY ERROR MESSAGE
+        # TO BE UPDATED: DISPLAY ERROR MESSAGE & STOPS
         logging.error("Wrong format for experiments list.")
     # create list
     experiment_list = []
@@ -89,7 +89,7 @@ def create_experiments_list(user_input):
                 else:
                     experiment_list += range(int(spectra[1]), int(spectra[0])+1)
             except:
-                # TO BE UPDATED: DISPLAY ERROR MESSAGE
+                # TO BE UPDATED: DISPLAY ERROR MESSAGE & STOPS
                 logging.error("Experiments/rows to process should be positive integers.")
         else:
             experiment_list.append(int(i))
@@ -114,7 +114,6 @@ def check_input_file(user_input,self=None):
         is_not_gui = True
 
     try:
-        print('------')
         output_dir = Path(user_input.get('output_path'),user_input.get('output_folder'))
         if not output_dir:
             return error_handling("Argument : 'output_folder' is missing", critical_error=is_not_gui)
@@ -157,7 +156,7 @@ def check_input_file(user_input,self=None):
         if len(spec_lim)%2 != 0 and len(spec_lim) != 0:
             return error_handling(self,"Argument : 'spectral_limits' is incomplete", critical_error=is_not_gui)
 
-        exp_list = create_experiments_list(user_input.get('data_exp_no'))
+        exp_list = create_spectra_list(user_input.get('data_exp_no'))
         for exp in exp_list:
             if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp)).exists():
                 return error_handling(self,f"Argument : experiment <{exp}> does not exist", critical_error=is_not_gui)
@@ -170,7 +169,7 @@ def check_input_file(user_input,self=None):
 
         row_list = []
         if user_input.get('option_data_row_no'):
-            row_list = create_experiments_list(user_input.get('option_data_row_no'))
+            row_list = create_spectra_list(user_input.get('option_data_row_no'))
             if int(user_input.get('reference_spectrum')) not in row_list :
                 return error_handling(self,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in row list", critical_error=is_not_gui)
 
@@ -187,9 +186,9 @@ def check_input_file(user_input,self=None):
             'output_folder'         :   user_input.get('output_folder'),
             'output_name'           :   user_input.get('output_name'),
             'data_row_no'           :   row_list,
-            'previous_fit'          :   user_input.get('time_series'),
-            'offset'                :   user_input.get('option_offset'),
-            'verbose_log'           :   user_input.get('option_verbose_log')
+            'previous_fit'          :   user_input.get('time_series', False),
+            'offset'                :   user_input.get('option_offset', False),
+            'verbose_log'           :   user_input.get('option_verbose_log', False)
 
         }
 
@@ -205,7 +204,6 @@ def check_input_file(user_input,self=None):
         config.pop("previous_fit")
         if config['data_row_no'] == []:
            config.pop("data_row_no") 
-
     
     for key, conf in config.items():        
         if key not in options_list and conf is None:
@@ -277,27 +275,30 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     plt.close(fig)
 
 def build_output(d_id_i, x_fit, fit_results, scaling_factor,spectra_to_fit):
-    d_mapping, _ = nfm.mapping_multiplets()
-    col = range(d_id_i[1][0],d_id_i[1][1])
+    
+    # get multiplicity, names & values of parameters to initialize the dataframe
     _multiplet_type_ = d_id_i[2]
+    col = range(d_id_i[1][0],d_id_i[1][1])
     mutliplet_results = fit_results[fit_results.columns.intersection(col)]
+    d_mapping, _ = nfm.mapping_multiplets()
     mutliplet_results.columns = d_mapping[_multiplet_type_]['params']
 
-    mutliplet_results["integral"] = [scaling_factor*getIntegral(x_fit, _multiplet_type_, row.tolist()) for index, row in mutliplet_results.iterrows()]
+    # calculate integral & intensity
+    mutliplet_results["integral"] = [scaling_factor*getIntegral(x_fit, _multiplet_type_, row.tolist()) for _, row in mutliplet_results.iterrows()]
     mutliplet_results["Amp"] *= scaling_factor
 
+    # append IDs
     mutliplet_results.insert(loc = 0, column = 'exp_no' , value = [i[2] for i in spectra_to_fit])
     mutliplet_results.insert(loc = 1, column = 'proc_no' , value = [int(i[3]) for i in spectra_to_fit])
     mutliplet_results.insert(loc = 2, column = 'row_id' , value = [i[4] for i in spectra_to_fit])
 
-    #mutliplet_results.set_index('exp_no', inplace=True)
     return _multiplet_type_, mutliplet_results
 
 def update_results(mutliplet_results, fname):
     try:
         original_data = pd.read_csv(str(fname), sep="\t")
     except:
-        logger.error("Error when opening existing results file")
+        logger.error("Error when opening existing results file.")
     condition = ((original_data['exp_no'].isin(mutliplet_results['exp_no'])) & (original_data['proc_no'].isin(mutliplet_results['proc_no'])) & (original_data['row_id'].isin(mutliplet_results['row_id'])))
     tmp = original_data.loc[[not x for x in condition],:]
 
@@ -306,13 +307,16 @@ def update_results(mutliplet_results, fname):
 def output_txt_file(x_fit,fit_results, d_id, scaling_factor,spectra_to_fit,output_path, output_folder,output_name):
     
     cluster_list = getList(d_id)
-    #fit_results = fit_results.round(9)
-    for i in cluster_list:        
+    for i in cluster_list:
+        # create output dataframe
         _multiplet_type_, mutliplet_results = build_output(d_id[i], x_fit, fit_results, scaling_factor,spectra_to_fit)
+        # update results file if already exists
         fname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt')
         if fname.is_file():
             mutliplet_results = update_results(mutliplet_results, fname)
+        # sort results by exp_no, proc_no & row_id
         mutliplet_results = mutliplet_results.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
+        # save to tsv
         mutliplet_results.to_csv(
             str(fname), 
             index=False, 
