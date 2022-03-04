@@ -14,7 +14,7 @@ setuptools.setup(
     version=VERSION,
     author="Cyril Charlier, Pierre Millard",
     author_email="charlier@insa-toulouse.fr",
-    description="multinmrfit: Fitting NMR spectra",
+    description="multinmrfit: Fit NMR spectra",
     long_description="add long description here",
     long_description_content_type="text/markdown",
     url="https://github.com/NMRTeamTBI/NMRFit",
@@ -24,6 +24,8 @@ setuptools.setup(
     package_data={'': ['data/*.png', ], },
     include_package_data=True,
     classifiers=[
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
@@ -33,10 +35,10 @@ setuptools.setup(
         ],
     entry_points={
         'console_scripts': [
-            'multinmrfit = multinmrfit.run:main' 
+            'multinmrfit = multinmrfit.run:main'
         ],
         'gui_scripts': [
-            'multinmrfit = multinmrfit.run:main' 
+            'multinmrfit = multinmrfit.run:main'
         ]
     }
 )
