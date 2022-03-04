@@ -84,7 +84,7 @@ def create_experiments_list(user_input):
         if "-" in i:
             spectra = i.split('-')
             try:
-                if int(spectra[0]) < int(spectra[1]):
+                if int(spectra[0]) <= int(spectra[1]):
                     experiment_list += range(int(spectra[0]), int(spectra[1])+1)
                 else:
                     experiment_list += range(int(spectra[1]), int(spectra[0])+1)
