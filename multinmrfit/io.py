@@ -17,6 +17,7 @@ import multinmrfit.ui as nui
 
 import natsort 
 from PyPDF2 import PdfFileMerger
+import string
 
 logger = logging.getLogger()
 
@@ -72,11 +73,24 @@ def load_config_file(self=None, user_input=None, config_file_path=None):
             return config
 
 def create_experiments_list(user_input):
+    # check for allowed characters
+    allowed = set(string.digits + ',' + '-')
+    if not set(user_input) <= allowed:
+        # TO BE UPDATED: DISPLAY ERROR MESSAGE
+        logging.error("Wrong format for experiments list.")
+    # create list
     experiment_list = []
     for i in user_input.split(','):
         if "-" in i:
             spectra = i.split('-')
-            experiment_list += range(int(spectra[0]), int(spectra[1])+1)
+            try:
+                if int(spectra[0]) < int(spectra[1]):
+                    experiment_list += range(int(spectra[0]), int(spectra[1])+1)
+                else:
+                    experiment_list += range(int(spectra[1]), int(spectra[0])+1)
+            except:
+                # TO BE UPDATED: DISPLAY ERROR MESSAGE
+                logging.error("Experiments/rows to process should be positive integers.")
         else:
             experiment_list.append(int(i))
     return experiment_list
