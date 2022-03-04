@@ -41,9 +41,6 @@ def Triplet( x, x0, a, h_s, lw, J1):
     Signal = S1+S2+S3
     return Signal
 
-# to be checked:
-#    - constraints on coupling constants are sufficient
-#    - error check on multiple peaks (duplicates lines in panda)
 def mapping_multiplets(lw_constraints = (1e-3,1e-2), x0_constraints = (1e-6,12), a_constraints = (1e-3,1), Amp_constraints = (1e-6,np.inf), dH_constraints= (0, np.inf), J_constraints = (2.5e-3,0.25)):
     d_mapping = {
         "Singlet":{"f_function":Singlet,"n_peaks" : "1", "option":"", "params":['x0','a','Amp','lw'],"n_params" : 4, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints]},
@@ -61,6 +58,7 @@ def Peak_Initialisation(
     Peak_Picking_Results = 'Peak_Picking_Results',
     scaling_factor=None
     ):
+    
     Line_Width = 0.001
     Ratio_Lorentzian_Gaussian = 0.5
 
@@ -78,7 +76,6 @@ def Peak_Initialisation(
         x0 = np.mean(Peak_Picking_Results.Peak_Position)
         J1 = 2*(np.abs(Peak_Picking_Results.Peak_Position.max())-np.abs(x0))
         Amp = np.mean(Peak_Picking_Results.loc[:,'Peak_Intensity'])/scaling_factor
-
         Init_Val= [
                 x0, 
                 Ratio_Lorentzian_Gaussian,
@@ -88,7 +85,6 @@ def Peak_Initialisation(
                 ]
 
     elif Peak_Type =='DoubletofDoublet':
-
         x0_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Position'])
         J_small = Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position.diff().iloc[1]
         J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'Peak_Position').Peak_Position)-np.mean(Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position))
@@ -101,8 +97,8 @@ def Peak_Initialisation(
                 J_small,
                 J_large
                 ]
-    elif Peak_Type =='DoubletofDoubletAsymetric':
 
+    elif Peak_Type =='DoubletofDoubletAsymetric':
         x0_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Position'])
         J_small = Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position.diff().iloc[1]
         J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'Peak_Position').Peak_Position)-np.mean(Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position))
@@ -116,6 +112,7 @@ def Peak_Initialisation(
                 J_large,
                 0
                 ]
+
     elif Peak_Type =='Triplet':
         x0 = np.mean(Peak_Picking_Results.Peak_Position)
         J1 = (np.abs(Peak_Picking_Results.Peak_Position.max())-np.abs(x0))
