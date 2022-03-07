@@ -87,25 +87,19 @@ def prepare_data(user_input):
     ######################################################
     # (id, expno, procno, rowno, output_name)
     if user_input['analysis_type'] == "Pseudo2D" : 
-        if not len(user_input.get('data_row_no',[])):
-            user_input['data_row_no'] = np.arange(1,len(intensities)+1,1)
-        spectra_to_fit = [(j-1, i, user_input['data_exp_no'][0], user_input['data_proc_no'], j, j) for i,j in enumerate(user_input['data_row_no'])]
+        if not len(user_input.get('option_data_row_no',[])):
+            user_input['option_data_row_no'] = np.arange(1,len(intensities)+1,1)
+        spectra_to_fit = [(j-1, i, user_input['data_exp_no'][0], user_input['data_proc_no'], j, j) for i,j in enumerate(user_input['option_data_row_no'])]
     elif user_input['analysis_type'] == '1D_Series':
             spectra_to_fit = [(i, i, j, user_input['data_proc_no'], 1, j) for i, j in enumerate(user_input['data_exp_no'])]
 
     ######################################################
     #Check to use the previpous fit as initial values for fitting##
     ######################################################
-    if user_input['analysis_type'] == 'Pseudo2D':
-        use_previous_fit = True
-    elif user_input['analysis_type'] == '1D_Series':
-        if user_input['previous_fit'] is None or user_input['previous_fit'] == 0:
-            use_previous_fit = False
-        else:
-            use_previous_fit = True
+    use_previous_fit = user_input['option_previous_fit']
 
     # TO BE UPDATED (must be defined from json and gui)
-    offset = False
+    offset = user_input['option_offset']
 
     return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset
 

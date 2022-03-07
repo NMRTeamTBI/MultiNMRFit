@@ -287,10 +287,10 @@ class App:
 
         # # ============ Options ============
         # raw ids for Pseudo2S
-        self.PartialPseudo2D = tk.IntVar()
+        self.PartialPseudo2D = tk.BooleanVar()
         self.check_box_opt1 = tk.Checkbutton(
                                         self.frame_options,
-                                        text='Data raw no (* partial analysis of Pseudo 2D)',
+                                        text='Data row no (* partial analysis of Pseudo 2D)',
                                         variable=self.PartialPseudo2D,
                                         width=20,
                                         font=("Helvetica", 14, 'normal'),
@@ -312,14 +312,14 @@ class App:
                             state='disabled' if user_input['analysis_type'] == '1D_Series' else 'normal'
                             )
         self.input_entry.place(relx=0.1, rely=0.2, width=200, anchor=tkinter.W)
-        user_input['option_data_daw_no'] = self.input_raws
+        user_input['option_data_row_no'] = self.input_raws
 
         # # if user_input['analysis_type'] == '1D_Series':
         # #     self.input_entry.config(state='disabled')
         # #     self.check_box_opt1.config(state='disabled')
 
         # Use previous Fit dor starting parameters
-        self.TimeSeries = tk.IntVar()
+        self.TimeSeries = tk.BooleanVar()
         self.check_box_opt2 = tk.Checkbutton(
                                 self.frame_options,
                                 text="Use previous fit (* 1D only)",
@@ -334,7 +334,7 @@ class App:
         user_input['option_previous_fit'] = self.TimeSeries
 
         # Use Offset in Fitting
-        self.Offset = tk.IntVar()
+        self.Offset = tk.BooleanVar()
         self.check_box_opt3 = tk.Checkbutton(
                                 self.frame_options,
                                 text="Offset",
@@ -348,7 +348,7 @@ class App:
         user_input['option_offset'] = self.Offset
 
         # # Verbose Log
-        self.VerboseLog = tk.IntVar()
+        self.VerboseLog = tk.BooleanVar()
         self.check_box_opt4 = tk.Checkbutton(
                                 self.frame_options,
                                 text="Verbose log",
@@ -387,11 +387,11 @@ class App:
         config_path = Path(user_input['output_path'], user_input['output_folder'])
         file_name = self.ask_filename(config_path)
 
-        if not 'rows_pseudo2D' in user_input:
+        if not 'option_data_row_no' in user_input:
             pass
         else:
-            if not user_input['rows_pseudo2D']:
-                del user_input['rows_pse    udo2D']
+            if not user_input['option_data_row_no']:
+                del user_input['option_data_row_no']
         if file_name :
             f = open(file_name, "a")
             f.seek(0)
@@ -400,9 +400,9 @@ class App:
             f.close()  
 
     def activateCheck(self):
-        if  self.PartialPseudo2D.get() == 1:          #whenever checked
+        if  self.PartialPseudo2D.get():          #whenever checked
             self.input_entry.config(state='normal')
-        elif  self.PartialPseudo2D.get() == 0:        #whenever unchecked
+        else:        #whenever unchecked
             self.input_entry.config(state='disabled')
 
     def on_closing(self, event=0):

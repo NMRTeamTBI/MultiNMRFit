@@ -114,9 +114,11 @@ def check_input_file(user_input,self=None):
         is_not_gui = True
 
     try:
-        output_dir = Path(user_input.get('output_path'),user_input.get('output_folder'))
-        if not output_dir:
+        if not Path(user_input.get('output_path')):
+            return error_handling("Argument : 'output_path' is missing", critical_error=is_not_gui)
+        if not Path(user_input.get('output_folder')):
             return error_handling("Argument : 'output_folder' is missing", critical_error=is_not_gui)
+        output_dir = Path(user_input.get('output_path'),user_input.get('output_folder'))
         output_dir.mkdir(parents=True,exist_ok=True)
 
         # create logger (should be root to catch builder and simulator loggers)
@@ -132,7 +134,7 @@ def check_input_file(user_input,self=None):
         logger.addHandler(strm_handler)
         logger.addHandler(file_handler)
         # set log level
-        log_level = logging.DEBUG if user_input.get('verbose_log') else logging.INFO
+        log_level = logging.DEBUG if user_input.get('option_verbose_log') else logging.INFO
         logger.setLevel(log_level)
 
         if not Path(user_input.get('data_path')).exists():
@@ -153,6 +155,7 @@ def check_input_file(user_input,self=None):
 
         spec_lim = [float(i) for i in user_input.get('spectral_limits').split(',')]
 
+        # make additional tests on limits
         if len(spec_lim)%2 != 0 and len(spec_lim) != 0:
             return error_handling(self,"Argument : 'spectral_limits' is incomplete", critical_error=is_not_gui)
 
@@ -185,10 +188,10 @@ def check_input_file(user_input,self=None):
             'output_path'           :   user_input.get('output_path'),
             'output_folder'         :   user_input.get('output_folder'),
             'output_name'           :   user_input.get('output_name'),
-            'data_row_no'           :   row_list,
-            'previous_fit'          :   user_input.get('option_previous_fit', False),
-            'offset'                :   user_input.get('option_offset', False),
-            'verbose_log'           :   user_input.get('option_verbose_log', False)
+            'option_data_row_no'           :   row_list,
+            'option_previous_fit'          :   user_input.get('option_previous_fit', False),
+            'option_offset'                :   user_input.get('option_offset', False),
+            'option_verbose_log'           :   user_input.get('option_verbose_log', False)
 
         }
 
@@ -196,14 +199,14 @@ def check_input_file(user_input,self=None):
         return error_handling(self,e, critical_error=is_not_gui)
 
     # Options
-    options_list = ['data_row_no','previous_fit','offset','verbose_log']
+    options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log']
 
     if config['analysis_type'] != 'Pseudo2D': 
-        config.pop("data_row_no")
+        config.pop("option_data_row_no")
     if config['analysis_type'] == 'Pseudo2D': 
-        config.pop("previous_fit")
-        if config['data_row_no'] == []:
-           config.pop("data_row_no") 
+        config["option_previous_fit"] = True
+        if config['option_data_row_no'] == []:
+           config.pop("option_data_row_no") 
     
     for key, conf in config.items():        
         if key not in options_list and conf is None:
