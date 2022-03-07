@@ -186,7 +186,7 @@ def check_input_file(user_input,self=None):
             'output_folder'         :   user_input.get('output_folder'),
             'output_name'           :   user_input.get('output_name'),
             'data_row_no'           :   row_list,
-            'previous_fit'          :   user_input.get('time_series', False),
+            'previous_fit'          :   user_input.get('option_previous_fit', False),
             'offset'                :   user_input.get('option_offset', False),
             'verbose_log'           :   user_input.get('option_verbose_log', False)
 
