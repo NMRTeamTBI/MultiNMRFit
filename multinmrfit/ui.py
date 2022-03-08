@@ -517,7 +517,7 @@ class App_Clustering:
                             fg='black',
                             borderwidth=0,
                             font=("Helvetica", 20, 'normal'),
-                            command=lambda:self.save_info_clustering(self.clustering_information, clustering_table)
+                            command=lambda:self.save_info_clustering(clustering_table)
                             )
         self.run.place(relx=0.71, rely=0.85,width=180,height=50)
 
@@ -646,7 +646,7 @@ class App_Clustering:
 
         return clustering_information
 
-    def save_info_clustering(self, clustering_information, clustering_table):
+    def save_info_clustering(self, clustering_table):
         clustering_table.Peak_Intensity = self.clustering_information['Peak Intensity']
         clustering_table.Peak_Position = self.clustering_information['Peak Position']
         clustering_table.Options = [i.get() for i in self.clustering_information["Options"]]
