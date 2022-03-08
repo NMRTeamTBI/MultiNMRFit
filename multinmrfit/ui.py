@@ -471,7 +471,7 @@ class App_Clustering:
         # ============ Figure ============
         peak_picking_data = self.peak_picking(x_spec, y_spec, peak_picking_threshold)
         colors = self.create_plot(x_spec, y_spec, peak_picking_threshold,peak_picking_data)
-        clustering_information = self.create_table(peak_picking_data,colors) 
+        self.clustering_information = self.create_table(peak_picking_data,colors) 
 
         # ============ Labels ============
         tk.Label(
@@ -501,7 +501,7 @@ class App_Clustering:
 
         # ============ Buttons ============
         self.refresh_th = tk.Button(master,
-                                    text=" Refresh & Close ",
+                                    text=" Update Threshold ",
                                     highlightbackground = self.FRAME_COLOR,
                                     fg='black',
                                     borderwidth=0,
@@ -517,7 +517,7 @@ class App_Clustering:
                             fg='black',
                             borderwidth=0,
                             font=("Helvetica", 20, 'normal'),
-                            command=lambda:self.save_info_clustering(clustering_information, clustering_table)
+                            command=lambda:self.save_info_clustering(self.clustering_information, clustering_table)
                             )
         self.run.place(relx=0.71, rely=0.85,width=180,height=50)
 
@@ -647,12 +647,11 @@ class App_Clustering:
         return clustering_information
 
     def save_info_clustering(self, clustering_information, clustering_table):
-
-        clustering_table.Peak_Intensity = clustering_information['Peak Intensity']
-        clustering_table.Peak_Position = clustering_information['Peak Position']
-        clustering_table.Options = [i.get() for i in clustering_information["Options"]]
-        clustering_table.Cluster = [i.get() for i in clustering_information["Cluster ID"]]
-        clustering_table.Selection = [True if i.get() != '' else False for i in clustering_information["Cluster ID"]]
+        clustering_table.Peak_Intensity = self.clustering_information['Peak Intensity']
+        clustering_table.Peak_Position = self.clustering_information['Peak Position']
+        clustering_table.Options = [i.get() for i in self.clustering_information["Options"]]
+        clustering_table.Cluster = [i.get() for i in self.clustering_information["Cluster ID"]]
+        clustering_table.Selection = [True if i.get() != '' else False for i in self.clustering_information["Cluster ID"]]
         self.master.destroy()
 
     def create_plot(self, x_spec, y_spec, threshold,peak_picking_data):
@@ -694,7 +693,7 @@ class App_Clustering:
         peak_picking = self.peak_picking(x_spec, y_spec, float(threshold))
         colors = self.create_plot(x_spec, y_spec, threshold, peak_picking)
         self.clear_frame()
-        self.create_table(peak_picking,colors)
+        self.clustering_information = self.create_table(peak_picking,colors)
 
     def clear_frame(self):
         for widgets in self.frame_peak_Table.winfo_children():
