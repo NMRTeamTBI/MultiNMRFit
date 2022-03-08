@@ -290,14 +290,12 @@ class App:
         self.PartialPseudo2D = tk.BooleanVar()
         self.check_box_opt1 = tk.Checkbutton(
                                         self.frame_options,
-                                        text='Data row no (* partial analysis of Pseudo 2D)',
+                                        text='Data row no (* 2D only)',
                                         variable=self.PartialPseudo2D,
                                         width=20,
                                         font=("Helvetica", 14, 'normal'),
                                         borderwidth=0,
-                                        fg='white',
                                         bg=FRAME_COLOR,
-                                        justify=tk.CENTER,
                                         command=self.activateCheck
              )
         self.check_box_opt1.place(relx=0.05, rely=0.1, width=310, anchor=tkinter.W)
@@ -322,7 +320,7 @@ class App:
         self.TimeSeries = tk.BooleanVar()
         self.check_box_opt2 = tk.Checkbutton(
                                 self.frame_options,
-                                text="Use previous fit (* 1D only)",
+                                text="Use previous fit (* 2D only)",
                                 font=("Helvetica", 14, 'normal'),
                                 variable=self.TimeSeries,
                                 highlightthickness=0,
