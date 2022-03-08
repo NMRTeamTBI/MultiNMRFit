@@ -38,27 +38,27 @@ def create_user_input():
     }
     return user_input  
 
-def load_config_file(self=None, user_input=None, config_file_path=None):
-        if self and self.winfo_exists():
+def load_config_file(gui=None, user_input=None, config_file_path=None):
+        if gui and gui.winfo_exists():
             config_file_path = filedialog.askopenfilename(filetypes=[("All Files", "*.json")])
             if not config_file_path:
                 return None
         try:
             f = open(str(Path(config_file_path)),"r")    
         except FileNotFoundError:
-            error_handling(self,'Config file not found')
+            error_handling(gui,'Config file not found')
             return None
 
         try:
             config = json.loads(f.read())
         except json.decoder.JSONDecodeError as e:
-            error_handling(self,'Json config file must be reformated')
+            error_handling(gui,'Json config file must be reformated')
             return None
         except UnicodeDecodeError as e:
             error_handling('Wrong config file type (not a json file, see example)')
             return None
 
-        if self and self.winfo_exists():
+        if gui and gui.winfo_exists():
             options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log']
             for label in user_input.keys():                
                 if label in options_list:
@@ -72,12 +72,13 @@ def load_config_file(self=None, user_input=None, config_file_path=None):
         else:
             return config
 
-def create_spectra_list(user_input):
+def create_spectra_list(user_input, gui=None):
     # check for allowed characters
     allowed = set(string.digits + ',' + '-')
     if not set(user_input) <= allowed:
         # TO BE UPDATED: DISPLAY ERROR MESSAGE & STOPS
-        logging.error("Wrong format for experiments list.")
+        error_handling(gui,"Argument : 'data_exp_no' has a wrong format")
+        # logging.error("Wrong format for experiments list.")
     # create list
     experiment_list = []
     for i in user_input.split(','):
@@ -90,37 +91,50 @@ def create_spectra_list(user_input):
                     experiment_list += range(int(spectra[1]), int(spectra[0])+1)
             except:
                 # TO BE UPDATED: DISPLAY ERROR MESSAGE & STOPS
-                logging.error("Experiments/rows to process should be positive integers.")
+                error_handling(gui,"Experiments/rows to process should be positive integers. \n Argument : 'data_exp_no' needs to be checked")
+                # logging.error("Experiments/rows to process should be positive integers.")
         else:
             experiment_list.append(int(i))
     return experiment_list
 
-def error_handling(self,message, critical_error=False):
-    if self and self.winfo_exists():
+def error_handling(gui,message):
+    if gui.winfo_exists(): #if gui
+        critical_error=False
         app_err = nui.App_Error(message)
         app_err.start()
     elif logger:
+        critical_error=True
         logger.error(message)    
     if critical_error is True:
         exit()
-  
-def check_input_file(user_input,self=None):
 
-    if self and self.winfo_exists():
-        is_gui = True
-        is_not_gui = False
-    else:
-        is_gui = False
-        is_not_gui = True
+def check_float(potential_float):
+    try:
+        float(potential_float)
+        return True
+    except ValueError:
+        return False
+
+
+def check_input_file(user_input,gui=None):
 
     try:
-        if not Path(user_input.get('output_path')):
-            return error_handling("Argument : 'output_path' is missing", critical_error=is_not_gui)
-        if not Path(user_input.get('output_folder')):
-            return error_handling("Argument : 'output_folder' is missing", critical_error=is_not_gui)
+        ######### Check Output Path #########
+        if not user_input.get('output_path'):
+            return error_handling(gui,"Argument : 'output_path' is missing")
+        ########################################################################
+
+        ######### Check Output Folder #########
+        if not user_input.get('output_folder'):
+            return error_handling(gui,"Argument : 'output_folder' is missing")
+        ########################################################################
+
+        ######### Create output if needed #########
         output_dir = Path(user_input.get('output_path'),user_input.get('output_folder'))
         output_dir.mkdir(parents=True,exist_ok=True)
+        ########################################################################
 
+        ######### Logger #########
         # create logger (should be root to catch builder and simulator loggers)
         logger = logging.getLogger()
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', "%Y-%m-%d %H:%M:%S")
@@ -136,45 +150,108 @@ def check_input_file(user_input,self=None):
         # set log level
         log_level = logging.DEBUG if user_input.get('option_verbose_log') else logging.INFO
         logger.setLevel(log_level)
+        ########################################################################
 
-        if not Path(user_input.get('data_path')).exists():
-            return error_handling(self,"Argument : 'data_path' does not exist", critical_error=is_not_gui)
+        ######### Check Data Path #########
+        if not user_input.get('data_path'):
+            return error_handling(gui,"Argument : 'data_path' is missing")
+        else:
+            if not Path(user_input.get('data_path')).exists():
+                return error_handling(gui,"Argument : 'data_path' does not exist")
+        ########################################################################
 
-        # if not Path(user_input.get('data_path'),user_input.get('data_folder')).exists():
-        #     print('hello')
-        #     return error_handling(self,"Argument : 'data_folder' does not exist", critical_error=is_not_gui)
+        ######### Check Data Folder #########
+        if not user_input.get('data_folder'):
+            return error_handling(gui,"Argument : 'data_folder' is missing")
+        else:
+            if not Path(user_input.get('data_path'),user_input.get('data_folder')).exists():
+                return error_handling(gui,"The path to the data is incorrect please check \n Argument : 'data_folder' or 'data_path' ")
+        ########################################################################
 
-        if float(user_input.get('threshold', 1)) <= float(0):
-            return error_handling(self,"Argument : 'threshold' is too low (should be > 0)", critical_error=is_not_gui)
+        ######### Check ProcNo #########
+        if not user_input.get('data_proc_no'):
+            return error_handling(gui,"Argument : 'data_proc_no' is missing")                      
+        else:
+            data_proc_no_check = check_float(user_input.get('data_proc_no'))
+            if data_proc_no_check is False:
+                return error_handling(gui,"Argument : 'data_proc_no' has a wrong type")
+        ########################################################################
 
-        if user_input.get('analysis_type') not in ['Pseudo2D', '1D', '1D_Series']:
-            return error_handling(self,"Argument : 'analysis_type' expected as 'Pseudo2D','1D' or '1D_Series", critical_error=is_not_gui)
-
-        if not user_input.get('spectral_limits'):
-            return error_handling(self,"Argument : 'spectral_limits' is missing" , critical_error=is_not_gui)
-
-        spec_lim = [float(i) for i in user_input.get('spectral_limits').split(',')]
-
-        # make additional tests on limits
-        if len(spec_lim)%2 != 0 and len(spec_lim) != 0:
-            return error_handling(self,"Argument : 'spectral_limits' is incomplete", critical_error=is_not_gui)
-
-        exp_list = create_spectra_list(user_input.get('data_exp_no'))
+        ######### Check Exp List #########
+        if not user_input.get('data_exp_no'):
+            return error_handling(gui,"Argument : 'data_exp_no' is missing")
+        else:
+            # The function create_spectra_list needs to be updated for error handling
+            exp_list = create_spectra_list(user_input.get('data_exp_no'),gui)
         for exp in exp_list:
             if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp)).exists():
-                return error_handling(self,f"Argument : experiment <{exp}> does not exist", critical_error=is_not_gui)
+                return error_handling(gui,f"Argument : experiment <{exp}> does not exist")
             else:
                 if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp),'pdata',user_input.get('data_proc_no')).exists():
-                    return error_handling(self,f"Argument : experiment/procno <{exp}/{user_input.get('data_proc_no')}> does not exist", critical_error=is_not_gui)
+                    return error_handling(gui,f"Argument : experiment/procno <{exp}/{user_input.get('data_proc_no')}> does not exist")
 
-        if user_input.get('analysis_type') != 'Pseudo2D' and int(user_input.get('reference_spectrum')) not in exp_list:
-            return error_handling(self,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in experiment list", critical_error=is_not_gui)
+        ########################################################################
 
+        ######### Check Threshold #########
+        if not user_input.get('threshold'):
+            return error_handling(gui,"Argument : 'threshold' is missing")          
+        else:
+            threshold_check = check_float(user_input.get('threshold'))
+            if threshold_check is False:
+                return error_handling(gui,"Argument : 'threshold' has a wrong type")
+            if threshold_check is True:
+                if float(user_input.get('threshold',1)) <= float(0):
+                    return error_handling(gui,"Argument : 'threshold' is too low (should be > 0)")
+        ########################################################################
+
+        ######### Check Limits #########
+        if not user_input.get('spectral_limits'):
+            return error_handling(gui,"Argument : 'spectral_limits' is missing")          
+        else:
+            spec_lim = [i for i in user_input.get('spectral_limits').split(',')]
+            if len(spec_lim) > 2:
+                return error_handling(gui,"Argument : 'spectral_limits' has more than tow entries")
+            if len(spec_lim)%2 != 0 and len(spec_lim) != 0:
+                return error_handling(gui,"Argument : 'spectral_limits' is incomplete")
+            for limits in spec_lim:
+                limit_check = check_float(limits)
+                if limit_check is False:
+                    return error_handling(gui,"At lest one of the Argument : 'spectral_limits' has a wrong type")
+            spec_lim = [float(i) for i in spec_lim]
+            spec_lim.sort(reverse=True)
+        ########################################################################
+
+        ######### Check analysis type ######### 
+        if not user_input.get('analysis_type'):
+            return error_handling(gui,"Argument : 'analysis_type' is missing")          
+        else:
+            if user_input.get('analysis_type') not in ['Pseudo2D', '1D_Series']:
+                return error_handling(gui,"Argument : 'analysis_type' expected as 'Pseudo2D'or '1D_Series \n (if you process a single 1D spectrum please use 1D_Series")
+        ########################################################################
+
+        # exp_list = create_spectra_list(user_input.get('data_exp_no'))
+        # for exp in exp_list:
+        #     if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp)).exists():
+        #         return error_handling(gui,f"Argument : experiment <{exp}> does not exist")
+        #     else:
+        #         if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp),'pdata',user_input.get('data_proc_no')).exists():
+        #             return error_handling(gui,f"Argument : experiment/procno <{exp}/{user_input.get('data_proc_no')}> does not exist")
+
+        ######### Check that reference exp belongs to the exp list ######### 
+        if not user_input.get('reference_spectrum'):
+            return error_handling(gui,"Argument : 'reference_spectrum' is missing")          
+        else:
+            if user_input.get('analysis_type') != 'Pseudo2D' and int(user_input.get('reference_spectrum')) not in exp_list:
+                return error_handling(gui,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in experiment list")
+        ########################################################################
+
+        ######### Check that reference exp belongs to optionnal row list ######### 
         row_list = []
         if user_input.get('option_data_row_no'):
             row_list = create_spectra_list(user_input.get('option_data_row_no'))
             if int(user_input.get('reference_spectrum')) not in row_list :
-                return error_handling(self,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in row list", critical_error=is_not_gui)
+                return error_handling(gui,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in row list")
+        ########################################################################
 
         config = {
             'data_path'             :   user_input.get('data_path'),
@@ -188,15 +265,15 @@ def check_input_file(user_input,self=None):
             'output_path'           :   user_input.get('output_path'),
             'output_folder'         :   user_input.get('output_folder'),
             'output_name'           :   user_input.get('output_name'),
-            'option_data_row_no'           :   row_list,
-            'option_previous_fit'          :   user_input.get('option_previous_fit', False),
-            'option_offset'                :   user_input.get('option_offset', False),
-            'option_verbose_log'           :   user_input.get('option_verbose_log', False)
+            'option_data_row_no'    :   row_list,
+            'option_previous_fit'   :   user_input.get('option_previous_fit', False),
+            'option_offset'         :   user_input.get('option_offset', False),
+            'option_verbose_log'    :   user_input.get('option_verbose_log', False)
 
         }
 
     except Exception as e:
-        return error_handling(self,e, critical_error=is_not_gui)
+        return error_handling(gui,e)
 
     # Options
     options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log']
@@ -210,9 +287,10 @@ def check_input_file(user_input,self=None):
     
     for key, conf in config.items():        
         if key not in options_list and conf is None:
-            return error_handling(self,f"Argument : '{key}' is missing", critical_error=is_not_gui)
-    if is_gui:
-        self.destroy()
+            return error_handling(gui,f"Argument : '{key}' is missing")
+    if gui:
+        gui.destroy()
+        
     logger.info(json.dumps(config,indent=4))
 
     return config

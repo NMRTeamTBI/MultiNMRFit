@@ -393,7 +393,7 @@ class App:
             if not user_input['option_data_row_no']:
                 del user_input['option_data_row_no']
         if file_name :
-            f = open(file_name, "a")
+            f = open(str(Path(file_name)), "a")
             f.seek(0)
             f.truncate()
             f.write(json.dumps(user_input, indent=4))
