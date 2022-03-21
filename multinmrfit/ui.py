@@ -429,7 +429,7 @@ class App_Clustering:
         super().__init__(*args, **kwargs)
         master = tk.Tk()
         self.master = master
-    
+        self.peak_picking_threshold = peak_picking_threshold
         master.title(self.APP_NAME)
         master.geometry(str(self.WIDTH) + "x" + str(self.HEIGHT))
         master.minsize(self.WIDTH, self.HEIGHT)
@@ -469,8 +469,8 @@ class App_Clustering:
         self.frame_peak_Table.place(relx=0.47, rely=0.03, anchor=tkinter.NW)
 
         # ============ Figure ============
-        peak_picking_data = self.peak_picking(x_spec, y_spec, peak_picking_threshold)
-        colors = self.create_plot(x_spec, y_spec, peak_picking_threshold,peak_picking_data)
+        peak_picking_data = self.peak_picking(x_spec, y_spec, self.peak_picking_threshold)
+        colors = self.create_plot(x_spec, y_spec, self.peak_picking_threshold,peak_picking_data)
         self.clustering_information = self.create_table(peak_picking_data,colors) 
 
         # ============ Labels ============
@@ -496,7 +496,7 @@ class App_Clustering:
                                     fg='black',
                                     borderwidth=0,
                                     )
-        self.threshold_entry.insert(0, peak_picking_threshold)                                  
+        self.threshold_entry.insert(0, self.peak_picking_threshold)                                  
         self.threshold_entry.place(relx=0.4, rely=0.2, width=200, anchor=tkinter.W)
 
         # ============ Buttons ============
@@ -645,7 +645,6 @@ class App_Clustering:
         
 
         return clustering_information
-
     def save_info_clustering(self, clustering_table):
         clustering_table.Peak_Intensity = self.clustering_information['Peak Intensity']
         clustering_table.Peak_Position = self.clustering_information['Peak Position']

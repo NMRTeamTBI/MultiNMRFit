@@ -98,7 +98,7 @@ def create_spectra_list(user_input, gui=None):
     return experiment_list
 
 def error_handling(gui,message):
-    if gui.winfo_exists(): #if gui
+    if gui and gui.winfo_exists(): 
         critical_error=False
         app_err = nui.App_Error(message)
         app_err.start()
