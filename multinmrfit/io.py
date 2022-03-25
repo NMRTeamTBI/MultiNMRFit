@@ -1,7 +1,7 @@
 # Import system libraries
 from pathlib import Path 
 import logging
-from tkinter import simpledialog, ttk, filedialog
+from tkinter import filedialog
 # Import math libraries
 import pandas as pd
 import numpy as np
@@ -10,14 +10,14 @@ import os
 # Import plot libraries
 import matplotlib.pyplot as plt
 
+import natsort 
+from PyPDF2 import PdfFileMerger
+import string
+
 # Import our own libraries
 import multinmrfit.fitting as nff
 import multinmrfit.multiplets as nfm
 import multinmrfit.ui as nui
-
-import natsort 
-from PyPDF2 import PdfFileMerger
-import string
 
 logger = logging.getLogger()
 
@@ -269,7 +269,6 @@ def check_input_file(user_input,gui=None):
             'option_previous_fit'   :   user_input.get('option_previous_fit', False),
             'option_offset'         :   user_input.get('option_offset', False),
             'option_verbose_log'    :   user_input.get('option_verbose_log', False)
-
         }
 
     except Exception as e:
@@ -339,7 +338,7 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     res_num = r[5]
     ax.text(0.05,0.9,"Spectra : " +str(res_num),transform=ax.transAxes,fontsize=20)  
     ax.set_ylabel('Intensity')
-    ax.set_xlabel(r'$^1H$ $(ppm)$')
+    ax.set_xlabel(r'$chemical shift$ $(ppm)$')
 
     plt.subplots_adjust(
         left = 0.1,

@@ -47,7 +47,7 @@ def prepare_data(user_input):
     )
     logger.info('Extraction -- Complete')
     #-----------------------------------------------------#
-    # 
+    
     if user_input['analysis_type'] == 'Pseudo2D':
         idx_ref = int(user_input['reference_spectrum' ]) - 1  
     else:            
@@ -98,7 +98,6 @@ def prepare_data(user_input):
     ######################################################
     use_previous_fit = user_input['option_previous_fit']
 
-    # TO BE UPDATED (must be defined from json and gui)
     offset = user_input['option_offset']
 
     return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset
