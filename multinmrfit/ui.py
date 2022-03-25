@@ -287,14 +287,13 @@ class App:
                                         self.frame_options,
                                         text='Data row no (* 2D only)',
                                         variable=self.PartialPseudo2D,
-                                        width=20,
                                         font=("Helvetica", 14, 'normal'),
                                         borderwidth=0,
                                         fg='white',
                                         bg=FRAME_COLOR,
                                         command=self.activateCheck
              )
-        self.check_box_opt1.place(relx=0.01, rely=0.1, anchor=tkinter.W)
+        self.check_box_opt1.place(relx=0.05, rely=0.1, anchor=tkinter.W)
 
         self.input_raws = tk.StringVar()
         self.input_entry = tk.Entry(
