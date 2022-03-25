@@ -71,11 +71,6 @@ class App:
         WIDTH = 1200
         HEIGHT = 600
         
-        MAIN_COLOR = "#5EA880"
-        OPTION_COLOR = "#001933"
-        BUTTON_COLOR = "#1c4587"
-
-        ENTRY_COLOR = "#3a8eba"
         MAIN_HOVER = "#3a8eba"
         FRAME_COLOR = '#708090'
 
@@ -295,10 +290,11 @@ class App:
                                         width=20,
                                         font=("Helvetica", 14, 'normal'),
                                         borderwidth=0,
+                                        fg='white',
                                         bg=FRAME_COLOR,
                                         command=self.activateCheck
              )
-        self.check_box_opt1.place(relx=0.05, rely=0.1, width=310, anchor=tkinter.W)
+        self.check_box_opt1.place(relx=0.01, rely=0.1, anchor=tkinter.W)
 
         self.input_raws = tk.StringVar()
         self.input_entry = tk.Entry(
@@ -325,6 +321,7 @@ class App:
                                 variable=self.TimeSeries,
                                 highlightthickness=0,
                                 bd=0,
+                                fg='white',
                                 bg=FRAME_COLOR,
                                 # state='disabled'
                                 )
@@ -339,6 +336,7 @@ class App:
                                 font=("Helvetica", 14, 'normal'),
                                 variable=self.Offset,
                                 highlightthickness=0,
+                                fg='white',
                                 bd=0,
                                 bg=FRAME_COLOR
                                 )
@@ -352,6 +350,7 @@ class App:
                                 text="Verbose log",
                                 font=("Helvetica", 14, 'normal'),
                                 variable=self.VerboseLog,
+                                fg='white',
                                 highlightthickness=0,
                                 bd=0,
                                 bg=FRAME_COLOR
