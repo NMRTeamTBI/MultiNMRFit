@@ -1,4 +1,5 @@
 ﻿# This script contains all the information for mulitplets definition
+
 import numpy as np
 import pandas as pd
 
@@ -49,7 +50,7 @@ def mapping_multiplets(lw_constraints = (1e-3,1e-2), x0_constraints = (1e-6,12),
         "DoubletofDoubletAsymetric":{"f_function":DoubletofDoubletAsymetric,"n_peaks" : "4", "option":"Roof","params":['x0','a','Amp','lw','J1','J2', 'dH'],"n_params" : 7, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints,J_constraints,J_constraints, dH_constraints]},
         "Triplet":{"f_function":Triplet,"n_peaks" : "3", "option":"","params":['x0','a','Amp','lw','J1'],"n_params" : 5, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints,J_constraints]},
         }
-    # add id to d_mapping, and create d_clustering with id as keys
+    #  create d_clustering with 'n_peaks + option' as keys (so must be unique, otherwise construction of this dict must be modified)
     d_clustering = {(d_mapping[k]["n_peaks"]+d_mapping[k]["option"]):k for k in d_mapping.keys()}
     return d_mapping, d_clustering
 
@@ -125,7 +126,7 @@ def Peak_Initialisation(
                 J1
                 ]
     else:
-        raise ValueError("Peak type is not defined.")
+        raise ValueError("Unknown multiplicity provided, please check 'Peak_Type'.")
 
     return Init_Val
 

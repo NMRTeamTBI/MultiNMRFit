@@ -98,7 +98,6 @@ def prepare_data(user_input):
     ######################################################
     use_previous_fit = user_input['option_previous_fit']
 
-    # TO BE UPDATED (must be defined from json and gui)
     offset = user_input['option_offset']
 
     return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset
