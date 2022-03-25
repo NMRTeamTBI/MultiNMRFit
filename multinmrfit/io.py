@@ -10,14 +10,14 @@ import os
 # Import plot libraries
 import matplotlib.pyplot as plt
 
+import natsort 
+from PyPDF2 import PdfFileMerger
+import string
+
 # Import our own libraries
 import multinmrfit.fitting as nff
 import multinmrfit.multiplets as nfm
 import multinmrfit.ui as nui
-
-import natsort 
-from PyPDF2 import PdfFileMerger
-import string
 
 logger = logging.getLogger()
 
@@ -269,7 +269,6 @@ def check_input_file(user_input,gui=None):
             'option_previous_fit'   :   user_input.get('option_previous_fit', False),
             'option_offset'         :   user_input.get('option_offset', False),
             'option_verbose_log'    :   user_input.get('option_verbose_log', False)
-
         }
 
     except Exception as e:

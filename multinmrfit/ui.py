@@ -10,10 +10,6 @@ import tkinter as tk
 from tkinter import simpledialog, ttk, filedialog
 import logging
 
-# Import math libraries
-import pandas as pd
-import numpy as np
-
 # Import plot libraries
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
