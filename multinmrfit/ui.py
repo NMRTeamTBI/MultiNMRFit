@@ -27,7 +27,7 @@ import multinmrfit.utils_nmrdata as nfu
 logger = logging.getLogger(__name__)
 # logger = logging.getLogger()
 
- 
+
 class App_Error:
     def __init__(self, message, *args, **kwargs):
         APP_NAME = "Error"
@@ -64,18 +64,13 @@ class App_Error:
     def start(self):
         self.master.mainloop()
 
-class App:
+
 
     def __init__(self, user_input, *args, **kwargs):
         APP_NAME = "Multinmrfit Interface (v2.0)"
         WIDTH = 1200
         HEIGHT = 600
         
-        MAIN_COLOR = "#5EA880"
-        OPTION_COLOR = "#001933"
-        BUTTON_COLOR = "#1c4587"
-
-        ENTRY_COLOR = "#3a8eba"
         MAIN_HOVER = "#3a8eba"
         FRAME_COLOR = '#708090'
 
@@ -292,13 +287,13 @@ class App:
                                         self.frame_options,
                                         text='Data row no (* 2D only)',
                                         variable=self.PartialPseudo2D,
-                                        width=20,
                                         font=("Helvetica", 14, 'normal'),
                                         borderwidth=0,
+                                        fg='white',
                                         bg=FRAME_COLOR,
                                         command=self.activateCheck
              )
-        self.check_box_opt1.place(relx=0.05, rely=0.1, width=310, anchor=tkinter.W)
+        self.check_box_opt1.place(relx=0.05, rely=0.1, anchor=tkinter.W)
 
         self.input_raws = tk.StringVar()
         self.input_entry = tk.Entry(
@@ -325,6 +320,7 @@ class App:
                                 variable=self.TimeSeries,
                                 highlightthickness=0,
                                 bd=0,
+                                fg='white',
                                 bg=FRAME_COLOR,
                                 # state='disabled'
                                 )
@@ -339,6 +335,7 @@ class App:
                                 font=("Helvetica", 14, 'normal'),
                                 variable=self.Offset,
                                 highlightthickness=0,
+                                fg='white',
                                 bd=0,
                                 bg=FRAME_COLOR
                                 )
@@ -352,6 +349,7 @@ class App:
                                 text="Verbose log",
                                 font=("Helvetica", 14, 'normal'),
                                 variable=self.VerboseLog,
+                                fg='white',
                                 highlightthickness=0,
                                 bd=0,
                                 bg=FRAME_COLOR
@@ -359,6 +357,219 @@ class App:
         self.check_box_opt4.place(relx=0.05, rely=0.5, anchor=tkinter.W)
         user_input['option_verbose_log'] = self.VerboseLog
 
+
+    def App_Run(self, user_input):
+        user_input = nio.check_input_file({k: v.get() for k, v in user_input.items()},self.master)
+        nrun.run_analysis(user_input,self)
+        self.on_closing()
+
+    def ask_filename(self,config_path, event=0):
+        wdw = tk.Tk()
+        wdw.withdraw()
+        # the input dialog
+        file_name = simpledialog.askstring(
+            title="Config File Name",
+            prompt="Config Input File Name:",
+            initialvalue="Inputs_Spec_Fitting")
+        if file_name is None:
+            wdw.destroy()
+            config_file = None
+        else:
+            config_file = Path(config_path,str(file_name)+'.json')
+            wdw.destroy()
+        return config_file
+
+    def save_config_file(self,user_input): 
+        config_path = Path(user_input['output_path'], user_input['output_folder'])
+        file_name = self.ask_filename(config_path)
+
+        if not 'option_data_row_no' in user_input:
+            pass
+        else:
+            if not user_input['option_data_row_no']:
+                del user_input['option_data_row_no']
+        if file_name :
+            f = open(str(Path(file_name)), "a")
+            f.seek(0)
+            f.truncate()
+            f.write(json.dumps(user_input, indent=4))
+            f.close()  
+
+    def activateCheck(self):
+        if  self.PartialPseudo2D.get():          #whenever checked
+            self.input_entry.config(state='normal')
+        else:        #whenever unchecked
+            self.input_entry.config(state='disabled')
+
+    def on_closing(self, event=0):
+        self.master.destroy()
+        exit()
+
+    def start(self):
+        self.master.mainloop()
+
+class App:
+
+    def __init__(self, user_input, *args, **kwargs):
+        APP_NAME = "Multinmrfit Interface (v 1.2)"
+        WIDTH = 500
+        HEIGHT = 500
+        
+        MAIN_HOVER = "#3a8eba"
+        FRAME_COLOR = '#708090'
+
+        super().__init__(*args, **kwargs)
+        master = tk.Tk()
+        self.master = master
+        master.title(APP_NAME)
+        master.geometry(str(WIDTH) + "x" + str(HEIGHT))
+        master.minsize(WIDTH, HEIGHT)
+        master.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        self.toplevel = None
+        if sys.platform == "darwin":
+            master.bind("<Command-q>", self.on_closing)
+            master.bind("<Command-w>", self.on_closing)
+
+
+        #Create Menu     
+        menubar = tk.Menu(master)
+        master.config(menu = menubar)
+        filemenu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=filemenu)
+        filemenu.add_command(label="Exit", command=master.quit)
+        helpmenu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=helpmenu)
+
+        # Add options here if needed
+    
+        # helpmenu.add_command(label = "IsoCor project", command=openGit)
+        # helpmenu.add_command(label = "Documentation", command=openDoc)
+        # ============ create CTkFrames ============
+
+
+        self.frame_inputs = tk.LabelFrame(master,width=250,height=225,text="Inputs",foreground='red')
+        self.frame_analysis = tk.LabelFrame(master,width=250,height=225,text="Analysis",foreground='red')
+        self.frame_output = tk.LabelFrame(master,width=250,height=225,text="Outputs",foreground='red')
+        self.frame_options = tk.LabelFrame(master,width=250,height=225,text="Options",foreground='red')
+
+        self.frame_inputs.grid(row=0,column=1)
+        self.frame_analysis.grid(row=0,column=2)
+        self.frame_output.grid(row=1,column=1)
+        self.frame_options.grid(row=1,column=2)
+
+
+         # ============ create CTkFrames ============
+        # # Set bottom picture
+        # path_image = pkg_resources.resource_filename('multinmrfit', 'data/')
+        # img_network = Image.open(str(Path(path_image, 'network.png')))
+        # self.img_network = ImageTk.PhotoImage(img_network.resize((800, 200)),Image.ANTIALIAS) 
+        # self.img_network_label = tkinter.Label(master, image = self.img_network)
+        # self.img_network_label.place(relx = 0.02, rely = 0.7)
+
+        # ============ create Labels and entries ============
+        data_inputs = ['data_path', 'data_folder', 'data_exp_no', 'data_proc_no']
+        for i in range(len(data_inputs)):
+            data_input_label = tk.Label(self.frame_inputs,text=data_inputs[i].replace("_", " ").capitalize(),justify=tk.CENTER,foreground='black')
+            data_input_label.place(relx=0.5, rely=0.02+i*0.25, anchor="center")
+
+            self.input_var = tk.StringVar() 
+            self.input_entry = tk.Entry(self.frame_inputs,textvariable=self.input_var,bg='white',foreground='black')
+            self.input_entry.place(relx=0.1, rely=0.15+i*0.25, anchor=tkinter.W)
+            user_input[data_inputs[i]]  = self.input_var
+
+
+        analysis_info = ['analysis_type','reference_spectrum','spectral_limits','threshold']
+        for i in range(len(analysis_info)):
+            analysis_info_label = tk.Label(self.frame_analysis,text=analysis_info[i].replace("_", " ").capitalize(),justify=tk.CENTER,foreground='black')
+            analysis_info_label.place(relx=0.5, rely=0.02+i*0.25, anchor="center")
+
+            if analysis_info[i] == 'analysis_type':
+                self.analysis_info_var = tk.StringVar()
+                self.analysis_type_cb = ttk.Combobox(self.frame_analysis,textvariable=self.analysis_info_var, values=['Pseudo2D','1D_Series'], state="readonly")
+                self.analysis_type_cb.place(relx=0.1, rely=0.15+i*0.25, anchor=tkinter.W)
+                user_input[analysis_info[i]]  = self.analysis_info_var
+                self.analysis_type_cb.bind("<<ComboboxSelected>>", self.update_analysis_type)
+            else:
+                self.analysis_info_var = tk.StringVar()
+                analysis_info_entry = tk.Entry(self.frame_analysis,textvariable=self.analysis_info_var,bg='white',foreground='black')
+                analysis_info_entry.place(relx=0.1, rely=0.15+i*0.25, anchor=tkinter.W)
+                user_input[analysis_info[i]]  = self.analysis_info_var
+
+
+        outputs = ['output_path','output_folder','output_name']
+        for i in range(len(outputs)):
+            text_opt = outputs[i].replace("_", " ").capitalize() if not 'Options' in outputs[i] else outputs[i].replace("_", " ") 
+            output_label = tk.Label(self.frame_output,text=text_opt,justify=tk.CENTER,foreground='black')
+            output_label.place(relx=0.5, rely=0.02+i*0.25, anchor="center")
+
+            self.outputs_var = tk.StringVar()
+            outputs_entry = tk.Entry(self.frame_output,textvariable=self.outputs_var,bg='white',foreground='black')
+            outputs_entry.place(relx=0.1, rely=0.15+i*0.25, anchor=tkinter.W)
+            user_input[outputs[i]]  = self.outputs_var
+
+
+        # # ============ create Buttons ============
+        self.load_button = tk.Button(master,text=" Load ",command=lambda:nio.load_config_file(self.master,user_input),foreground='black')
+        self.load_button.place(relx=0.1, rely=0.9)
+
+        self.save_button = tk.Button(master,text=" Save ",command=lambda:self.save_config_file({k: v.get() for k, v in user_input.items()}),foreground='black')
+        self.save_button.place(relx=0.3, rely=0.9)
+
+        self.run_button = tk.Button(master,text=" Run ",command=lambda:self.App_Run(user_input),foreground='black')
+        self.run_button.place(relx=0.5, rely=0.9)
+
+        self.close_button = tk.Button(master,text=" Close ",command=lambda:self.on_closing(),foreground='black')
+        self.close_button.place(relx=0.7, rely=0.9)
+
+        # # ============ Options ============
+        # raw ids for Pseudo2S
+        # self.PartialPseudo2D = tk.BooleanVar()
+        # self.check_box_opt1 = tk.Checkbutton(self.frame_options,text='Data row no (* 2D only)',variable=self.PartialPseudo2D,command=self.activateCheck,foreground='black')
+        # self.check_box_opt1.place(relx=0.05, rely=0.1, anchor=tkinter.W)
+
+        self.input_raws_label = tk.Label(self.frame_options,text='Data row no (* 2D only)',justify=tk.CENTER,foreground='black')
+        self.input_raws_label.place(relx=0.5, rely=0.1, anchor="center")
+
+        self.input_raws = tk.StringVar()
+        self.input_raws_entry = tk.Entry(self.frame_options,textvariable=self.input_raws,bg='white',fg='black',borderwidth=0,state='disabled' if user_input['analysis_type'] == '1D_Series' else 'normal')
+        self.input_raws_entry.place(relx=0.1, rely=0.2, width=200, anchor=tkinter.W)
+        user_input['option_data_row_no'] = self.input_raws
+
+        # # # if user_input['analysis_type'] == '1D_Series':
+        # # #     self.input_entry.config(state='disabled')
+        # # #     self.check_box_opt1.config(state='disabled')
+
+        # Use previous Fit dor starting parameters
+        self.TimeSeries = tk.BooleanVar()
+        self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries,foreground='black')
+        self.check_box_opt2.place(relx=0.05, rely=0.3, anchor=tkinter.W)
+        user_input['option_previous_fit'] = self.TimeSeries
+
+        # if (user_input['analysis_type'] == 'Pseudo2D' or user_input.get('option_previous_fit', False)):
+        #     self.check_box_opt2.select()
+        # else:
+        #     self.check_box_opt2.deselect()
+        #self.update_analysis_type(None)
+        
+        # Use Offset in Fitting
+        self.Offset = tk.BooleanVar()
+        self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset,foreground='black')
+        self.check_box_opt3.place(relx=0.05, rely=0.4, anchor=tkinter.W)
+        user_input['option_offset'] = self.Offset
+
+        # # Verbose Log
+        self.VerboseLog = tk.BooleanVar()
+        self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog,foreground='black')
+        self.check_box_opt4.place(relx=0.05, rely=0.5, anchor=tkinter.W)
+        user_input['option_verbose_log'] = self.VerboseLog
+
+    def update_analysis_type(self, event):
+        print(self.analysis_type_cb.get())
+        if self.analysis_type_cb.get() == "Pseudo2D":
+            self.check_box_opt2.select()
+        else:
+            self.check_box_opt2.deselect()
 
     def App_Run(self, user_input):
         user_input = nio.check_input_file({k: v.get() for k, v in user_input.items()},self.master)
@@ -418,12 +629,8 @@ class App_Clustering:
         self.WIDTH = 1200
         self.HEIGHT = 600
         
-        MAIN_COLOR = "#5EA880"
         self.ENTRY_COLOR = "#3c78d8"
-        OPTION_COLOR = "#001933"
-        BUTTON_COLOR = "#1c4587"
         self.MAIN_HOVER = "#3a8eba"
-
         self.FRAME_COLOR = '#708090'
 
         super().__init__(*args, **kwargs)
@@ -550,9 +757,9 @@ class App_Clustering:
         }
 
         options = ['Roof'] # options
-
+        print(n_peak)
         if not n_peak:
-            th_label = tk.Label(
+            self.th_label = tk.Label(
                 self.frame_threshold, 
                 text='No peak found, please lower the threshold',
                 font=("Helvetica", 18, 'bold'),
@@ -560,7 +767,7 @@ class App_Clustering:
                 fg='white',
                 bg=self.FRAME_COLOR,
             )
-            th_label.place(relx=0.25, rely=0.8, anchor=tkinter.W)   
+            self.th_label.place(relx=0.25, rely=0.8, anchor=tkinter.W)   
         else:
             if len(self.frame_threshold.winfo_children()) >2 :
                 self.frame_threshold.winfo_children()[2].destroy()
@@ -697,7 +904,8 @@ class App_Clustering:
     def clear_frame(self):
         for widgets in self.frame_peak_Table.winfo_children():
             widgets.destroy()
-        
+        # self.frame_threshold.winfo_children()[3].destroy()
+
     def on_closing(self, event=0):
         self.master.destroy()
         exit()
