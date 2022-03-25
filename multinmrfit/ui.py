@@ -20,6 +20,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+import multinmrfit
 import multinmrfit.io as nio
 import multinmrfit.run as nrun
 import multinmrfit.utils_nmrdata as nfu
@@ -67,7 +68,7 @@ class App_Error:
 class App:
 
     def __init__(self, user_input, *args, **kwargs):
-        APP_NAME = "Multinmrfit Interface (v 1.2)"
+        APP_NAME = f"Multinmrfit Interface (v{multinmrfit.__version__})"
         WIDTH = 500
         HEIGHT = 520
         
