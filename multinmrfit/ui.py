@@ -195,16 +195,15 @@ class App:
 
             if analysis_info[i] == 'analysis_type':
                 self.analysis_info_var = tk.StringVar()
-                ttk.Combobox(
+                self.analysis_type_cb = ttk.Combobox(
                             self.frame_analysis,
                             textvariable=self.analysis_info_var, 
                             values=['Pseudo2D','1D_Series'], 
-                            state="readonly",
-                            # bg='white',
-                            # fg='black',
-                ).place(relx=0.1, rely=0.2+i*0.2, width=200, anchor=tkinter.W)
+                            state="readonly"
+                )
+                self.analysis_type_cb.place(relx=0.1, rely=0.2+i*0.2, width=200, anchor=tkinter.W)
                 user_input[analysis_info[i]]  = self.analysis_info_var
-
+                self.analysis_type_cb.bind("<<ComboboxSelected>>", self.update_analysis_type)
             else:
                 self.analysis_info_var = tk.StringVar()
                 analysis_info_entry = tk.Entry(
@@ -289,7 +288,6 @@ class App:
                                         variable=self.PartialPseudo2D,
                                         font=("Helvetica", 14, 'normal'),
                                         borderwidth=0,
-                                        fg='white',
                                         bg=FRAME_COLOR,
                                         command=self.activateCheck
              )
@@ -315,18 +313,21 @@ class App:
         self.TimeSeries = tk.BooleanVar()
         self.check_box_opt2 = tk.Checkbutton(
                                 self.frame_options,
-                                text="Use previous fit (* 2D only)",
+                                text="Use previous fit",
                                 font=("Helvetica", 14, 'normal'),
                                 variable=self.TimeSeries,
                                 highlightthickness=0,
                                 bd=0,
-                                fg='white',
-                                bg=FRAME_COLOR,
-                                # state='disabled'
+                                bg=FRAME_COLOR
                                 )
         self.check_box_opt2.place(relx=0.05, rely=0.3, anchor=tkinter.W)
         user_input['option_previous_fit'] = self.TimeSeries
-
+        if (user_input['analysis_type'] == 'Pseudo2D' or user_input.get('option_previous_fit', False)):
+            self.check_box_opt2.select()
+        else:
+            self.check_box_opt2.deselect()
+        #self.update_analysis_type(None)
+        
         # Use Offset in Fitting
         self.Offset = tk.BooleanVar()
         self.check_box_opt3 = tk.Checkbutton(
@@ -335,7 +336,6 @@ class App:
                                 font=("Helvetica", 14, 'normal'),
                                 variable=self.Offset,
                                 highlightthickness=0,
-                                fg='white',
                                 bd=0,
                                 bg=FRAME_COLOR
                                 )
@@ -349,7 +349,6 @@ class App:
                                 text="Verbose log",
                                 font=("Helvetica", 14, 'normal'),
                                 variable=self.VerboseLog,
-                                fg='white',
                                 highlightthickness=0,
                                 bd=0,
                                 bg=FRAME_COLOR
@@ -357,6 +356,12 @@ class App:
         self.check_box_opt4.place(relx=0.05, rely=0.5, anchor=tkinter.W)
         user_input['option_verbose_log'] = self.VerboseLog
 
+    def update_analysis_type(self, event):
+        print(self.analysis_type_cb.get())
+        if self.analysis_type_cb.get() == "Pseudo2D":
+            self.check_box_opt2.select()
+        else:
+            self.check_box_opt2.deselect()
 
     def App_Run(self, user_input):
         user_input = nio.check_input_file({k: v.get() for k, v in user_input.items()},self.master)
