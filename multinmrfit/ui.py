@@ -69,7 +69,7 @@ class App:
     def __init__(self, user_input, *args, **kwargs):
         APP_NAME = "Multinmrfit Interface (v 1.2)"
         WIDTH = 500
-        HEIGHT = 500
+        HEIGHT = 520
         
         MAIN_HOVER = "#3a8eba"
         FRAME_COLOR = '#708090'
@@ -104,10 +104,10 @@ class App:
         # ============ create CTkFrames ============
 
 
-        self.frame_inputs = tk.LabelFrame(master,width=250,height=225,text="Inputs",foreground='red')
-        self.frame_analysis = tk.LabelFrame(master,width=250,height=225,text="Analysis",foreground='red')
-        self.frame_output = tk.LabelFrame(master,width=250,height=225,text="Outputs",foreground='red')
-        self.frame_options = tk.LabelFrame(master,width=250,height=225,text="Options",foreground='red')
+        self.frame_inputs = tk.LabelFrame(master,width=250,height=250,text="Inputs",foreground='red')
+        self.frame_analysis = tk.LabelFrame(master,width=250,height=250,text="Analysis",foreground='red')
+        self.frame_output = tk.LabelFrame(master,width=250,height=200,text="Outputs",foreground='red')
+        self.frame_options = tk.LabelFrame(master,width=250,height=200,text="Options",foreground='red')
 
         self.frame_inputs.grid(row=0,column=1)
         self.frame_analysis.grid(row=0,column=2)
@@ -126,19 +126,19 @@ class App:
         # ============ create Labels and entries ============
         data_inputs = ['data_path', 'data_folder', 'data_exp_no', 'data_proc_no']
         for i in range(len(data_inputs)):
-            data_input_label = tk.Label(self.frame_inputs,text=data_inputs[i].replace("_", " ").capitalize(),justify=tk.CENTER,foreground='black')
-            data_input_label.place(relx=0.5, rely=0.02+i*0.25, anchor="center")
+            data_input_label = tk.Label(self.frame_inputs,text=data_inputs[i].replace("_", " ").capitalize() + ":",foreground='black')
+            data_input_label.place(relx=0.1, rely=0.05+i*0.25, anchor="w")
 
             self.input_var = tk.StringVar() 
-            self.input_entry = tk.Entry(self.frame_inputs,textvariable=self.input_var,bg='white',foreground='black')
-            self.input_entry.place(relx=0.1, rely=0.15+i*0.25, anchor=tkinter.W)
+            self.input_entry = tk.Entry(self.frame_inputs,textvariable=self.input_var,bg='white',borderwidth=0,foreground='black')
+            self.input_entry.place(relx=0.1, rely=0.15+i*0.25,width=200, anchor=tkinter.W)
             user_input[data_inputs[i]]  = self.input_var
 
 
         analysis_info = ['analysis_type','reference_spectrum','spectral_limits','threshold']
         for i in range(len(analysis_info)):
-            analysis_info_label = tk.Label(self.frame_analysis,text=analysis_info[i].replace("_", " ").capitalize(),justify=tk.CENTER,foreground='black')
-            analysis_info_label.place(relx=0.5, rely=0.02+i*0.25, anchor="center")
+            analysis_info_label = tk.Label(self.frame_analysis,text=analysis_info[i].replace("_", " ").capitalize() + ":",foreground='black')
+            analysis_info_label.place(relx=0.1, rely=0.05+i*0.25, anchor="w")
 
             if analysis_info[i] == 'analysis_type':
                 self.analysis_info_var = tk.StringVar()
@@ -148,20 +148,20 @@ class App:
                 self.analysis_type_cb.bind("<<ComboboxSelected>>", self.update_analysis_type)
             else:
                 self.analysis_info_var = tk.StringVar()
-                analysis_info_entry = tk.Entry(self.frame_analysis,textvariable=self.analysis_info_var,bg='white',foreground='black')
-                analysis_info_entry.place(relx=0.1, rely=0.15+i*0.25, anchor=tkinter.W)
+                analysis_info_entry = tk.Entry(self.frame_analysis,textvariable=self.analysis_info_var,bg='white',borderwidth=0,foreground='black')
+                analysis_info_entry.place(relx=0.1, rely=0.15+i*0.25,width=200, anchor=tkinter.W)
                 user_input[analysis_info[i]]  = self.analysis_info_var
 
 
         outputs = ['output_path','output_folder','output_name']
         for i in range(len(outputs)):
-            text_opt = outputs[i].replace("_", " ").capitalize() if not 'Options' in outputs[i] else outputs[i].replace("_", " ") 
-            output_label = tk.Label(self.frame_output,text=text_opt,justify=tk.CENTER,foreground='black')
-            output_label.place(relx=0.5, rely=0.02+i*0.25, anchor="center")
+            text_opt = outputs[i].replace("_", " ").capitalize() + ":" if not 'Options' in outputs[i] else outputs[i].replace("_", " ") 
+            output_label = tk.Label(self.frame_output,text=text_opt,foreground='black')
+            output_label.place(relx=0.1, rely=0.08+i*0.32, anchor="w")
 
             self.outputs_var = tk.StringVar()
-            outputs_entry = tk.Entry(self.frame_output,textvariable=self.outputs_var,bg='white',foreground='black')
-            outputs_entry.place(relx=0.1, rely=0.15+i*0.25, anchor=tkinter.W)
+            outputs_entry = tk.Entry(self.frame_output,textvariable=self.outputs_var,bg='white',borderwidth=0,foreground='black')
+            outputs_entry.place(relx=0.1, rely=0.2+i*0.32,width=200, anchor=tkinter.W)
             user_input[outputs[i]]  = self.outputs_var
 
 
@@ -180,8 +180,8 @@ class App:
 
         # # ============ Options ============
 
-        self.input_raws_label = tk.Label(self.frame_options,text='Data row no (* 2D only)',justify=tk.CENTER,foreground='black')
-        self.input_raws_label.place(relx=0.5, rely=0.1, anchor="center")
+        self.input_raws_label = tk.Label(self.frame_options,text='Data row no (* 2D only):',justify=tk.CENTER,foreground='black')
+        self.input_raws_label.place(relx=0.05, rely=0.08, anchor="w")
 
         self.input_raws = tk.StringVar()
         self.input_raws_entry = tk.Entry(self.frame_options,textvariable=self.input_raws,bg='white',fg='black',borderwidth=0,state='disabled' if user_input['analysis_type'] == '1D_Series' else 'normal')
@@ -191,8 +191,8 @@ class App:
 
         # Use previous Fit dor starting parameters
         self.TimeSeries = tk.BooleanVar()
-        self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries,foreground='black')
-        self.check_box_opt2.place(relx=0.05, rely=0.3, anchor=tkinter.W)
+        self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries)
+        self.check_box_opt2.place(relx=0.05, rely=0.37, anchor=tkinter.W)
         user_input['option_previous_fit'] = self.TimeSeries
 
         # if (user_input['analysis_type'] == 'Pseudo2D' or user_input.get('option_previous_fit', False)):
@@ -203,14 +203,14 @@ class App:
         
         # Use Offset in Fitting
         self.Offset = tk.BooleanVar()
-        self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset,foreground='black')
-        self.check_box_opt3.place(relx=0.05, rely=0.4, anchor=tkinter.W)
+        self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset)
+        self.check_box_opt3.place(relx=0.05, rely=0.52, anchor=tkinter.W)
         user_input['option_offset'] = self.Offset
 
         # # Verbose Log
         self.VerboseLog = tk.BooleanVar()
-        self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog,foreground='black')
-        self.check_box_opt4.place(relx=0.05, rely=0.5, anchor=tkinter.W)
+        self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog)
+        self.check_box_opt4.place(relx=0.05, rely=0.67, anchor=tkinter.W)
         user_input['option_verbose_log'] = self.VerboseLog
 
     def update_analysis_type(self, event):
