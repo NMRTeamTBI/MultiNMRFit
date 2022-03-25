@@ -339,7 +339,7 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     res_num = r[5]
     ax.text(0.05,0.9,"Spectra : " +str(res_num),transform=ax.transAxes,fontsize=20)  
     ax.set_ylabel('Intensity')
-    ax.set_xlabel(r'$^1H$ $(ppm)$')
+    ax.set_xlabel(r'$chemical shift$ $(ppm)$')
 
     plt.subplots_adjust(
         left = 0.1,
