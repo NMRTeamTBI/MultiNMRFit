@@ -10,5 +10,6 @@
     "output_path":          "C:/Users/millard/Documents/GIT/multinmrfit/MultiNMRFit/test_pseudo2d/",
     "output_folder":        "Test_Guy",    
     "output_name":          "test",
-    "data_row_no":          "23-27"
+    "data_row_no":          "23-27",
+    "option_previous_fit": "True"
 }
