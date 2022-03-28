@@ -124,14 +124,14 @@ def filter_multiple_clusters(Res):
     return Res
 
 def retrieve_nmr_data(user_input):
-    if user_input['analysis_type'] in ['Pseudo2D']:
+    if user_input['analysis_type'] == 'Pseudo2D':
         [y_intensities_all, x_ppm_all] = read_nmr_data_bruker(
                 path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
                 expno_data      =   user_input['data_exp_no'][0],
                 procno_data     =   user_input['data_proc_no']
         )
 
-    elif user_input['analysis_type'] in ['1D_Series']:
+    elif user_input['analysis_type'] == '1D_Series':
         if len(user_input['data_exp_no']) == 1:
             [y_intensities_all, x_ppm_all] = read_nmr_data_bruker(
                     path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
@@ -153,7 +153,7 @@ def retrieve_nmr_data(user_input):
             x_ppm_all = np.array(raw_x_data)
             y_intensities_all = np.array(raw_y_data)
     else:
-        raise ValueError("Wrong type of experiment in 'Analysis Type' (expected 'Pseudo2D','1D' or '1D_Series', got '{}').".format(user_input['analysis_type']))
+        raise ValueError("Wrong type of experiment in 'Analysis Type' (expected 'Pseudo2D' or '1D_Series', got '{}').".format(user_input['analysis_type']))
     print(y_intensities_all.shape)
 
     return y_intensities_all, x_ppm_all

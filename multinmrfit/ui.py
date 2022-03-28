@@ -28,16 +28,16 @@ class App_Error:
         HEIGHT = 100
 
         super().__init__(*args, **kwargs)
-        master = tk.Tk()
-        self.master = master
-        master.title(APP_NAME)
-        master.geometry(str(WIDTH) + "x" + str(HEIGHT))
-        master.minsize(WIDTH, HEIGHT)
-        master.configure(bg='#2F4F4F')
-        master.protocol("WM_DELETE_WINDOW", self.on_closing)
-        master.toplevel = None
+        self.master = tk.Tk()
+        self.master = self.master
+        self.master.title(APP_NAME)
+        self.master.geometry(str(WIDTH) + "x" + str(HEIGHT))
+        self.master.minsize(WIDTH, HEIGHT)
+        self.master.configure(bg='#2F4F4F')
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.master.toplevel = None
         self.label = tk.Label(
-                            master, 
+                            self.master, 
                             text=message, 
                             width= WIDTH,
                             height=HEIGHT,
@@ -48,8 +48,8 @@ class App_Error:
         # self.configure("TCombobox", fieldbackground= "orange", background= "white")
         self.toplevel = None
         if sys.platform == "darwin":
-            master.bind("<Command-q>", self.on_closing)
-            master.bind("<Command-w>", self.on_closing)
+            self.master.bind("<Command-q>", self.on_closing)
+            self.master.bind("<Command-w>", self.on_closing)
 
     def on_closing(self, event=0):
         self.master.destroy()
@@ -61,28 +61,29 @@ class App:
 
     def __init__(self, user_input, *args, **kwargs):
         APP_NAME = f"Multinmrfit Interface (v{multinmrfit.__version__})"
-        WIDTH = 500
-        HEIGHT = 520
+        #WIDTH = 500
+        #HEIGHT = 520
         
         super().__init__(*args, **kwargs)
-        master = tk.Tk()
-        self.master = master
-        master.title(APP_NAME)
-        master.geometry(str(WIDTH) + "x" + str(HEIGHT))
-        master.minsize(WIDTH, HEIGHT)
-        master.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.master = tk.Tk()
+        #self.master = self.master
+        self.master.title(APP_NAME)
+        #self.master.geometry(str(WIDTH) + "x" + str(HEIGHT))
+        #self.master.minsize(WIDTH, HEIGHT)
+        self.master.resizable(False, False)
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.toplevel = None
         if sys.platform == "darwin":
-            master.bind("<Command-q>", self.on_closing)
-            master.bind("<Command-w>", self.on_closing)
+            self.master.bind("<Command-q>", self.on_closing)
+            self.master.bind("<Command-w>", self.on_closing)
 
         #Create Menu     
-        menubar = tk.Menu(master)
-        master.config(menu = menubar)
+        menubar = tk.Menu(self.master)
+        self.master.config(menu = menubar)
         filemenu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=filemenu)
-        filemenu.add_command(label="Exit", command=master.quit)
+        filemenu.add_command(label="Exit", command=self.master.quit)
         helpmenu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Help", menu=helpmenu)
 
@@ -93,15 +94,15 @@ class App:
         # ============ create CTkFrames ============
 
 
-        self.frame_inputs = tk.LabelFrame(master,width=250,height=250,text="Inputs",foreground='red')
-        self.frame_analysis = tk.LabelFrame(master,width=250,height=250,text="Analysis",foreground='red')
-        self.frame_output = tk.LabelFrame(master,width=250,height=200,text="Outputs",foreground='red')
-        self.frame_options = tk.LabelFrame(master,width=250,height=200,text="Options",foreground='red')
+        self.frame_inputs = tk.LabelFrame(self.master,width=250,height=250,text="Inputs",foreground='red')
+        self.frame_analysis = tk.LabelFrame(self.master,width=250,height=250,text="Analysis",foreground='red')
+        self.frame_output = tk.LabelFrame(self.master,width=250,height=200,text="Outputs",foreground='red')
+        self.frame_options = tk.LabelFrame(self.master,width=250,height=200,text="Options",foreground='red')
 
-        self.frame_inputs.grid(row=0,column=1)
-        self.frame_analysis.grid(row=0,column=2)
-        self.frame_output.grid(row=1,column=1)
-        self.frame_options.grid(row=1,column=2)
+        self.frame_inputs.grid(row=0,column=0, columnspan=2, padx=3, pady=3)
+        self.frame_analysis.grid(row=0,column=2, columnspan=2, padx=3, pady=3)
+        self.frame_output.grid(row=1,column=0, columnspan=2, padx=3, pady=3)
+        self.frame_options.grid(row=1,column=2, columnspan=2, padx=3, pady=3)
 
         # ============ create Labels and entries ============
         data_inputs = ['data_path', 'data_folder', 'data_exp_no', 'data_proc_no']
@@ -143,17 +144,21 @@ class App:
             user_input[outputs[i]]  = self.outputs_var
 
         # # ============ create Buttons ============
-        self.load_button = tk.Button(master,text=" Load ",command=lambda:nio.load_config_file(self.master,user_input),foreground='black')
-        self.load_button.place(relx=0.1, rely=0.9)
+        self.load_button = tk.Button(self.master,text=" Load ",command=lambda:nio.load_config_file(self.master,user_input),foreground='black')
+        #self.load_button.place(relx=0.1, rely=0.9)
+        self.load_button.grid(row=2, column=0, padx=3, pady=5)
 
-        self.save_button = tk.Button(master,text=" Save ",command=lambda:self.save_config_file({k: v.get() for k, v in user_input.items()}),foreground='black')
-        self.save_button.place(relx=0.3, rely=0.9)
+        self.save_button = tk.Button(self.master,text=" Save ",command=lambda:self.save_config_file({k: v.get() for k, v in user_input.items()}),foreground='black')
+        #self.save_button.place(relx=0.3, rely=0.9)
+        self.save_button.grid(row=2, column=1, padx=3, pady=5)
 
-        self.run_button = tk.Button(master,text=" Run ",command=lambda:self.App_Run(user_input),foreground='black')
-        self.run_button.place(relx=0.5, rely=0.9)
+        self.run_button = tk.Button(self.master,text=" Run ",command=lambda:self.App_Run(user_input),foreground='black')
+        #self.run_button.place(relx=0.5, rely=0.9)
+        self.run_button.grid(row=2, column=2, padx=3, pady=5)
 
-        self.close_button = tk.Button(master,text=" Close ",command=lambda:self.on_closing(),foreground='black')
-        self.close_button.place(relx=0.7, rely=0.9)
+        self.close_button = tk.Button(self.master,text=" Close ",command=lambda:self.on_closing(),foreground='black')
+        #self.close_button.place(relx=0.7, rely=0.9)
+        self.close_button.grid(row=2, column=3, padx=3, pady=5)
 
         # # ============ Options ============
 
@@ -249,18 +254,19 @@ class App_Clustering:
     
     def __init__(self, x_spec, y_spec, peak_picking_threshold, clustering_table, *args, **kwargs):
         self.APP_NAME = f"Peak Picking Visualisation and Clustering (v{multinmrfit.__version__})"
-        self.WIDTH = 1200
-        self.HEIGHT = 520
+        #self.WIDTH = 1200
+        #self.HEIGHT = 590
         
         super().__init__(*args, **kwargs)
-        master = tk.Tk()
-        self.master = master
+        self.master = tk.Tk()
+        #self.master = self.master
         self.peak_picking_threshold = peak_picking_threshold
-        master.title(self.APP_NAME)
-        master.geometry(str(self.WIDTH) + "x" + str(self.HEIGHT))
-        master.minsize(self.WIDTH, self.HEIGHT)
+        self.master.title(self.APP_NAME)
+        self.master.resizable(False, False)
+        #self.master.geometry(str(self.WIDTH) + "x" + str(self.HEIGHT))
+        #self.master.minsize(self.WIDTH, self.HEIGHT)
 
-        master.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.widget = None
         
         self.df_var = tk.StringVar()
@@ -268,18 +274,18 @@ class App_Clustering:
         # self.configure("TCombobox", fieldbackground= "orange", background= "white")
         self.toplevel = None
         if sys.platform == "darwin":
-            master.bind("<Command-q>", self.on_closing)
-            master.bind("<Command-w>", self.on_closing)
+            self.master.bind("<Command-q>", self.on_closing)
+            self.master.bind("<Command-w>", self.on_closing)
         # # ============ create CTkFrames ============
-        self.frame_graph = tk.LabelFrame(master,width=500,height=400,text="Plot Reference Spectrum",foreground='red')
-        self.frame_threshold = tk.LabelFrame(master,width=500,height=70,text="Threshold",foreground='red')
-        self.frame_peak_Table = tk.LabelFrame(master,width=640,height=570,text="Clusterization",foreground='red')
+        self.frame_graph = tk.LabelFrame(self.master,width=500,height=500,text="Plot Reference Spectrum",foreground='red')
+        self.frame_threshold = tk.LabelFrame(self.master,width=500,height=70,text="Threshold",foreground='red')
+        self.frame_peak_Table = tk.LabelFrame(self.master,width=640,height=570,text="Clusterization",foreground='red')
 
 
-        self.frame_graph.grid(row=0,column=1)
-        self.frame_threshold.grid(row=1,column=1)
+        self.frame_graph.grid(row=0,column=0, sticky="nsew", padx=3, pady=5)
+        self.frame_threshold.grid(row=1,column=0, padx=3, pady=5)
         # self.frame_peak_Table.grid(row=0,column=2)
-        self.frame_peak_Table.place(relx=0.7, rely=.38, anchor="c",width=640,height=self.HEIGHT-150)
+        self.frame_peak_Table.grid(row=0, column=1, sticky="nsew", padx=3, pady=5, columnspan=3)
 
 
         # # Add a canvas in that frame
@@ -303,16 +309,20 @@ class App_Clustering:
         self.threshold_entry = tk.Entry(self.frame_threshold,justify = "center",bg='white',borderwidth=0,foreground='black')
         self.threshold_entry.insert(0, self.peak_picking_threshold)                                  
         self.threshold_entry.place(relx=.5, rely=.3, anchor="c")
+        #self.threshold_entry.grid(row=1, column=2, padx=3, pady=5)
 
         # # ============ Buttons ============
-        self.refresh_th = tk.Button(master,text=" Update Threshold ",command=lambda:self.refresh_ui(x_spec, y_spec, self.threshold_entry.get(),colors),foreground='black')          
-        self.refresh_th.place(relx=0.54, rely=0.78)
+        self.refresh_th = tk.Button(self.master,text=" Update Threshold ",command=lambda:self.refresh_ui(x_spec, y_spec, self.threshold_entry.get(),colors),foreground='black')          
+        #self.refresh_th.place(relx=0.54, rely=0.78)
+        self.refresh_th.grid(row=1, column=1, padx=3, pady=5)
 
-        self.run = tk.Button(master,text=" Run Fitting ",command=lambda:self.save_info_clustering(clustering_table),foreground='black')
-        self.run.place(relx=0.71, rely=0.78)
+        self.run = tk.Button(self.master,text=" Run Fitting ",command=lambda:self.save_info_clustering(clustering_table),foreground='black')
+        #self.run.place(relx=0.71, rely=0.78)
+        self.run.grid(row=1, column=2, padx=3, pady=5)
 
-        self.close_button = tk.Button(master,text=" Close ",command=lambda:self.on_closing(),foreground='black')
-        self.close_button.place(relx=0.85, rely=0.78)
+        self.close_button = tk.Button(self.master,text=" Close ",command=lambda:self.on_closing(),foreground='black')
+        #self.close_button.place(relx=0.85, rely=0.78)
+        self.close_button.grid(row=1, column=3, padx=3, pady=5)
 
     def peak_picking(self, x_spec_ref, y_spec_ref, threshold):
         peak_picking = nfu.Peak_Picking_1D(
@@ -423,7 +433,7 @@ class App_Clustering:
                 )
         ax1.axhline(float(threshold),c='r')
         ax1.invert_xaxis()
-        ax1.set_xlabel(r'$^1H$ $(ppm)$')
+        ax1.set_xlabel(r'$chemical$ $shift$ $(ppm)$')
 
         self.graph = FigureCanvasTkAgg(fig, self.frame_graph)
         self.graph_canvas = self.graph.get_tk_widget()
