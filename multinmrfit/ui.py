@@ -167,7 +167,11 @@ class App:
 
         # Use previous fit results as starting parameters
         self.TimeSeries = tk.BooleanVar()
+<<<<<<< HEAD
         self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries,foreground='black')
+=======
+        self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries)
+>>>>>>> 1bcdda824736a71e8f528be8e5b5be37cd715fb0
         self.check_box_opt2.place(relx=0.05, rely=0.37, anchor=tkinter.W)
         user_input['option_previous_fit'] = self.TimeSeries
 
@@ -179,13 +183,21 @@ class App:
         
         # Use Offset in Fitting
         self.Offset = tk.BooleanVar()
+<<<<<<< HEAD
         self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset,foreground='black')
+=======
+        self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset)
+>>>>>>> 1bcdda824736a71e8f528be8e5b5be37cd715fb0
         self.check_box_opt3.place(relx=0.05, rely=0.52, anchor=tkinter.W)
         user_input['option_offset'] = self.Offset
 
         # # Verbose Log
         self.VerboseLog = tk.BooleanVar()
+<<<<<<< HEAD
         self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog,foreground='black')
+=======
+        self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog)
+>>>>>>> 1bcdda824736a71e8f528be8e5b5be37cd715fb0
         self.check_box_opt4.place(relx=0.05, rely=0.67, anchor=tkinter.W)
         user_input['option_verbose_log'] = self.VerboseLog
 
