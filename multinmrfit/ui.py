@@ -167,11 +167,7 @@ class App:
 
         # Use previous fit results as starting parameters
         self.TimeSeries = tk.BooleanVar()
-<<<<<<< HEAD
         self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries,foreground='black')
-=======
-        self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries)
->>>>>>> 1bcdda824736a71e8f528be8e5b5be37cd715fb0
         self.check_box_opt2.place(relx=0.05, rely=0.37, anchor=tkinter.W)
         user_input['option_previous_fit'] = self.TimeSeries
 
@@ -183,21 +179,13 @@ class App:
         
         # Use Offset in Fitting
         self.Offset = tk.BooleanVar()
-<<<<<<< HEAD
         self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset,foreground='black')
-=======
-        self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset)
->>>>>>> 1bcdda824736a71e8f528be8e5b5be37cd715fb0
         self.check_box_opt3.place(relx=0.05, rely=0.52, anchor=tkinter.W)
         user_input['option_offset'] = self.Offset
 
         # # Verbose Log
         self.VerboseLog = tk.BooleanVar()
-<<<<<<< HEAD
         self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog,foreground='black')
-=======
-        self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog)
->>>>>>> 1bcdda824736a71e8f528be8e5b5be37cd715fb0
         self.check_box_opt4.place(relx=0.05, rely=0.67, anchor=tkinter.W)
         user_input['option_verbose_log'] = self.VerboseLog
 
@@ -257,18 +245,13 @@ class App:
     def start(self):
         self.master.mainloop()
 
-
 class App_Clustering:
     
     def __init__(self, x_spec, y_spec, peak_picking_threshold, clustering_table, *args, **kwargs):
-        self.APP_NAME = "Peak Picking Visualisation and Clustering"
+        self.APP_NAME = f"Peak Picking Visualisation and Clustering (v{multinmrfit.__version__})"
         self.WIDTH = 1200
-        self.HEIGHT = 600
+        self.HEIGHT = 520
         
-        self.ENTRY_COLOR = "#3c78d8"
-        self.MAIN_HOVER = "#3a8eba"
-        self.FRAME_COLOR = '#708090'
-
         super().__init__(*args, **kwargs)
         master = tk.Tk()
         self.master = master
@@ -276,7 +259,6 @@ class App_Clustering:
         master.title(self.APP_NAME)
         master.geometry(str(self.WIDTH) + "x" + str(self.HEIGHT))
         master.minsize(self.WIDTH, self.HEIGHT)
-        master.configure(bg='#2F4F4F')
 
         master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.widget = None
@@ -289,88 +271,48 @@ class App_Clustering:
             master.bind("<Command-q>", self.on_closing)
             master.bind("<Command-w>", self.on_closing)
         # # ============ create CTkFrames ============
-        self.frame_graph = tk.Frame(master,
-                                    width=500,
-                                    height=self.HEIGHT-150,
-                                    bg=self.FRAME_COLOR
-                                    )
-        self.frame_graph.place(relx=0.02, rely=0.03, anchor=tkinter.NW)
-
-        self.frame_threshold = tk.Frame(master,
-                                    width=500,
-                                    height=self.HEIGHT-520,
-                                    bg=self.FRAME_COLOR
-                                    )
-        self.frame_threshold.place(relx=0.02, rely=0.82, anchor=tkinter.NW)
+        self.frame_graph = tk.LabelFrame(master,width=500,height=400,text="Plot Reference Spectrum",foreground='red')
+        self.frame_threshold = tk.LabelFrame(master,width=500,height=70,text="Threshold",foreground='red')
+        self.frame_peak_Table = tk.LabelFrame(master,width=640,height=570,text="Clusterization",foreground='red')
 
 
-        self.frame_peak_Table = tk.Frame(master,
-                                    width=640,
-                                    height=self.HEIGHT-50,
-                                    bg=self.FRAME_COLOR
-                                    )
-        self.frame_peak_Table.place(relx=0.47, rely=0.03, anchor=tkinter.NW)
+        self.frame_graph.grid(row=0,column=1)
+        self.frame_threshold.grid(row=1,column=1)
+        # self.frame_peak_Table.grid(row=0,column=2)
+        self.frame_peak_Table.place(relx=0.7, rely=.38, anchor="c",width=640,height=self.HEIGHT-150)
 
-        # ============ Figure ============
+
+        # # Add a canvas in that frame
+        # canvas = tk.Canvas(self.frame_peak_Table, bg="yellow")
+        # canvas.grid(row=0, column=0, sticky="news")
+
+
+        # # Link a scrollbar to the canvas
+        # vsb = tk.Scrollbar(self.frame_peak_Table, orient="vertical", command=canvas.yview)
+        # vsb.grid(row=0, column=1, sticky='ns')
+        # canvas.configure(yscrollcommand=vsb.set)
+
+        # # ============ Figure ============
         peak_picking_data = self.peak_picking(x_spec, y_spec, self.peak_picking_threshold)
         colors = self.create_plot(x_spec, y_spec, self.peak_picking_threshold,peak_picking_data)
         self.clustering_information = self.create_table(peak_picking_data,colors) 
 
-        # ============ Labels ============
-        tk.Label(
-            self.frame_threshold,
-            text='Threshold',
-            width=10,
-            borderwidth=0,
-            fg='white',
-            bg=self.MAIN_HOVER,
-            font=("Helvetica", 18, 'normal'),
-            justify=tk.CENTER
-        ).place(relx=0.02, rely=0.2, anchor=tkinter.W)
 
-        # ============ Entry ============
-        # self.threshold_var = tk.StringVar()
-        self.threshold_entry = tk.Entry(
-                                    self.frame_threshold,
-                                    justify = "center",
-                                    width=12,
-                                    bg='white',
-                                    fg='black',
-                                    borderwidth=0,
-                                    )
+        # # ============ Entry ============
+        self.threshold_var = tk.StringVar()
+        self.threshold_entry = tk.Entry(self.frame_threshold,justify = "center",bg='white',borderwidth=0,foreground='black')
         self.threshold_entry.insert(0, self.peak_picking_threshold)                                  
-        self.threshold_entry.place(relx=0.4, rely=0.2, width=200, anchor=tkinter.W)
+        self.threshold_entry.place(relx=.5, rely=.3, anchor="c")
 
-        # ============ Buttons ============
-        self.refresh_th = tk.Button(master,
-                                    text=" Update Threshold ",
-                                    highlightbackground = self.FRAME_COLOR,
-                                    fg='black',
-                                    borderwidth=0,
-                                    font=("Helvetica", 20, 'normal'),
-                                    command=lambda:self.refresh_ui(x_spec, y_spec, self.threshold_entry.get(),colors)
-                                    )
-          
-        self.refresh_th.place(relx=0.54, rely=0.85,width=180,height=50)
+        # # ============ Buttons ============
+        self.refresh_th = tk.Button(master,text=" Update Threshold ",command=lambda:self.refresh_ui(x_spec, y_spec, self.threshold_entry.get(),colors),foreground='black')          
+        self.refresh_th.place(relx=0.54, rely=0.78)
 
-        self.run = tk.Button(master,
-                            text=" Run Fitting ",
-                            highlightbackground = self.FRAME_COLOR,
-                            fg='black',
-                            borderwidth=0,
-                            font=("Helvetica", 20, 'normal'),
-                            command=lambda:self.save_info_clustering(clustering_table)
-                            )
-        self.run.place(relx=0.71, rely=0.85,width=180,height=50)
+        self.run = tk.Button(master,text=" Run Fitting ",command=lambda:self.save_info_clustering(clustering_table),foreground='black')
+        self.run.place(relx=0.71, rely=0.78)
 
-        self.close_button = tk.Button(master,
-                            text=" Close ",
-                            highlightbackground = self.FRAME_COLOR,
-                            fg='black',
-                            borderwidth=0,
-                            font=("Helvetica", 20, 'normal'),
-                            command=lambda:self.on_closing())
-        self.close_button.place(relx=0.88, rely=0.85,width=80,height=50)
+        self.close_button = tk.Button(master,text=" Close ",command=lambda:self.on_closing(),foreground='black')
+        self.close_button.place(relx=0.85, rely=0.78)
 
     def peak_picking(self, x_spec_ref, y_spec_ref, threshold):
         peak_picking = nfu.Peak_Picking_1D(
@@ -392,73 +334,37 @@ class App_Clustering:
         }
 
         options = ['Roof'] # options
-        print(n_peak)
         if not n_peak:
-            self.th_label = tk.Label(
+            th_label = tk.Label(
                 self.frame_threshold, 
                 text='No peak found, please lower the threshold',
-                font=("Helvetica", 18, 'bold'),
-                borderwidth=0,
-                fg='white',
-                bg=self.FRAME_COLOR,
+                foreground='red'
             )
-            self.th_label.place(relx=0.25, rely=0.8, anchor=tkinter.W)   
+            th_label.place(relx=0.25, rely=0.7, anchor=tkinter.W)   
         else:
-            if len(self.frame_threshold.winfo_children()) >2 :
-                self.frame_threshold.winfo_children()[2].destroy()
-
-            tk.Label(
-                self.frame_peak_Table,
-                text='Clutering',
-                width=10,
-                borderwidth=0,
-                fg='white',
-                bg=self.MAIN_HOVER,
-                font=("Helvetica", 18, 'normal'),
-                justify=tk.CENTER
-            ).grid(column=0, row=0)
-
+            try:
+                th_label
+                if th_label.winfo_exists():
+                    th_label.destroy()
+            except:
+                pass
 
             c = 0 
             for label in clustering_information.keys():
-                tk.Label(
-                    self.frame_peak_Table, 
-                    text=label, 
-                    borderwidth=0,
-                    fg='white',
-                    bg=self.FRAME_COLOR,
-                    width=10
-                ).grid(column=c+1, row=2,padx=2)
+                tk.Label(self.frame_peak_Table, text=label,foreground='black').grid(column=c+1, row=2,padx=2)
                 c +=1
                 
             for i in range(n_peak):
-                peak_label = tk.Label(
-                    self.frame_peak_Table, 
-                    text="Peak "+str(i+1),
-                    borderwidth=0,
-                    bg=self.FRAME_COLOR,
-                    fg=colors[i]
-                    )
+                peak_label = tk.Label(self.frame_peak_Table, text="Peak "+str(i+1),fg=colors[i])
                 peak_label.grid(column=0, row=i+3,pady=5)
 
                 # Clustering
-                self.cluster_entry = tk.Entry(
-                                            self.frame_peak_Table,
-                                            justify = "center",
-                                            width=12,
-                                            bg='white',
-                                            fg='black',
-                                            borderwidth=0,
-                                            )
+                self.cluster_entry = tk.Entry(self.frame_peak_Table,justify = "center",background='white',foreground='black')
                 clustering_information['Cluster ID'].append(self.cluster_entry)
                 self.cluster_entry.grid(row=i+3,column=3)
 
                 # Options
-                self.options_entry = ttk.Combobox(
-                                            self.frame_peak_Table, 
-                                            values=options,
-                                            width=12
-                                            )
+                self.options_entry = ttk.Combobox(self.frame_peak_Table, values=options,width=12)
                 clustering_information['Options'].append(self.options_entry)
                 self.options_entry.grid(row=i+3,column=4)
 
@@ -470,7 +376,6 @@ class App_Clustering:
                                             width=12,
                                             bg='white',
                                             fg='black',
-                                            borderwidth=0,
                                             )
                     data = peak_picking_data.iloc[i].loc[col]
                     if col == 'Peak_Position':
@@ -522,8 +427,7 @@ class App_Clustering:
 
         self.graph = FigureCanvasTkAgg(fig, self.frame_graph)
         self.graph_canvas = self.graph.get_tk_widget()
-        self.graph_canvas.place(relx=0.0,rely=0.0,width=500,height=self.HEIGHT-150)
-
+        self.graph_canvas.grid(row=0, column=0)
         return colors
 
     def refresh_ui(self, x_spec, y_spec, threshold, colors):
