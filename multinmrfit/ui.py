@@ -345,17 +345,17 @@ class App_Clustering:
 
         options = ['Roof'] # options
         if not n_peak:
-            th_label = tk.Label(
+            self.th_label = tk.Label(
                 self.frame_threshold, 
                 text='No peak found, please lower the threshold',
                 foreground='red'
             )
-            th_label.place(relx=0.25, rely=0.7, anchor=tkinter.W)   
+            self.th_label.place(relx=0.25, rely=0.7, anchor=tkinter.W)   
         else:
             try:
-                th_label
-                if th_label.winfo_exists():
-                    th_label.destroy()
+                self.th_label
+                if self.th_label.winfo_exists():
+                    self.th_label.destroy()
             except:
                 pass
 
