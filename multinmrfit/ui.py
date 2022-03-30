@@ -186,6 +186,12 @@ class App:
         self.check_box_opt4.place(relx=0.05, rely=0.67, anchor=tkinter.W)
         user_input['option_verbose_log'] = self.VerboseLog
 
+        # # Verbose Log
+        self.mergepdf = tk.BooleanVar()
+        self.check_box_opt5 = tk.Checkbutton(self.frame_options,text="Merge pdf(s)",variable=self.mergepdf,foreground='black')
+        self.check_box_opt5.place(relx=0.05, rely=0.82, anchor=tkinter.W)
+        user_input['option_merge_pdf'] = self.mergepdf
+
     def update_analysis_type(self, event):
         if self.analysis_type_cb.get() == "Pseudo2D":
             self.check_box_opt2.select()

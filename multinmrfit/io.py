@@ -59,7 +59,7 @@ def load_config_file(gui=None, user_input=None, config_file_path=None):
             return None
 
         if gui and gui.winfo_exists():
-            options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log']
+            options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf']
             for label in user_input.keys():                
                 if label in options_list:
                     if label not in config.keys():
@@ -114,7 +114,6 @@ def check_float(potential_float):
         return True
     except ValueError:
         return False
-
 
 def check_input_file(user_input,gui=None):
 
@@ -268,14 +267,16 @@ def check_input_file(user_input,gui=None):
             'option_data_row_no'    :   row_list,
             'option_previous_fit'   :   user_input.get('option_previous_fit', False),
             'option_offset'         :   user_input.get('option_offset', False),
-            'option_verbose_log'    :   user_input.get('option_verbose_log', False)
+            'option_verbose_log'    :   user_input.get('option_verbose_log', False),
+            'option_merge_pdf'      :   user_input.get('option_merge_pdf', False)
+
         }
 
     except Exception as e:
         return error_handling(gui,e)
 
     # Options
-    options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log']
+    options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf']
 
     if config['analysis_type'] != 'Pseudo2D': 
         config.pop("option_data_row_no")
@@ -426,7 +427,7 @@ def merge_pdf(output_path,output_folder,output_name):
     merger.write(output_pdf)
     merger.close()
 
-def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_fit, peak_picking_data, scaling_factor, offset=False):
+def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_fit, peak_picking_data, scaling_factor, offset=False, merged_pdf=False):
 
     output_path         =   user_input['output_path']
     output_folder       =   user_input['output_folder']
@@ -457,5 +458,6 @@ def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_f
                 output_name,
                 offset=offset
             )
-    merge_pdf(output_path,output_folder,output_name)
+    if merged_pdf is True:
+        merge_pdf(output_path,output_folder,output_name)
     logger.info('Save plot to pdf -- Complete')

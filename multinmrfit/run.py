@@ -100,13 +100,13 @@ def prepare_data(user_input):
     use_previous_fit = user_input['option_previous_fit']
 
     offset = user_input['option_offset']
-
-    return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset
+    merged_pdf = user_input['option_merge_pdf']
+    return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset, merged_pdf
 
 def run_analysis(user_input, gui=False):
     logger.info('Loading NMR Data')
 
-    spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset = prepare_data(user_input)
+    spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset, merged_pdf = prepare_data(user_input)
     #-----------------------------------------------------#   
     ######################################################
     #######################Fitting########################
@@ -127,7 +127,6 @@ def run_analysis(user_input, gui=False):
     #######################Output#########################
     ######################################################
     logger.info('Save results')
-
     nio.save_output_data(
         user_input          ,
         fit_results_table   ,
@@ -136,7 +135,8 @@ def run_analysis(user_input, gui=False):
         spectra_to_fit,
         user_picked_data,
         scaling_factor,
-        offset=offset
+        offset=offset,
+        merged_pdf = merged_pdf
     )
     logger.info('Full Analysis is complete')
     exit()
