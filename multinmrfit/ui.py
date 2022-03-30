@@ -7,8 +7,9 @@ import sys
 import json
 from pathlib import Path 
 import tkinter as tk
-from tkinter import simpledialog, ttk, filedialog
+from tkinter import simpledialog, ttk, messagebox
 import logging
+import webbrowser
 
 # Import plot libraries
 import matplotlib.pyplot as plt
@@ -21,33 +22,40 @@ import multinmrfit.utils_nmrdata as nfu
 
 logger = logging.getLogger(__name__)
 
-class App_Error:
-    def __init__(self, message, *args, **kwargs):
-        APP_NAME = f"Error (v{multinmrfit.__version__})"
+#class App_Error:
+#    def __init__(self, message, *args, **kwargs):
+#        messagebox.showerror("Error", message)
+    #     APP_NAME = f"Error (v{multinmrfit.__version__})"
 
-        super().__init__(*args, **kwargs)
-        self.master = tk.Tk()
-        self.master = self.master
-        self.master.title(APP_NAME)
-        self.master.resizable(False, False)
-        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
-        self.master.toplevel = None
-        self.label = tk.Label(
-                            self.master, 
-                            text=message, 
-                            fg='black'
-                            )
-        self.label.pack()
-        self.toplevel = None
-        if sys.platform == "darwin":
-            self.master.bind("<Command-q>", self.on_closing)
-            self.master.bind("<Command-w>", self.on_closing)
+    #     super().__init__(*args, **kwargs)
+    #     self.master = tk.Tk()
+    #     self.master = self.master
+    #     self.master.title(APP_NAME)
+    #     self.master.resizable(False, False)
+    #     self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+    #     self.master.toplevel = None
+    #     self.label = tk.Label(
+    #                         self.master, 
+    #                         text=message, 
+    #                         fg='black'
+    #                         )
+    #     self.label.pack()
+    #     self.toplevel = None
+    #     if sys.platform == "darwin":
+    #         self.master.bind("<Command-q>", self.on_closing)
+    #         self.master.bind("<Command-w>", self.on_closing)
 
-    def on_closing(self, event=0):
-        self.master.destroy()
+    # def on_closing(self, event=0):
+    #     self.master.destroy()
 
-    def start(self):
-        self.master.mainloop()
+    # def start(self):
+    #     self.master.mainloop()
+
+def openDoc():
+    webbrowser.open_new(r"https://multinmrfit.readthedocs.io/en/latest/")
+
+def openGit():
+    webbrowser.open_new(r"https://github.com/NMRTeamTBI/MultiNMRFit/")
 
 class App:
 
@@ -81,8 +89,8 @@ class App:
 
         # Add options here if needed
     
-        # helpmenu.add_command(label = "IsoCor project", command=openGit)
-        # helpmenu.add_command(label = "Documentation", command=openDoc)
+        helpmenu.add_command(label = "MultiNMRFit project", command=openGit)
+        helpmenu.add_command(label = "Documentation", command=openDoc)
         # ============ create CTkFrames ============
 
 
@@ -276,9 +284,9 @@ class App_Clustering:
             self.master.bind("<Command-q>", self.on_closing)
             self.master.bind("<Command-w>", self.on_closing)
         # # ============ create CTkFrames ============
-        self.frame_graph = tk.LabelFrame(self.master,width=500,height=500,text="Plot Reference Spectrum",foreground='red')
+        self.frame_graph = tk.LabelFrame(self.master,width=500,height=500,text="Reference spectrum",foreground='red')
         self.frame_threshold = tk.LabelFrame(self.master,width=500,height=70,text="Threshold",foreground='red')
-        self.frame_peak_Table = tk.LabelFrame(self.master,width=640,height=570,text="Clusterization",foreground='red')
+        self.frame_peak_Table = tk.LabelFrame(self.master,width=640,height=570,text="Clustering information",foreground='red')
 
 
         self.frame_graph.grid(row=0,column=0, sticky="nsew", padx=3, pady=5)
@@ -404,8 +412,7 @@ class App_Clustering:
         clustering_table.Cluster = [i.get() for i in self.clustering_information["Cluster ID"]]
         clustering_table.Selection = [True if i.get() != '' else False for i in self.clustering_information["Cluster ID"]]
         if not True in clustering_table.Selection.tolist():
-            app_err = App_Error('No Peak was selected for fitting \n -- please select at least one signal -- ')
-            app_err.start()
+            messagebox.showerror("Error", 'No peak selected. Select at least one signal.')
         else:
             self.master.destroy()
 

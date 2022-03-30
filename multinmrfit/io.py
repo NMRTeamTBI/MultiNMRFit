@@ -1,7 +1,7 @@
 # Import system libraries
 from pathlib import Path 
 import logging
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 # Import math libraries
 import pandas as pd
 import numpy as np
@@ -17,7 +17,6 @@ import string
 # Import our own libraries
 import multinmrfit.fitting as nff
 import multinmrfit.multiplets as nfm
-import multinmrfit.ui as nui
 
 logger = logging.getLogger()
 
@@ -100,12 +99,11 @@ def create_spectra_list(user_input, gui=None):
 def error_handling(gui,message):
     if gui and gui.winfo_exists(): 
         critical_error=False
-        app_err = nui.App_Error(message)
-        app_err.start()
+        messagebox.showerror("Error", message)
     elif logger:
         critical_error=True
         logger.error(message)    
-    if critical_error is True:
+    if critical_error:
         exit()
 
 def check_float(potential_float):
@@ -129,8 +127,16 @@ def check_input_file(user_input,gui=None):
         ########################################################################
 
         ######### Create output if needed #########
-        output_dir = Path(user_input.get('output_path'),user_input.get('output_folder'))
-        output_dir.mkdir(parents=True,exist_ok=True)
+        try:
+            output_dir = Path(user_input.get('output_path'),user_input.get('output_folder'))
+        except:
+            return error_handling(gui,"Check arguments 'output_path' and 'output_folder'.")
+
+        try:
+            output_dir.mkdir(parents=True,exist_ok=True)
+        except:
+            return error_handling(gui,"Cannot create output folder.")
+
         ########################################################################
 
         ######### Logger #########
@@ -172,7 +178,7 @@ def check_input_file(user_input,gui=None):
             return error_handling(gui,"Argument : 'data_proc_no' is missing")                      
         else:
             data_proc_no_check = check_float(user_input.get('data_proc_no'))
-            if data_proc_no_check is False:
+            if not data_proc_no_check:
                 return error_handling(gui,"Argument : 'data_proc_no' has a wrong type")
         ########################################################################
 
@@ -196,9 +202,9 @@ def check_input_file(user_input,gui=None):
             return error_handling(gui,"Argument : 'threshold' is missing")          
         else:
             threshold_check = check_float(user_input.get('threshold'))
-            if threshold_check is False:
+            if not threshold_check:
                 return error_handling(gui,"Argument : 'threshold' has a wrong type")
-            if threshold_check is True:
+            if threshold_check:
                 if float(user_input.get('threshold',1)) <= float(0):
                     return error_handling(gui,"Argument : 'threshold' is too low (should be > 0)")
         ########################################################################
@@ -214,8 +220,8 @@ def check_input_file(user_input,gui=None):
                 return error_handling(gui,"Argument : 'spectral_limits' is incomplete")
             for limits in spec_lim:
                 limit_check = check_float(limits)
-                if limit_check is False:
-                    return error_handling(gui,"At lest one of the Argument : 'spectral_limits' has a wrong type")
+                if not limit_check:
+                    return error_handling(gui,"At lest one of the 'spectral_limits' has a wrong type")
             spec_lim = [float(i) for i in spec_lim]
             spec_lim.sort(reverse=True)
         ########################################################################
@@ -458,6 +464,6 @@ def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_f
                 output_name,
                 offset=offset
             )
-    if merged_pdf is True:
+    if merged_pdf:
         merge_pdf(output_path,output_folder,output_name)
     logger.info('Save plot to pdf -- Complete')
