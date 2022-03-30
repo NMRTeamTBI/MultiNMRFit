@@ -212,7 +212,8 @@ class App:
         file_name = simpledialog.askstring(
             title="Config File Name",
             prompt="Config Input File Name:",
-            initialvalue="Inputs_Spec_Fitting")
+            initialvalue="Inputs_Spec_Fitting"
+            )
         if file_name is None:
             wdw.destroy()
             config_file = None
@@ -324,6 +325,7 @@ class App_Clustering:
         #self.close_button.place(relx=0.85, rely=0.78)
         self.close_button.grid(row=1, column=3, padx=3, pady=5)
 
+
     def peak_picking(self, x_spec_ref, y_spec_ref, threshold):
         peak_picking = nfu.Peak_Picking_1D(
             x_data          =   x_spec_ref, 
@@ -404,6 +406,7 @@ class App_Clustering:
         clustering_table.Options = [i.get() for i in self.clustering_information["Options"]]
         clustering_table.Cluster = [i.get() for i in self.clustering_information["Cluster ID"]]
         clustering_table.Selection = [True if i.get() != '' else False for i in self.clustering_information["Cluster ID"]]
+        # self.add_frame()
         self.master.destroy()
 
     def create_plot(self, x_spec, y_spec, threshold,peak_picking_data):
@@ -450,6 +453,19 @@ class App_Clustering:
             widgets.destroy()
         # self.frame_threshold.winfo_children()[3].destroy()
 
+    def add_frame(self):
+        self.test = tk.LabelFrame(self.master,width=500,height=100,text="Test",foreground='red')
+        self.test.grid(row=2,column=0, sticky="nsew", padx=3, pady=5)
+
+
+        # level_frame.grid(row=0, column=0, sticky='news')
+        # level_frame.lift()
+        # self.frame_stack.append(level_frame)
+        # self.stack_pointer = len(self.frame_stack)-1
+        # self.stack_level_var.set(self.stack_pointer)  
+        #self.show_level_frame()
+        #self.stack_pointer += 1
+
     def on_closing(self, event=0):
         self.master.destroy()
         exit()
@@ -463,7 +479,6 @@ def init_progress_bar_windows(len_progresses, title, progress_bar_label):
     root_height= len(len_progresses)*120
     root.geometry(f'300x{root_height}')
     root.title(title)
-    root.configure(bg='#2F4F4F')
     progress_bars = []
     for len_progress in len_progresses:
         pg_bar = ttk.Progressbar(
@@ -478,11 +493,7 @@ def init_progress_bar_windows(len_progresses, title, progress_bar_label):
         value_label = tk.Label(
                         root,
                         text=progress_bar_label[len(progress_bars)],
-                        width=10,
-                        borderwidth=0,
-                        fg='white',
-                        bg='#2F4F4F',
-                        font=("Helvetica", 18, 'normal'),
+                        fg='black',
                         justify=tk.CENTER
 )
         value_label.grid(column=0, row=len(len_progresses)*len(progress_bars), columnspan=2)
