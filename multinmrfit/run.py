@@ -78,6 +78,7 @@ def prepare_data(user_input):
         clustering_table = clustering_results
         )
     app_clustering.start()
+
     user_picked_data = clustering_results[clustering_results["Selection"].values]
     user_picked_data = nfu.filter_multiple_clusters(user_picked_data)
     scaling_factor = user_picked_data.Peak_Intensity.mean()
