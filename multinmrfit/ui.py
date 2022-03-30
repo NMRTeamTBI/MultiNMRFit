@@ -23,29 +23,21 @@ logger = logging.getLogger(__name__)
 
 class App_Error:
     def __init__(self, message, *args, **kwargs):
-        APP_NAME = "Error"
-        WIDTH = 500
-        HEIGHT = 100
+        APP_NAME = f"Error (v{multinmrfit.__version__})"
 
         super().__init__(*args, **kwargs)
         self.master = tk.Tk()
         self.master = self.master
         self.master.title(APP_NAME)
-        self.master.geometry(str(WIDTH) + "x" + str(HEIGHT))
-        self.master.minsize(WIDTH, HEIGHT)
-        self.master.configure(bg='#2F4F4F')
+        self.master.resizable(False, False)
         self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.master.toplevel = None
         self.label = tk.Label(
                             self.master, 
                             text=message, 
-                            width= WIDTH,
-                            height=HEIGHT,
-                            bg='#2F4F4F',
-                            fg='white'
+                            fg='black'
                             )
         self.label.pack()
-        # self.configure("TCombobox", fieldbackground= "orange", background= "white")
         self.toplevel = None
         if sys.platform == "darwin":
             self.master.bind("<Command-q>", self.on_closing)
@@ -456,15 +448,6 @@ class App_Clustering:
     def add_frame(self):
         self.test = tk.LabelFrame(self.master,width=500,height=100,text="Test",foreground='red')
         self.test.grid(row=2,column=0, sticky="nsew", padx=3, pady=5)
-
-
-        # level_frame.grid(row=0, column=0, sticky='news')
-        # level_frame.lift()
-        # self.frame_stack.append(level_frame)
-        # self.stack_pointer = len(self.frame_stack)-1
-        # self.stack_level_var.set(self.stack_pointer)  
-        #self.show_level_frame()
-        #self.stack_pointer += 1
 
     def on_closing(self, event=0):
         self.master.destroy()
