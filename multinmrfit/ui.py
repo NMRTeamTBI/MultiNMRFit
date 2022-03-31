@@ -20,36 +20,8 @@ import multinmrfit.io as nio
 import multinmrfit.run as nrun
 import multinmrfit.utils_nmrdata as nfu
 
+# initialize logger
 logger = logging.getLogger(__name__)
-
-#class App_Error:
-#    def __init__(self, message, *args, **kwargs):
-#        messagebox.showerror("Error", message)
-    #     APP_NAME = f"Error (v{multinmrfit.__version__})"
-
-    #     super().__init__(*args, **kwargs)
-    #     self.master = tk.Tk()
-    #     self.master = self.master
-    #     self.master.title(APP_NAME)
-    #     self.master.resizable(False, False)
-    #     self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
-    #     self.master.toplevel = None
-    #     self.label = tk.Label(
-    #                         self.master, 
-    #                         text=message, 
-    #                         fg='black'
-    #                         )
-    #     self.label.pack()
-    #     self.toplevel = None
-    #     if sys.platform == "darwin":
-    #         self.master.bind("<Command-q>", self.on_closing)
-    #         self.master.bind("<Command-w>", self.on_closing)
-
-    # def on_closing(self, event=0):
-    #     self.master.destroy()
-
-    # def start(self):
-    #     self.master.mainloop()
 
 def openDoc():
     webbrowser.open_new(r"https://multinmrfit.readthedocs.io/en/latest/")
@@ -61,15 +33,10 @@ class App:
 
     def __init__(self, user_input, *args, **kwargs):
         APP_NAME = f"Multinmrfit Interface (v{multinmrfit.__version__})"
-        #WIDTH = 500
-        #HEIGHT = 520
         
         super().__init__(*args, **kwargs)
         self.master = tk.Tk()
-        #self.master = self.master
         self.master.title(APP_NAME)
-        #self.master.geometry(str(WIDTH) + "x" + str(HEIGHT))
-        #self.master.minsize(WIDTH, HEIGHT)
         self.master.resizable(False, False)
         self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -78,7 +45,7 @@ class App:
             self.master.bind("<Command-q>", self.on_closing)
             self.master.bind("<Command-w>", self.on_closing)
 
-        #Create Menu     
+        # Create Menu     
         menubar = tk.Menu(self.master)
         self.master.config(menu = menubar)
         filemenu = tk.Menu(menubar, tearoff=0)
@@ -88,12 +55,10 @@ class App:
         menubar.add_cascade(label="Help", menu=helpmenu)
 
         # Add options here if needed
-    
         helpmenu.add_command(label = "MultiNMRFit project", command=openGit)
         helpmenu.add_command(label = "Documentation", command=openDoc)
-        # ============ create CTkFrames ============
 
-
+        # ============ create TkFrames ============
         self.frame_inputs = tk.LabelFrame(self.master,width=250,height=250,text="Inputs",foreground='red')
         self.frame_analysis = tk.LabelFrame(self.master,width=250,height=250,text="Analysis",foreground='red')
         self.frame_output = tk.LabelFrame(self.master,width=250,height=200,text="Outputs",foreground='red')
@@ -261,74 +226,52 @@ class App_Clustering:
     
     def __init__(self, x_spec, y_spec, peak_picking_threshold, clustering_table, *args, **kwargs):
         self.APP_NAME = f"Peak Picking Visualisation and Clustering (v{multinmrfit.__version__})"
-        #self.WIDTH = 1200
-        #self.HEIGHT = 590
-        
+       
         super().__init__(*args, **kwargs)
         self.master = tk.Tk()
-        #self.master = self.master
         self.peak_picking_threshold = peak_picking_threshold
         self.master.title(self.APP_NAME)
         self.master.resizable(False, False)
-        #self.master.geometry(str(self.WIDTH) + "x" + str(self.HEIGHT))
-        #self.master.minsize(self.WIDTH, self.HEIGHT)
-
+        
         self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.widget = None
         
         self.df_var = tk.StringVar()
 
-        # self.configure("TCombobox", fieldbackground= "orange", background= "white")
         self.toplevel = None
         if sys.platform == "darwin":
             self.master.bind("<Command-q>", self.on_closing)
             self.master.bind("<Command-w>", self.on_closing)
-        # # ============ create CTkFrames ============
+
+        # # ============ create TkFrames ============
         self.frame_graph = tk.LabelFrame(self.master,width=500,height=500,text="Reference spectrum",foreground='red')
         self.frame_threshold = tk.LabelFrame(self.master,width=500,height=70,text="Threshold",foreground='red')
         self.frame_peak_Table = tk.LabelFrame(self.master,width=640,height=570,text="Clustering information",foreground='red')
-
 
         self.frame_graph.grid(row=0,column=0, sticky="nsew", padx=3, pady=5)
         self.frame_threshold.grid(row=1,column=0, padx=3, pady=5)
         # self.frame_peak_Table.grid(row=0,column=2)
         self.frame_peak_Table.grid(row=0, column=1, sticky="nsew", padx=3, pady=5, columnspan=3)
 
-
-        # # Add a canvas in that frame
-        # canvas = tk.Canvas(self.frame_peak_Table, bg="yellow")
-        # canvas.grid(row=0, column=0, sticky="news")
-
-
-        # # Link a scrollbar to the canvas
-        # vsb = tk.Scrollbar(self.frame_peak_Table, orient="vertical", command=canvas.yview)
-        # vsb.grid(row=0, column=1, sticky='ns')
-        # canvas.configure(yscrollcommand=vsb.set)
-
         # # ============ Figure ============
         peak_picking_data = self.peak_picking(x_spec, y_spec, self.peak_picking_threshold)
         colors = self.create_plot(x_spec, y_spec, self.peak_picking_threshold,peak_picking_data)
         self.clustering_information = self.create_table(peak_picking_data,colors) 
-
 
         # # ============ Entry ============
         self.threshold_var = tk.StringVar()
         self.threshold_entry = tk.Entry(self.frame_threshold,justify = "center",bg='white',borderwidth=0,foreground='black')
         self.threshold_entry.insert(0, self.peak_picking_threshold)                                  
         self.threshold_entry.place(relx=.5, rely=.3, anchor="c")
-        #self.threshold_entry.grid(row=1, column=2, padx=3, pady=5)
-
+        
         # # ============ Buttons ============
         self.refresh_th = tk.Button(self.master,text=" Update Threshold ",command=lambda:self.refresh_ui(x_spec, y_spec, self.threshold_entry.get(),colors),foreground='black')          
-        #self.refresh_th.place(relx=0.54, rely=0.78)
         self.refresh_th.grid(row=1, column=1, padx=3, pady=5)
 
         self.run = tk.Button(self.master,text=" Run Fitting ",command=lambda:self.save_info_clustering(clustering_table),foreground='black')
-        #self.run.place(relx=0.71, rely=0.78)
         self.run.grid(row=1, column=2, padx=3, pady=5)
 
         self.close_button = tk.Button(self.master,text=" Close ",command=lambda:self.on_closing(),foreground='black')
-        #self.close_button.place(relx=0.85, rely=0.78)
         self.close_button.grid(row=1, column=3, padx=3, pady=5)
 
     def peak_picking(self, x_spec_ref, y_spec_ref, threshold):
@@ -485,8 +428,6 @@ def init_progress_bar_windows(len_progresses, title, progress_bar_label):
             maximum=len_progress,
             length=280
         )
-
-        # value_label = ttk.Label(root, text=update_progress_label())
         value_label = tk.Label(
                         root,
                         text=progress_bar_label[len(progress_bars)],
