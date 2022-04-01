@@ -48,7 +48,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'MultiNMRFit'
-copyright = u'{}, Baudoin Delépine, Matthieu Guionnet, Pierre Millard'.format(datetime.date.today().year)
+copyright = u'{}, Cyril Charlier, Pierre Millard'.format(datetime.date.today().year)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -211,7 +211,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual], toctree_only).
 latex_documents = [
   ('index', 'MultiNMRFit.tex', u'MultiNMRFit Documentation',
-   "Baudoin Del\\'epine, Matthieu Guionnet, Pierre Millard", 'manual', False),
+   "Cyril Charlier, Pierre Millard", 'manual', False),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -241,7 +241,7 @@ latex_use_modindex = True
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'MultiNMRFit', u'MultiNMRFit Documentation',
-     [u'Baudoin Delépine, Matthieu Guionnet, Pierre Millard'], 1)
+     [u'Cyril Charlier, Pierre Millard'], 1)
 ]
 
 # If true, show URL addresses after external links.
