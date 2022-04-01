@@ -34,4 +34,21 @@ and can be downloaded as a `PDF file <https://readthedocs.org/projects/isocor/do
 
 .. seealso:: We strongly encourage you to read the :ref:`Tutorials` before using IsoCor.
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Usage
 
+   quickstart.rst
+#   tutorials.rst
+#   cite.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Miscellaneous
+
+   faq.rst
+   definitions.rst
+   library_doc.rst
+   license.rst
+
+.. todolist::
