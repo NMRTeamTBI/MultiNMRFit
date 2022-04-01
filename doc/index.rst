@@ -11,7 +11,7 @@ Welcome to MultiNMRFit documentation!
 **MultiNMRFit is a scientific software dedicated to the analysis of 1H NMR data **.
 MultiNMRFit: Semi-automated software for the analysis of 1H NMR .
 
-It is one of the routine tools that we use at the `NMR team <http://www.toulouse-biotechnology-institute.fr/en/research/physiology-and-engineering-of-microbial-metabolism/rmn.html>`_ and `MetaSys team <http://www.toulouse-biotechnology-institute.fr/en/research/molecular-physiology-and-metabolism/metasys.html>`.
+It is one of the routine tools that we use at the `NMR team <http://www.toulouse-biotechnology-institute.fr/en/research/physiology-and-engineering-of-microbial-metabolism/rmn.html>`_ and `MetaSys team <http://www.toulouse-biotechnology-institute.fr/en/research/molecular-physiology-and-metabolism/metasys.html>`_.
 
 The code is open-source, and available on `GitHub <https://github.com/NMRTeamTBI/MultiNMRFit>`_ under a :ref:`GPLv3 license <license>`.
 
