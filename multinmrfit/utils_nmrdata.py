@@ -107,6 +107,8 @@ def sort_peak_picking_data(peak_picking_data, n_peak_max):
     return peak_picking_data
 
 def filter_multiple_clusters(Res):
+    #print(Res)
+    Res_upd = pd.DataFrame(columns=Res.columns)
     for i,j in enumerate(Res.Cluster):
         cluster_num = j.split(',')
         if len(cluster_num) > 1:
@@ -119,9 +121,16 @@ def filter_multiple_clusters(Res):
                     'Cluster': k
 
                     }
-                Res = Res.append(new_pk, ignore_index = True)
-            Res = Res.drop(Res.index[i])
-    return Res
+                #Res = Res.append(new_pk, ignore_index = True)
+                #Res = Res.drop(Res.index[i])
+                Res_upd = Res_upd.append(new_pk, ignore_index = True)
+        else:
+            tt = Res.iloc[i]
+            #print(tt)
+            Res_upd = pd.concat([Res_upd, tt.to_frame().T], ignore_index = True)
+    #print(Res_upd)
+    #exit()
+    return Res_upd
 
 def retrieve_nmr_data(user_input):
     if user_input['analysis_type'] == 'Pseudo2D':
