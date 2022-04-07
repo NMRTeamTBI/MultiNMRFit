@@ -439,14 +439,7 @@ def init_progress_bar_windows(len_progresses, title, progress_bar_label):
         pg_bar.grid(column=0, row=len(len_progresses)*len(progress_bars)+1, columnspan=2, padx=10, pady=20)
         progress_bars.append(pg_bar)
 
-    close_button = tk.Button(
-        root, 
-        text="Close", 
-        fg = "black", 
-        bg = '#2F4F4F',
-        font=("Helvetica", 20),        
-        command=lambda: progress_bar_exit(root)
-    )
+    close_button = tk.Button(root, text="Close", fg = "black", command=lambda: progress_bar_exit(root))
     close_button.grid(column = 1, row = len(len_progresses)+5)
     return root, close_button, progress_bars
 

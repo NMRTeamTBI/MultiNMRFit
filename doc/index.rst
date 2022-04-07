@@ -9,14 +9,14 @@ Welcome to MultiNMRFit documentation!
    :align: center
 
 **MultiNMRFit is a scientific software dedicated to the analysis of 1H NMR data **.
-MultiNMRFit: Semi-automated software for the analysis of 1H NMR .
+MultiNMRFit: Semi-automated software for the analysis of 1H NMR including multiplicity.
 
 It is one of the routine tools that we use at the `NMR team <http://www.toulouse-biotechnology-institute.fr/en/research/physiology-and-engineering-of-microbial-metabolism/rmn.html>`_ and `MetaSys team <http://www.toulouse-biotechnology-institute.fr/en/research/molecular-physiology-and-metabolism/metasys.html>`_.
 
 The code is open-source, and available on `GitHub <https://github.com/NMRTeamTBI/MultiNMRFit>`_ under a :ref:`GPLv3 license <license>`.
 
-This documentation is available on Read the Docs (`https://isocor.readthedocs.io <https://isocor.readthedocs.io/>`_)
-and can be downloaded as a `PDF file <https://readthedocs.org/projects/isocor/downloads/pdf/latest/>`_.
+This documentation is available on Read the Docs (`https://multinmrfit.readthedocs.io <https://multinmrfit.readthedocs.io/>`_)
+and can be downloaded as a `PDF file <https://multinmrfit.readthedocs.io/_/downloads/en/latest/pdf/>`_.
 
 
 .. rubric:: Key features
