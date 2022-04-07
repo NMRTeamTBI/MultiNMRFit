@@ -34,8 +34,8 @@ and can be downloaded as a `PDF file <https://multinmrfit.readthedocs.io/_/downl
    :caption: Usage
 
    quickstart.rst
-#   tutorials.rst
-#   cite.rst
+   tutorials.rst
+   cite.rst
 
 .. toctree::
    :maxdepth: 1
