@@ -1,7 +1,7 @@
 # MultiNMRFit
 
-# [![PyPI version](https://badge.fury.io/py/multinmrfit.svg)](https://badge.fury.io/py/multinmrfit)
-# [![PyPI pyversions](https://img.shields.io/pypi/pyversions/multinmrfit.svg)](https://pypi.python.org/pypi/multinmrfit/)
+[![PyPI version](https://badge.fury.io/py/multinmrfit.svg)](https://badge.fury.io/py/multinmrfit)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/multinmrfit.svg)](https://pypi.python.org/pypi/multinmrfit/)
 [![Documentation Status](https://readthedocs.org/projects/multinmrfit/badge/?version=latest)](http://multinmrfit.readthedocs.io/?badge=latest)
 
 
