@@ -9,6 +9,7 @@ Welcome to MultiNMRFit documentation!
    :align: center
 
 **MultiNMRFit is a scientific software dedicated to the analysis of 1H NMR data **.
+
 MultiNMRFit: Semi-automated software for the analysis of 1H NMR including multiplicity.
 
 It is one of the routine tools that we use at the `NMR team <http://www.toulouse-biotechnology-institute.fr/en/research/physiology-and-engineering-of-microbial-metabolism/rmn.html>`_ and `MetaSys team <http://www.toulouse-biotechnology-institute.fr/en/research/molecular-physiology-and-metabolism/metasys.html>`_.
@@ -21,18 +22,12 @@ and can be downloaded as a `PDF file <https://multinmrfit.readthedocs.io/_/downl
 
 .. rubric:: Key features
 
-* **correction of naturally occuring isotopes**, both for non-tracer and tracer elements,
-* **correction of tracer purity**,
-* shipped as a library with both a **graphical and command line interface**,
-* mass-spectrometer and :ref:`resolution <resolution>` agnostic,
-* can be applied to singly- and multiply-charged ions
-* can be used with any tracer element (having two or more isotopes)
-* account for the contribution of derivatization steps (if any),
-* generate InChIs of isotopically-resolved (tracer) isotopologues,
+* **Rapid analysis** of a large number of 1H spectra (pseudo 2D, time series, ...) ,
+* Maintain the **multiplicity** in the fitting procedure,
 * open-source, free and easy to install everywhere where Python 3 and pip run,
 * biologist-friendly.
 
-.. seealso:: We strongly encourage you to read the :ref:`Tutorials` before using IsoCor.
+.. seealso:: We strongly encourage you to read the :ref:`Tutorials` before using MultiNMRFit.
 
 .. toctree::
    :maxdepth: 2
