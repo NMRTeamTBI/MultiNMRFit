@@ -89,6 +89,19 @@ def refine_constraints(initial_fit_values, bounds_fit, name_parameters):
     logger.debug(f"new bounds: {bounds_fit}")
     return bounds_fit
 
+def compute_statistics(res, ftol=2.220446049250313e-09):
+    npar = len(res.x)
+    tmp_i = np.zeros(npar)
+    standard_deviations = np.array([np.inf]*npar)
+    for i in range(npar):
+        tmp_i[i] = 1.0
+        hess_inv_i = res.hess_inv(tmp_i)[i]
+        sd_i = np.sqrt(max(1, abs(res.fun)) * ftol * hess_inv_i)
+        tmp_i[i] = 0.0
+        logger.info('x^{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
+        standard_deviations[i] = sd_i
+    return standard_deviations
+
 def run_single_fit_function(up, 
                             fit, 
                             intensities, 
