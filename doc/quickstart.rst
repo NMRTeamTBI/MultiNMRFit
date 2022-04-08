@@ -61,19 +61,18 @@ The MultiNMRFit window will open. If the window fails to open, have a look at ou
 
 .. image:: _static/multinmrfit_load_gui.png
 
-Select the measurements file, modify the correction parameters (isotopic tracer, resolution, etc) according to your experiment,
-and click on :samp:`Run`. IsoCor proceeds automatically to the corrections and display its progress
-and important messages.
+Fill al the required entries from the **inputs**, **analysis** and **outputs** sections. **Options** might me used accordingly to your need and 
+clik on :samp:`Run`. If you want to save your configuration file clik on :samp:`Save` and a small window will pop up in which you can specify the name. 
+If your config file is already created, click on :samp:`Load` that will fill all fields. 
 
-.. warning:: The correction options must be carefully selected to ensure reliable interpretations of labeling data, as detailed in the :ref:`Tutorials`.
+.. note:: The saving of the configuration file is not automatic.
 
-The output of the calculations (i.e. isotopologue distributions) will be written in a text file
-along a log file.
+When :samp:`Run` is cliked it will display the visualization and clusteing window clustering.
 
 .. note:: IsoCor silently overwrites (results and log) files if they already exist. So take care to copy your results elsewhere if you want to protect them from overwriting.
 
-.. seealso:: Tutorial :ref:`First time using IsoCor` has example data
-            that you can use to test your installation.
+.. seealso:: Tutorial :ref:`First time using MultiNMRFit` has example of configuration file.
+
 
 Command Line Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
