@@ -5,13 +5,13 @@ Tutorials
 ################################################################################
 
 .. seealso:: If you have a question that is not covered in the tutorials, have a look
-             at the :ref:`faq`.
+             at the :ref:`faq` or please contact us.
 
 
-.. _First time using IsoCor:
+.. _First time using MultiNMRFit:
 
 ********************************************************************************
-First time using IsoCor
+First time using MultiNMRFit
 ********************************************************************************
 
 ..  _`Input data`:
@@ -19,19 +19,11 @@ First time using IsoCor
 Input data
 ================================================================================
 
-IsoCor takes as input the raw MS data, i.e. :ref:`mass fractions <mass fractions>`
-of the :ref:`isotopic cluster <isotopic cluster>`,
-to calculate the corresponding :ref:`isotopologue distribution <isotopologue distribution>`,
-hence providing quantitative information on the incorporation of labeling into metabolites.
+MultiNMRFit takes as input processed 1D NMR data either acquired in a Pseudo2D manner or a list of 1D experiments acquired separetly i.e. :ref:`input expno <input expno>`.
+MultiNMRFit assumes that all the processing (base line correction, phasing, ...) is performed prior its usage.
 
-The raw MS data and the information required to perform the correction (i.e. the natural abundance and exact mass of isotopes,
-and a list of metabolites and derivatives moieties with their elemental formulas) are provided in flat text files.
 
-At first start, IsoCor creates in the user directory a IsoCor data folder `isocordb` containing default database files.
-These files can be edited and implemented according to the user's needs, as detailed below. Different database files can also be created
-(e.g. to have specific project-related databases), as detailed below.
-
-..  _`Measurements file`:
+..  _`Data path`:
 
 Measurements file
 --------------------------------------------------------------------------------
