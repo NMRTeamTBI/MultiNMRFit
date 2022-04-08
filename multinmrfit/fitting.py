@@ -98,7 +98,7 @@ def compute_statistics(res, ftol=2.220446049250313e-09):
         hess_inv_i = res.hess_inv(tmp_i)[i]
         sd_i = np.sqrt(max(1, abs(res.fun)) * ftol * hess_inv_i)
         tmp_i[i] = 0.0
-        logger.info('x^{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
+        logger.info('p{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
         standard_deviations[i] = sd_i
     return standard_deviations
 
@@ -129,12 +129,15 @@ def run_single_fit_function(up,
             options={'maxcor': 30},
             args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset),
             )
+        logger.info(res_fit)
+        res_stats = compute_statistics(res_fit)
+        logger.info(res_stats)
 
         if writing_to_file is False:
             return res_fit
         else:
             fit_results.loc[fit[1],:] = res_fit.x.tolist()
-    
+
     except:
         logger.error('An unknown error has occured when fitting spectra: '+str(fit[1]))
 
