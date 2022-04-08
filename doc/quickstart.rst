@@ -59,7 +59,7 @@ To start the Graphical User Interface, type in a terminal (Windows: *Anaconda Pr
 The MultiNMRFit window will open. If the window fails to open, have a look at our
 :ref:`dedicated troubleshooting procedure <failed_gui>` to solve the problem.
 
-.. image:: _static/isocor_GUI.png
+.. image:: _static/multinmrfit_load_gui.png
 
 Select the measurements file, modify the correction parameters (isotopic tracer, resolution, etc) according to your experiment,
 and click on :samp:`Process`. IsoCor proceeds automatically to the corrections and display its progress
