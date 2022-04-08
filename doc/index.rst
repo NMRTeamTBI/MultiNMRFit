@@ -4,7 +4,7 @@ MultiNMRFit: Fitting of 1D NMR Data
 Welcome to MultiNMRFit documentation!
 ----------------------------------------
 
-.. image:: _static/isocor_abstract.png
+.. image:: _static/toc_multinmrfit.png
    :width: 100%
    :align: center
 

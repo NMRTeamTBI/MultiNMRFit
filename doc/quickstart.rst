@@ -62,7 +62,7 @@ The MultiNMRFit window will open. If the window fails to open, have a look at ou
 .. image:: _static/multinmrfit_load_gui.png
 
 Select the measurements file, modify the correction parameters (isotopic tracer, resolution, etc) according to your experiment,
-and click on :samp:`Process`. IsoCor proceeds automatically to the corrections and display its progress
+and click on :samp:`Run`. IsoCor proceeds automatically to the corrections and display its progress
 and important messages.
 
 .. warning:: The correction options must be carefully selected to ensure reliable interpretations of labeling data, as detailed in the :ref:`Tutorials`.
