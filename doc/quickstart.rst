@@ -47,7 +47,7 @@ but it will be more difficult to update MultiNMRFit later on.
 Usage
 ------------------------------------------------
 
-Data Loading via Graphical User Interface
+*Data Loading* via Graphical User Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To start the Graphical User Interface, type in a terminal (Windows: *Anaconda Prompt*):
@@ -71,7 +71,7 @@ When :samp:`Run` is cliked it will display the visualization and clustering wind
 
 .. note:: MultiNMRFit silently overwrites (results and log) files if they already exist. So take care to copy your results elsewhere if you want to protect them from overwriting.
 
-Data Loading via Command Line Interface
+*Data Loading* via Command Line Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To process your data, type in a terminal:
@@ -92,7 +92,7 @@ MultiNMRFit will display the visualization and clustering window (see below).
 
 .. seealso:: Tutorial :ref:`First time using MultiNMRFit` has example of configuration file.
 
-Data Loading via Command Line Interface
+*Peak Picking visualisation and Clustering* via Graphical User Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. image:: _static/multinmrfit_clustering_gui.png
 
@@ -104,8 +104,6 @@ Peaks are labeled with the same color as on the plot and appear in the chemical 
 Once you have filled at least one **cluster ID** click on :samp:`Run Fitting` to start the analysis of your data. Progress bars will appear on 
 the screen to report on the progress of the fitting procedure and more information are displayed in the terminal window or the *Anaconda Prompt*.
 
-.. warning:: The correction options must be carefully selected to ensure reliable interpretations of labeling data, as detailed in the :ref:`Tutorials`.
-
 .. seealso:: Tutorial :ref:`First time using IsoCor` has example data
             that you can use to test your installation.
 
@@ -113,11 +111,9 @@ the screen to report on the progress of the fitting procedure and more informati
 Library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-IsoCor is also available as a library (a Python module) that you can import directly in your Python
+MultiNMRFit is also available as a library (a Python module) that you can import directly in your Python
 scripts:
 
 .. code-block:: python
 
-  import isocor
-
-.. seealso::  Have a look at our :ref:`library showcase <Library documentation>` if you are interested into this experimental feature.
+  import multinmrfit
