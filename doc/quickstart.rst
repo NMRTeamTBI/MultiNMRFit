@@ -80,7 +80,7 @@ To process your data, type in a terminal:
 
   multinmrfit [path/config_file.json]
 
-where [path/config_file.json] is the path to the configuration file tha
+where path/config_file.json is the path to the configuration file tha
 
 .. argparse::
    :module: isocor.ui.isocorcli
@@ -94,6 +94,11 @@ MultiNMRFit will display the visualization and clustering window (see below).
 
 Data Loading via Command Line Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. image:: _static/multinmrfit_clustering_gui.png
+
+MultiNMRFit automatically detects peaks above the threshold given previously either by the loading ui or in the congiguration file. 
+If the **threshold** is too low (c.a not peaks are detected)
+
 .. warning:: The correction options must be carefully selected to ensure reliable interpretations of labeling data, as detailed in the :ref:`Tutorials`.
 
 .. seealso:: Tutorial :ref:`First time using IsoCor` has example data
