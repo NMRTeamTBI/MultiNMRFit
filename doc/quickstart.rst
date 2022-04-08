@@ -47,7 +47,7 @@ but it will be more difficult to update MultiNMRFit later on.
 Usage
 ------------------------------------------------
 
-Graphical User Interface
+Data Loading via Graphical User Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To start the Graphical User Interface, type in a terminal (Windows: *Anaconda Prompt*):
@@ -62,28 +62,25 @@ The MultiNMRFit window will open. If the window fails to open, have a look at ou
 .. image:: _static/multinmrfit_load_gui.png
 
 Fill al the required entries from the **inputs**, **analysis** and **outputs** sections. **Options** might me used accordingly to your need and 
-clik on :samp:`Run`. If you want to save your configuration file clik on :samp:`Save` and a small window will pop up in which you can specify the name. 
+click on :samp:`Run`. If you want to save your configuration file click on :samp:`Save` and a small window will pop up in which you can specify the name. 
 If your config file is already created, click on :samp:`Load` that will fill all fields. 
 
 .. note:: The saving of the configuration file is not automatic.
 
-When :samp:`Run` is cliked it will display the visualization and clusteing window clustering.
+When :samp:`Run` is cliked it will display the visualization and clustering window (see below).
 
-.. note:: IsoCor silently overwrites (results and log) files if they already exist. So take care to copy your results elsewhere if you want to protect them from overwriting.
+.. note:: MultiNMRFit silently overwrites (results and log) files if they already exist. So take care to copy your results elsewhere if you want to protect them from overwriting.
 
-.. seealso:: Tutorial :ref:`First time using MultiNMRFit` has example of configuration file.
-
-
-Command Line Interface
+Data Loading via Command Line Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To process your data, type in a terminal:
 
 .. code-block:: bash
 
-  isocorcli [command line options]
+  multinmrfit [path/config_file.json]
 
-Here after the available options with their full names are enumerated and detailed.
+where [path/config_file.json] is the path to the configuration file tha
 
 .. argparse::
    :module: isocor.ui.isocorcli
@@ -91,9 +88,12 @@ Here after the available options with their full names are enumerated and detail
    :prog: isocorcli
    :nodescription:
 
-IsoCor proceeds automatically to the corrections and display its progress
-and important messages.
+MultiNMRFit will display the visualization and clustering window (see below).
 
+.. seealso:: Tutorial :ref:`First time using MultiNMRFit` has example of configuration file.
+
+Data Loading via Command Line Interface
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. warning:: The correction options must be carefully selected to ensure reliable interpretations of labeling data, as detailed in the :ref:`Tutorials`.
 
 .. seealso:: Tutorial :ref:`First time using IsoCor` has example data
