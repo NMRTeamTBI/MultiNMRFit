@@ -96,8 +96,13 @@ Data Loading via Command Line Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. image:: _static/multinmrfit_clustering_gui.png
 
-MultiNMRFit automatically detects peaks above the threshold given previously either by the loading ui or in the congiguration file. 
-If the **threshold** is too low (c.a not peaks are detected)
+MultiNMRFit automatically detects peaks above the threshold given previously either through the loading ui or in the configuration file. 
+If the **threshold** is too low (c.a no peaks are detected) you need to update the number in bottom left frame and click on :samp:`Update Threshold`
+to perform the peak picking with the new value. Detected peaks are marked with a colored dot on the spectrum and appear in the **clustering information** table. 
+Peaks are labeled with the same color as on the plot and appear in the chemical shift ascending manner (c.a from right to left).
+
+Once you have filled at least one **cluster ID** click on :samp:`Run Fitting` to start the analysis of your data. Progress bars will appear on 
+the screen to report on the progress of the fitting procedure and more information are displayed in the terminal window or the *Anaconda Prompt*.
 
 .. warning:: The correction options must be carefully selected to ensure reliable interpretations of labeling data, as detailed in the :ref:`Tutorials`.
 
