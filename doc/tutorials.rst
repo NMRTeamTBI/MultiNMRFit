@@ -48,10 +48,18 @@ Analysis
 :Spectral limits: Boundaries for the region of spectra to be used in the analysis: e.g. "spectral_limits"
 :Threshold: Lower limit for the peak detection: e.g. "threshold"
 
-Analysis
+Outputs
 --------------------------------------------------------------------------------
+:Output path: Path to the directory in which the outputs of the program will be saved; e.g. "output_path"
+:Output folder: Folder for the outputs; e.g. "output_folder"
+:Output name: Name used for all the filed created (text files and figures); e.g. "output_name"
 
-
+Options
+--------------------------------------------------------------------------------
+:Data row no: Options used in the case of incomplete processing of a Pseudo2D experiments, in which only a subset of rows need to be analyzed; e.g. "option_data_row_no"
+:Use previous fit: Options for the analysis to use the fit of the row *i-1* as a starting parameter for the fitting of row *i*; e.g. "option_previous_fit"
+:Offset: Adding an offset in the fitting (otherwise set to 0 by default); e.g. "option_offset"
+:Merge pdf(s): Options used to merge all pdfs in a single file; e.g. "option_merge_pdf"
 
 
 **This file contains the raw MS data for each metabolite of each sample**,
