@@ -33,20 +33,18 @@ The configuration file is a json file (see example below) and contains all rows 
 
 :download:`Example file <../multinmrfit/data/Imput_example.json>`.
 
+Inputs
+--------------------------------------------------------------------------------
+
 :Data path: Path to the directory that contain the data; e.g. "data_path".
 :Data Folder: Folder containing your NMR data: e.g. "data_folder"
 :Experiments: List of experiments used in the MultiNMRFit analyis: e.g. "data_exp_no"
-..  _`Data path`:
+:Process Number: Process bumber (e.g. procno in Topspin): e.g. "data_proc_no"
 
-Data path
+Analysis
 --------------------------------------------------------------------------------
+:Analysis type: Choice of analysis between a pseudo2D or list of 1D experiments; e.g. "analysis_type"
 
-
-..  _`Data Folder`:
-
-Data folder
---------------------------------------------------------------------------------
-Folder containing your NMR data
 
 
 **This file contains the raw MS data for each metabolite of each sample**,
