@@ -39,7 +39,7 @@ Inputs
 :Data path: Path to the directory that contain the data; e.g. "data_path".
 :Data Folder: Folder containing your NMR data: e.g. "data_folder"
 :Experiments: List of experiments used in the MultiNMRFit analyis: e.g. "data_exp_no"
-:Process Number: Process bumber (e.g. procno in Topspin): e.g. "data_proc_no"
+:Process Number: Process number (e.g. procno in Topspin): e.g. "data_proc_no"
 
 Analysis
 --------------------------------------------------------------------------------
@@ -62,36 +62,15 @@ Options
 :Merge pdf(s): Options used to merge all pdfs in a single file; e.g. "option_merge_pdf"
 
 
-**This file contains the raw MS data for each metabolite of each sample**,
-i.e. the :ref:`mass fractions <mass fractions>` of the measured :ref:`isotopic cluster <isotopic cluster>`
-that contain information on the :ref:`tracer isotopologues <tracer isotopologues>`.
-For each metabolite you should always measure :math:`n+1` mass fractions,
-where :math:`n` is the number of atoms of the tracer element in the metabolite.
+.. topic:: About Experiments
 
-The measurement file is a TSV file with one row by :ref:`isotopologue <isotopologues>` and the following columns:
+          Experiments might be anything from a single experiments to a list of 1D experiments:
 
-:sample: The sample name (optional); e.g. "Cloverfield 10".
-:metabolite: The metabolite name that represents the metabolite moiety, as it is referred in the metabolite database (*metabolites.dat*); e.g. "PEP".
-:derivative: The derivative name (optional) that represents the derivative moiety, as it is referred in the derivative database (*derivatives.dat*); e.g. "TMS".
-:isotopologue: The index of the peak measured, as an integer; e.g. '0' for the M0 peak that does not have any mass shift.
-:area: The measured :ref:`mass fractions <mass fractions>`; e.g. "4242.42".
-:resolution (optional): The MS resolution of the corresponding :ref:`mass fractions <mass fractions>`; e.g. "60000". Note the *all* mass fractions of a given isotopic cluster must have the same resolution.
+          1. **Pseudo2D** analysis: a single number is expected and all rows will be processed unless the *Data row no* is defined. 
+          2. **1D_Series** analysis: list of 1Ds can be given with with the format 
+            :1,2,3,4,5,6,7 or 1-7 for a list of sequential experiments
+            :1,5,9-12 for a list non sequential experiments
 
-:download:`Example file <../isocor/data/Data_example.tsv>`.
-
-.. note:: An example file is provided with IsoCor. It is created at the
-          first run of IsoCor in your user directory (`<youruserdirectory>/isocordb/Data_example.tsv`).
-
-.. topic:: About derivatives
-
-          The derivative field is optional and should be declared only if:
-
-          1. a derivatization step was performed before MS analysis,
-          2. some atoms of the derivative remains in the molecular entity that gives rise to
-             measured :ref:`isotopic cluster <isotopic cluster>`.
-
-.. seealso::
-  :ref:`Declaration of elemental formulas: "metabolite" and "derivative" moieties <Formulas>`
 
 
 Database files
