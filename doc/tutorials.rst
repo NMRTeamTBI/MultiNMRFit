@@ -44,6 +44,13 @@ Inputs
 Analysis
 --------------------------------------------------------------------------------
 :Analysis type: Choice of analysis between a pseudo2D or list of 1D experiments; e.g. "analysis_type"
+:Reference spectrum: Experiment used for the peak picking and initial fit; e.g. "reference_spectrum"
+:Spectral limits: Boundaries for the region of spectra to be used in the analysis: e.g. "spectral_limits"
+:Threshold: Lower limit for the peak detection: e.g. "threshold"
+
+Analysis
+--------------------------------------------------------------------------------
+
 
 
 
