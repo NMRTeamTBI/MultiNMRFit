@@ -19,14 +19,33 @@ First time using MultiNMRFit
 Input data
 ================================================================================
 
-MultiNMRFit takes as input processed 1D NMR data either acquired in a Pseudo2D manner or a list of 1D experiments acquired separetly i.e. :ref:`input expno <input expno>`.
+MultiNMRFit takes as input processed 1D NMR data either acquired in a Pseudo2D manner or a list of 1D experiments acquired separetly.
 MultiNMRFit assumes that all the processing (base line correction, phasing, ...) is performed prior its usage.
 
+..  _`Configuration file`:
+
+Configuration file
+================================================================================
+
+The configuration file contains all the required information to load the data (**Inputs** section), run the analysis (**Analysis** section), 
+output the results (**Outputs** section). Users might alos be intersted to use some of the options (**Options** section). 
+The configuration file is a json file (see example below) and contains all rows described below:
+
+:download:`Example file <../multinmrfit/data/Imput_example.json>`.
 
 ..  _`Data path`:
 
-Measurements file
+Data path
 --------------------------------------------------------------------------------
+Path to the directory that contain the data 
+
+
+..  _`Data Folder`:
+
+Data folder
+--------------------------------------------------------------------------------
+Folder containing your NMR data
+
 
 **This file contains the raw MS data for each metabolite of each sample**,
 i.e. the :ref:`mass fractions <mass fractions>` of the measured :ref:`isotopic cluster <isotopic cluster>`
