@@ -33,11 +33,13 @@ The configuration file is a json file (see example below) and contains all rows 
 
 :download:`Example file <../multinmrfit/data/Imput_example.json>`.
 
+:Data path: Path to the directory that contain the data; e.g. "data_path".
+:Data Folder: Folder containing your NMR data: e.g. "data_folder"
+:Experiments: List of experiments used in the MultiNMRFit analyis: e.g. "data_exp_no"
 ..  _`Data path`:
 
 Data path
 --------------------------------------------------------------------------------
-Path to the directory that contain the data 
 
 
 ..  _`Data Folder`:
