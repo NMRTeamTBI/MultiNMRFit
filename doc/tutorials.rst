@@ -100,7 +100,7 @@ If the threshold needs to be re-evaluated (lower or higher), please change its v
 .. note:: Number of peaks
         Number of peaks is by default limited to 15.
 
-The peaks detection is automatic within the spectral range provided by the user in the first step. Only peaks with 
+The peaks detection is automatically performed on the reference spectrum and within the spectral range provided by the user in the first step. Only peaks with 
 an assigned *Cluster ID* will be fitted later on (e.g. by leaving *Cluster ID* it means that the peak is not included in the analysis)
 
 The mulitplicity of each cluster is automatically defined by the number of repetitions of the same *Cluster ID*
@@ -118,9 +118,15 @@ only a limited number of multiplicity:
 .. note:: Strong coupling
         is included for a quadruplet by setting the options *Roof* in the menu of one of the 4 rows defined with the *Cluster ID*.
 
+
 Fitting
 --------------------------------------------------------------------------------
+The fitting procedure starts with the minimization of the reference spectrum with the sum of all the multiplicty defined by the user. 
+This initial minimization procedure uses the results of the peak picking as starting point for the position, intensities and coupling constants. 
+Each multiplicity is defined a sum of signals that are themselves calculated as a weighted average of a lorentzian and gaussian functions reprensented with the parameter *a*. 
 
+The procedure then optimized the **linewidth** of the Signals (e.g. "lw"), the **ratio** lorentzian/gaussian (e.g. "a"), the **amplitude** (e.g. "Amp"), 
+the **center position** of the multiplet (e.g. "x0") and the different **coupling constants** (e.g. "J1, J2").
 
 
 ..  _`Output data`:
