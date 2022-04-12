@@ -78,6 +78,34 @@ Options
 MultiNMRFit Analysis
 ================================================================================
 
+Data Loading
+--------------------------------------------------------------------------------
+The MultiNMRFit analysis is launched from a terminal (Windows: *Anaconda Prompt*) either by using 
+the graphical user interface or the command line. In the first case, a interface will allow the user to 
+fill all required information, save the configuration file and run the analysis. 
+
+.. code-block:: bash
+  multinmrfit 
+
+In the second instance, the configuration file already exists and the analysis might be started from the command line.
+
+.. code-block:: bash
+  multinmrfit <path>/<*config_file.json*>
+
+Data visualisation and clustering
+--------------------------------------------------------------------------------
+
+Multiplets
+--------------------------------------------------------------------------------
+
+The mulitplicity of each cluster is automatically defined by the number of repetitions of the same *Cluster ID*
+in the *Peak Picking visualisation and Clustering*. 
+
+.. note:: Cluster ID
+         The Cluster ID might be defined by integers or string (*xx* for instance)
+
+At this stage 
+
 
 ..  _`Output data`:
 
