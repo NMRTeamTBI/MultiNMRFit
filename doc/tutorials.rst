@@ -128,6 +128,15 @@ Each multiplicity is defined a sum of signals that are themselves calculated as 
 The procedure then optimized the **linewidth** of the Signals (e.g. "lw"), the **ratio** lorentzian/gaussian (e.g. "a"), the **amplitude** (e.g. "Amp"), 
 the **center position** of the multiplet (e.g. "x0") and the different **coupling constants** (e.g. "J1, J2").
 
+The series of spectra is then divided in two groups: above and below the reference spectrum and will be fitted in parallel. A interface will whow the progress 
+of the analysis in real-time. If the option *option_previous_fit* is selected (by default for a *Pseudo2D* analysis) the fitting of the a spectra *i* will use 
+starting parameters the final results of *i-1* otherwise it will always use the results of the reference spectrum as the initial parameters. The use of this option also restrained 
+the change of parameters between 2 spectra with for instance J within 5% of the previous value, x0 within 1% and lw within 30%. 
+
+.. note:: Use previous fit
+        option is worth using even for a 1D_Series if these data are time dependent for instance. 
+
+Once the complete analysis is done the program will automatically generate text files and plot the data. Progress are shown in the terminal (Windows: *Anaconda Prompt*).
 
 ..  _`Output data`:
 
