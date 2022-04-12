@@ -38,7 +38,7 @@ Inputs
 
 :Data path: Path to the directory that contain the data; e.g. "data_path"
 :Data Folder: Folder containing your NMR data; e.g. "data_folder"
-:Experiments: List of experiments used in the MultiNMRFit analyis; e.g. "data_exp_no". (ex: 1,2,3,4,5,6,7,9,10; 1-10; 1,5-10)
+:Experiments: List of experiments used in the MultiNMRFit analyis; e.g. "data_exp_no"
 :Process Number: Process number (e.g. procno in Topspin); e.g. "data_proc_no"
 
 Analysis
@@ -50,14 +50,16 @@ Analysis
 
 .. topic:: About Analysis
 
-          Two type of analyses type are provided **Pseudo2D** or **1D_Series**. In the case of **Pseudo2D** analysis a single *Experiments* should be given and all the 
+          Two type of analysis type are provided **Pseudo2D** or **1D_Series**. In the case of **Pseudo2D** analysis a single *Experiments* should be given and all the 
           rows will be processes unless the *Data row no* is defined. The **1D_Series** analysis works for 1D 1H experiments acquired independently. This analysis should 
           also be used for a the fitting of a single experiment. *Experiments* might be defined as 1,2,3,4,5,6,7,8,9,10 (or 1-10) for sequential experiments and 1,5,6,7,8,9,10
           (1,5-10) for incomplete series. 
 
 .. note:: Process Number 
-         The Process Number (e.g. "data_proc_no") should be the same for all experiments.
+         (e.g. "data_proc_no") should be the same for all experiments.
 
+.. note:: Threshold
+         Users will be able to update it through the graphical user interface is needed.
 Outputs
 --------------------------------------------------------------------------------
 :Output path: Path to the directory in which the outputs of the program will be saved; e.g. "output_path"
