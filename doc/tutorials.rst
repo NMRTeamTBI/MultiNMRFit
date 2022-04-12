@@ -36,17 +36,27 @@ The configuration file is a json file (see example below) and contains all rows 
 Inputs
 --------------------------------------------------------------------------------
 
-:Data path: Path to the directory that contain the data; e.g. "data_path".
-:Data Folder: Folder containing your NMR data: e.g. "data_folder"
-:Experiments: List of experiments used in the MultiNMRFit analyis: e.g. "data_exp_no"
-:Process Number: Process number (e.g. procno in Topspin): e.g. "data_proc_no"
+:Data path: Path to the directory that contain the data; e.g. "data_path"
+:Data Folder: Folder containing your NMR data; e.g. "data_folder"
+:Experiments: List of experiments used in the MultiNMRFit analyis; e.g. "data_exp_no". (ex: 1,2,3,4,5,6,7,9,10; 1-10; 1,5-10)
+:Process Number: Process number (e.g. procno in Topspin); e.g. "data_proc_no"
 
 Analysis
 --------------------------------------------------------------------------------
-:Analysis type: Choice of analysis between a pseudo2D or list of 1D experiments; e.g. "analysis_type"
+:Analysis type: Choice of analysis between a pseudo2D or list of 1D experiments; e.g. "analysis_type" (Pseudo2D or 1D_Series)
 :Reference spectrum: Experiment used for the peak picking and initial fit; e.g. "reference_spectrum"
-:Spectral limits: Boundaries for the region of spectra to be used in the analysis: e.g. "spectral_limits"
-:Threshold: Lower limit for the peak detection: e.g. "threshold"
+:Spectral limits: Boundaries for the region of spectra to be used in the analysis; e.g. "spectral_limits"
+:Threshold: Lower limit for the peak detection; e.g. "threshold"
+
+.. topic:: About Analysis
+
+          Two type of analyses type are provided **Pseudo2D** or **1D_Series**. In the case of **Pseudo2D** analysis a single *Experiments* should be given and all the 
+          rows will be processes unless the *Data row no* is defined. The **1D_Series** analysis works for 1D 1H experiments acquired independently. This analysis should 
+          also be used for a the fitting of a single experiment. *Experiments* might be defined as 1,2,3,4,5,6,7,8,9,10 (or 1-10) for sequential experiments and 1,5,6,7,8,9,10
+          (1,5-10) for incomplete series. 
+
+.. note:: Process Number 
+         The Process Number (e.g. "data_proc_no") should be the same for all experiments.
 
 Outputs
 --------------------------------------------------------------------------------
@@ -62,14 +72,6 @@ Options
 :Merge pdf(s): Options used to merge all pdfs in a single file; e.g. "option_merge_pdf"
 
 
-.. topic:: About Experiments
-
-          Experiments might be anything from a single experiments to a list of 1D experiments:
-
-          1. **Pseudo2D** analysis: a single number is expected and all rows will be processed unless the *Data row no* is defined. 
-          2. **1D_Series** analysis: list of 1Ds can be given with with the format 
-            :1,2,3,4,5,6,7 or 1-7 for a list of sequential experiments
-            :1,5,9-12 for a list non sequential experiments
 
 
 
