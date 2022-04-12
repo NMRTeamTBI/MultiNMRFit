@@ -104,9 +104,6 @@ Peaks are labeled with the same color as on the plot and appear in the chemical 
 Once you have filled at least one **cluster ID** click on :samp:`Run Fitting` to start the analysis of your data. Progress bars will appear on 
 the screen to report on the progress of the fitting procedure and more information are displayed in the terminal window or the *Anaconda Prompt*.
 
-.. seealso:: Tutorial :ref:`First time using IsoCor` has example data
-            that you can use to test your installation.
-
 
 Library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
