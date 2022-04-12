@@ -73,6 +73,11 @@ Options
 :Offset: Adding an offset in the fitting (otherwise set to 0 by default); e.g. "option_offset"
 :Merge pdf(s): Options used to merge all pdfs in a single file; e.g. "option_merge_pdf"
 
+..  _`MultiNMRFit Analysis`:
+
+MultiNMRFit Analysis
+================================================================================
+
 
 ..  _`Output data`:
 
