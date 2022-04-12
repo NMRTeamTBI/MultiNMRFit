@@ -94,17 +94,33 @@ In the second instance, the configuration file already exists and the analysis m
 
 Data visualisation and clustering
 --------------------------------------------------------------------------------
+A second graphical interface will pop-up and will allow the user to define the multiplets to be analyzed.  
+If the threshold needs to be re-evaluated (lower or higher), please change its value and update threshold. 
 
-Multiplets
---------------------------------------------------------------------------------
+.. note:: Number of peaks
+        Number of peaks is by default limited to 15.
+
+The peaks detection is automatic within the spectral range provided by the user in the first step. Only peaks with 
+an assigned *Cluster ID* will be fitted later on (e.g. by leaving *Cluster ID* it means that the peak is not included in the analysis)
 
 The mulitplicity of each cluster is automatically defined by the number of repetitions of the same *Cluster ID*
-in the *Peak Picking visualisation and Clustering*. 
+in the *Peak Picking visualisation and Clustering* interface. At the current stage of development we have implemented 
+only a limited number of multiplicity:
+
+:1 peak: Singlet
+:2 peaks: Doublet
+:3 peaks: Triplet
+:4 peaks: Quadruplet 
 
 .. note:: Cluster ID
-         The Cluster ID might be defined by integers or string (*xx* for instance)
+        might be defined by integers or string (*xx* for instance)
 
-At this stage 
+.. note:: Strong coupling
+        is included for a quadruplet by setting the options *Roof* in the menu of one of the 4 rows defined with the *Cluster ID*.
+
+Fitting
+--------------------------------------------------------------------------------
+
 
 
 ..  _`Output data`:
