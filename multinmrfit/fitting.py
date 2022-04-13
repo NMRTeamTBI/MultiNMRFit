@@ -96,11 +96,13 @@ def compute_statistics(res, ftol=2.220446049250313e-09):
     for i in range(npar):
         tmp_i[i] = 1.0
         hess_inv_i = res.hess_inv(tmp_i)[i]
-        sd_i = np.sqrt(max(1, abs(res.fun)) * ftol * hess_inv_i)
+        sd_i = np.sqrt(max(1.0, res.fun) * ftol * hess_inv_i)
         tmp_i[i] = 0.0
-        logger.info('p{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
+        logger.debug('sd p{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
+        logger.debug(f"   (rsd = {sd_i/res.x[i]}")
         standard_deviations[i] = sd_i
     return standard_deviations
+
 
 def run_single_fit_function(up, 
                             fit, 
@@ -130,16 +132,16 @@ def run_single_fit_function(up,
             options={'maxcor': 30},
             args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset),
             )
-        logger.info(res_fit)
+        logger.debug(res_fit)
         res_stats = compute_statistics(res_fit)
-        logger.info(res_stats)
-        setattr(res_fit, "standard_deviation", res_stats)
-
+        logger.debug(res_stats)
+        res_fit.res_stats = res_stats.tolist()
+        
         if not writing_to_file:
             return res_fit
         else:
             fit_results.loc[fit[1],:] = res_fit.x.tolist()
-            stat_results.loc[fit[1],:] = res_stats
+            stat_results.loc[fit[1],:] = res_stats.tolist()
 
     except:
         logger.error('An unknown error has occured when fitting spectra: '+str(fit[1]))
@@ -184,7 +186,7 @@ def full_fitting_procedure(
             )
     stat_results_table = pd.DataFrame(
         index=[i[1] for i in spectra_to_fit],
-        columns=np.arange(0,len(res_fit_reference_spectrum.x.tolist()),1)
+        columns=np.arange(0,len(res_fit_reference_spectrum.res_stats),1)
             )
     # Filling the dataframe for the reference spectrum 
     fit_results_table.loc[id_ref_spec[0][1],:] = res_fit_reference_spectrum.x.tolist()

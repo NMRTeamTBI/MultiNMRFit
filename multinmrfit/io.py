@@ -361,25 +361,39 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     plt.savefig(str(Path(path_2_save,output_name+'_'+str(res_num)+'.pdf')))
     plt.close(fig)
 
-def build_output(d_id_i, x_fit, fit_results, scaling_factor,spectra_to_fit):
+def build_output(d_id_i, x_fit, fit_results, stat_results, scaling_factor, spectra_to_fit, offset):
     
     # get multiplicity, names & values of parameters to initialize the dataframe
     _multiplet_type_ = d_id_i[2]
+
     col = range(d_id_i[1][0],d_id_i[1][1])
     mutliplet_results = fit_results[fit_results.columns.intersection(col)]
+    mutliplet_stats = stat_results[stat_results.columns.intersection(col)]
     d_mapping, _ = nfm.mapping_multiplets()
     mutliplet_results.columns = d_mapping[_multiplet_type_]['params']
+    mutliplet_stats.columns = d_mapping[_multiplet_type_]['params']
 
     # calculate integral & intensity
     mutliplet_results["integral"] = [scaling_factor*getIntegral(x_fit, _multiplet_type_, row.tolist()) for _, row in mutliplet_results.iterrows()]
     mutliplet_results["Amp"] *= scaling_factor
 
+    mutliplet_stats["Amp"] *= scaling_factor
+    mutliplet_stats["integral"] = mutliplet_stats["Amp"] / mutliplet_results["Amp"] * mutliplet_results["integral"]
+    
+    if offset:
+        mutliplet_results["offset"] = scaling_factor*fit_results.iloc[: , -1]
+        mutliplet_stats["offset"] = scaling_factor*stat_results.iloc[: , -1]
+    
     # append IDs
     mutliplet_results.insert(loc = 0, column = 'exp_no' , value = [i[2] for i in spectra_to_fit])
     mutliplet_results.insert(loc = 1, column = 'proc_no' , value = [int(i[3]) for i in spectra_to_fit])
     mutliplet_results.insert(loc = 2, column = 'row_id' , value = [i[4] for i in spectra_to_fit])
 
-    return _multiplet_type_, mutliplet_results
+    mutliplet_stats.insert(loc = 0, column = 'exp_no' , value = [i[2] for i in spectra_to_fit])
+    mutliplet_stats.insert(loc = 1, column = 'proc_no' , value = [int(i[3]) for i in spectra_to_fit])
+    mutliplet_stats.insert(loc = 2, column = 'row_id' , value = [i[4] for i in spectra_to_fit])
+
+    return _multiplet_type_, mutliplet_results, mutliplet_stats
 
 def update_results(mutliplet_results, fname):
     try:
@@ -391,21 +405,30 @@ def update_results(mutliplet_results, fname):
 
     return pd.concat([tmp, mutliplet_results])
 
-def output_txt_file(x_fit,fit_results, d_id, scaling_factor,spectra_to_fit,output_path, output_folder,output_name):
+def output_txt_file(x_fit,fit_results, stat_results, d_id, scaling_factor,spectra_to_fit,output_path, output_folder,output_name, offset):
     
     cluster_list = getList(d_id)
     for i in cluster_list:
         # create output dataframe
-        _multiplet_type_, mutliplet_results = build_output(d_id[i], x_fit, fit_results, scaling_factor,spectra_to_fit)
+        _multiplet_type_, mutliplet_results, mutliplet_stats = build_output(d_id[i], x_fit, fit_results, stat_results, scaling_factor, spectra_to_fit, offset)
         # update results file if already exists
-        fname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt')
+        fname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'_fit.txt')
+        sname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'_stat.txt')
         if fname.is_file():
             mutliplet_results = update_results(mutliplet_results, fname)
+        if sname.is_file():
+            mutliplet_stats = update_results(mutliplet_stats, fname)
         # sort results by exp_no, proc_no & row_id
         mutliplet_results = mutliplet_results.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
+        mutliplet_stats = mutliplet_stats.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
         # save to tsv
         mutliplet_results.to_csv(
             str(fname), 
+            index=False, 
+            sep = '\t'
+            )
+        mutliplet_stats.to_csv(
+            str(sname), 
             index=False, 
             sep = '\t'
             )
@@ -433,7 +456,7 @@ def merge_pdf(output_path,output_folder,output_name):
     merger.write(output_pdf)
     merger.close()
 
-def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_fit, peak_picking_data, scaling_factor, offset=False, merged_pdf=False):
+def save_output_data(user_input, fit_results, stat_results, intensities, x_scale, spectra_to_fit, peak_picking_data, scaling_factor, offset=False, merged_pdf=False):
 
     output_path         =   user_input['output_path']
     output_folder       =   user_input['output_folder']
@@ -446,7 +469,7 @@ def save_output_data(user_input, fit_results, intensities, x_scale, spectra_to_f
     Path(output_path,output_folder).mkdir(parents=True,exist_ok=True)
 
     logger.info('Save data to text file ') 
-    output_txt_file(x_fit,fit_results, d_id, scaling_factor,spectra_to_fit,output_path, output_folder,output_name)
+    output_txt_file(x_fit,fit_results, stat_results, d_id, scaling_factor,spectra_to_fit,output_path, output_folder,output_name, offset)
     logger.info('Save data to text file -- Complete')
 
     logger.info('Save plot to pdf')

@@ -112,7 +112,7 @@ def run_analysis(user_input, gui=False):
     #######################Fitting########################
     ######################################################
     logger.info('Fit spectra')
-    fit_results_table = nff.full_fitting_procedure(
+    fit_results_table, stat_results_table = nff.full_fitting_procedure(
         intensities         =   intensities,
         x_spec              =   x_ppm_reference_spectrum,
         ref_spec            =   idx_ref,
@@ -130,6 +130,7 @@ def run_analysis(user_input, gui=False):
     nio.save_output_data(
         user_input          ,
         fit_results_table   ,
+        stat_results_table,
         intensities         ,
         x_ppm_reference_spectrum,
         spectra_to_fit,
