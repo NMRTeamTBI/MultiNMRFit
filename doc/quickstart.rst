@@ -47,7 +47,7 @@ but it will be more difficult to update MultiNMRFit later on.
 Usage
 ------------------------------------------------
 
-Graphical User Interface
+*Data Loading* via Graphical User Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To start the Graphical User Interface, type in a terminal (Windows: *Anaconda Prompt*):
@@ -61,30 +61,26 @@ The MultiNMRFit window will open. If the window fails to open, have a look at ou
 
 .. image:: _static/multinmrfit_load_gui.png
 
-Select the measurements file, modify the correction parameters (isotopic tracer, resolution, etc) according to your experiment,
-and click on :samp:`Process`. IsoCor proceeds automatically to the corrections and display its progress
-and important messages.
+Fill al the required entries from the **inputs**, **analysis** and **outputs** sections. **Options** might me used accordingly to your need and 
+click on :samp:`Run`. If you want to save your configuration file click on :samp:`Save` and a small window will pop up in which you can specify the name. 
+If your config file is already created, click on :samp:`Load` that will fill all fields. 
 
-.. warning:: The correction options must be carefully selected to ensure reliable interpretations of labeling data, as detailed in the :ref:`Tutorials`.
+.. note:: The saving of the configuration file is not automatic.
 
-The output of the calculations (i.e. isotopologue distributions) will be written in a text file
-along a log file.
+When :samp:`Run` is cliked it will display the visualization and clustering window (see below).
 
-.. note:: IsoCor silently overwrites (results and log) files if they already exist. So take care to copy your results elsewhere if you want to protect them from overwriting.
+.. note:: MultiNMRFit silently overwrites (results and log) files if they already exist. So take care to copy your results elsewhere if you want to protect them from overwriting.
 
-.. seealso:: Tutorial :ref:`First time using IsoCor` has example data
-            that you can use to test your installation.
-
-Command Line Interface
+*Data Loading* via Command Line Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To process your data, type in a terminal:
 
 .. code-block:: bash
 
-  isocorcli [command line options]
+  multinmrfit [path/config_file.json]
 
-Here after the available options with their full names are enumerated and detailed.
+where path/config_file.json is the path to the configuration file tha
 
 .. argparse::
    :module: isocor.ui.isocorcli
@@ -92,23 +88,29 @@ Here after the available options with their full names are enumerated and detail
    :prog: isocorcli
    :nodescription:
 
-IsoCor proceeds automatically to the corrections and display its progress
-and important messages.
+MultiNMRFit will display the visualization and clustering window (see below).
 
-.. warning:: The correction options must be carefully selected to ensure reliable interpretations of labeling data, as detailed in the :ref:`Tutorials`.
+.. seealso:: Tutorial :ref:`First time using MultiNMRFit` has example of configuration file.
 
-.. seealso:: Tutorial :ref:`First time using IsoCor` has example data
-            that you can use to test your installation.
+*Peak Picking visualisation and Clustering* via Graphical User Interface
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. image:: _static/multinmrfit_clustering_gui.png
+
+MultiNMRFit automatically detects peaks above the threshold given previously either through the loading ui or in the configuration file. 
+If the **threshold** is too low (c.a no peaks are detected) you need to update the number in bottom left frame and click on :samp:`Update Threshold`
+to perform the peak picking with the new value. Detected peaks are marked with a colored dot on the spectrum and appear in the **clustering information** table. 
+Peaks are labeled with the same color as on the plot and appear in the chemical shift ascending manner (c.a from right to left).
+
+Once you have filled at least one **cluster ID** click on :samp:`Run Fitting` to start the analysis of your data. Progress bars will appear on 
+the screen to report on the progress of the fitting procedure and more information are displayed in the terminal window or the *Anaconda Prompt*.
 
 
 Library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-IsoCor is also available as a library (a Python module) that you can import directly in your Python
+MultiNMRFit is also available as a library (a Python module) that you can import directly in your Python
 scripts:
 
 .. code-block:: python
 
-  import isocor
-
-.. seealso::  Have a look at our :ref:`library showcase <Library documentation>` if you are interested into this experimental feature.
+  import multinmrfit
