@@ -106,6 +106,7 @@ def run_single_fit_function(up,
                             fit, 
                             intensities, 
                             fit_results, 
+                            stat_results, 
                             x_spectrum_fit, 
                             peak_picking_data, 
                             scaling_factor,
@@ -132,11 +133,13 @@ def run_single_fit_function(up,
         logger.info(res_fit)
         res_stats = compute_statistics(res_fit)
         logger.info(res_stats)
+        setattr(res_fit, "standard_deviation", res_stats)
 
-        if writing_to_file is False:
+        if not writing_to_file:
             return res_fit
         else:
             fit_results.loc[fit[1],:] = res_fit.x.tolist()
+            stat_results.loc[fit[1],:] = res_stats
 
     except:
         logger.error('An unknown error has occured when fitting spectra: '+str(fit[1]))
@@ -164,6 +167,7 @@ def full_fitting_procedure(
         id_ref_spec[0],
         intensities,
         None,  
+        None,  
         x_spec, 
         peak_picking_data,  
         scaling_factor,
@@ -178,8 +182,13 @@ def full_fitting_procedure(
         index=[i[1] for i in spectra_to_fit],
         columns=np.arange(0,len(res_fit_reference_spectrum.x.tolist()),1)
             )
+    stat_results_table = pd.DataFrame(
+        index=[i[1] for i in spectra_to_fit],
+        columns=np.arange(0,len(res_fit_reference_spectrum.x.tolist()),1)
+            )
     # Filling the dataframe for the reference spectrum 
     fit_results_table.loc[id_ref_spec[0][1],:] = res_fit_reference_spectrum.x.tolist()
+    stat_results_table.loc[id_ref_spec[0][1],:] = res_fit_reference_spectrum.res_stats
 
     root, close_button, progress_bars = nfui.init_progress_bar_windows(
         len_progresses = [len(id_spec_part1), len(id_spec_part2)],
@@ -200,6 +209,7 @@ def full_fitting_procedure(
                 "spec_list"           : id_spec_part1,
                 "intensities"         : intensities,
                 "fit_results"         : fit_results_table,
+                "stat_results"         : stat_results_table,
                 "x_spectrum_fit"      : x_spec,
                 "peak_picking_data"   : peak_picking_data,
                 "scaling_factor"      : scaling_factor,
@@ -221,6 +231,7 @@ def full_fitting_procedure(
                 "spec_list"           : id_spec_part2[::-1],
                 "intensities"         : intensities,
                 "fit_results"         : fit_results_table,
+                "stat_results"         : stat_results_table,
                 "x_spectrum_fit"      : x_spec,
                 "peak_picking_data"   : peak_picking_data,
                 "scaling_factor"      : scaling_factor,
@@ -237,7 +248,7 @@ def full_fitting_procedure(
 
         root.mainloop()
     
-    return fit_results_table
+    return fit_results_table, stat_results_table
 
 class MyApp_Fitting(threading.Thread):
 
