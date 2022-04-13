@@ -15,16 +15,18 @@ The code is open-source, and available under a GPLv3 license. Additional informa
 Detailed documentation can be found online at Read the Docs ([https://multinmrfit.readthedocs.io/](https://multinmrfit.readthedocs.io/)).
 
 ## Key features
-* **fitting of a series of 1D spectra acquired individually or as pseudo 2D spectra**.
-* **semi-automated analysis** for **peak picking** and **definition of multiplicity** for each signal.
-* account for **overlaps** between peaks.
-* **visual inspection of the fitted curves**.
+* **fitting of a series of 1D spectra (acquired individually or as a pseudo 2D spectra)**,
+* estimation of several parameters (intensity, area, chemical shift, linewidth, coupling constant(s), offset, etc) for each signal of interest,
+* **semi-automated analysis** for **peak picking** and **definition of multiplicity** for each signal,
+* account for **overlaps** between peaks and **zero-order baseline correction**,
+* **visual inspection of the fitted curves**,
+* estimation of **uncertainty** (standard deviation) on estimated parameters,
 * shipped as a **library** with both a **graphical** and **command line** interface,
 * open-source, free and easy to install everywhere where Python 3 and pip run,
 * biologist-friendly.
 
 ## Quick-start
-MultiNMRFit requires Python 3.6 or higher and run on all plate-forms.
+MultiNMRFit requires Python 3.6 or higher and run on all platforms (Windows, MacOS and Unix).
 Please check [the documentation](https://multinmrfit.readthedocs.io/en/latest/quickstart.html) for complete
 installation and usage instructions.
 
