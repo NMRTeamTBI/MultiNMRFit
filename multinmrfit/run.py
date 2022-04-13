@@ -1,154 +1,145 @@
-﻿import multinmrfit as nf
+﻿# System Libraries
+import logging
+import sys
+import warnings
+warnings.filterwarnings('ignore')
+import numpy as np
+import pandas as pd
+
+# Own Libs
+import multinmrfit.ui as nui
+import multinmrfit.io as nio
 import multinmrfit.utils_nmrdata as nfu
 import multinmrfit.fitting as nff
-import numpy as np
-import os
-import pandas as pd
-import logging
 
 logger = logging.getLogger(__name__)
 
 ################################################################
 # Loading Raw Data 
 ################################################################
-# if Analysis_Type not in ['1D_Series','Pseudo2D','1D']:
-#     exit()
 
-def run_analysis(imputs_dic, gui=False):
 
-    Analysis_Type = imputs_dic['Data_Type']
-    logger.info('Test')
+def main():
+    if not len(sys.argv) == 2:
+        app = nui.App(user_input=nio.create_user_input())
+        app.start()
+    else:
+        user_input = nio.load_config_file(None,config_file_path=sys.argv[1]) 
+        user_input = nio.check_input_file(user_input,None)       
+        run_analysis(user_input,None)
+
+def prepare_data(user_input):
     ######################################################
     ##################### Read and Load Data #############
     ######################################################
-    if Analysis_Type in ['Pseudo2D','1D']:
-        [data_all, dic_all, x_ppm_all] = nfu.Read_Raw_NMR_Data_Bruker(
-                path_nmr_data   =   os.path.join(imputs_dic['Data_Path'],imputs_dic['Data_Folder']),
-                expno_data      =   imputs_dic['ExpNo'],
-                procno_data     =   imputs_dic['ProcNo']
-        )
-        Exp_List = None
-    elif Analysis_Type in ['1D_Series']:
-        Raw_y_Data = []
-        Raw_x_Data = []
-        Exp_List = imputs_dic['ExpNo']
-        for n in Exp_List:
-            [data, diC, x_ppm] = nfu.Read_Raw_NMR_Data_Bruker(
-                    path_nmr_data   =   os.path.join(imputs_dic['Data_Path'],imputs_dic['Data_Folder']),
-                    expno_data      =   n,
-                    procno_data     =   imputs_dic['ProcNo']
-            )       
-            
-            Raw_x_Data.append(x_ppm)  
-            Raw_y_Data.append(data)  
-
-        x_ppm_all = np.array(Raw_x_Data)
-        data_all = np.array(Raw_y_Data)
-    else:
-        raise ValueError("Wrong type of experiment in 'Analysis_Type' (expected 'Pseudo2D','1D' or '1D_Series', got '{}').".format(Analysis_Type))
+    intensities, x_ppm = nfu.retrieve_nmr_data(user_input) 
+    logger.info('Loading -- Complete')
     #-----------------------------------------------------#    
 
     ######################################################
     #Extract data within the region selected by the user##
     ######################################################
-    [_Ext_data_, _Ext_x_ppm_] = nfu.Extract_Data(
-        data     = data_all,
-        x_ppm    = x_ppm_all,
-        x_lim    = [imputs_dic['Spec_Lim'][0],imputs_dic['Spec_Lim'][1]]
+    logger.info('Extraction of NMR Data')
+    intensities, x_ppm = nfu.Extract_Data(
+        data     = intensities,
+        x_ppm    = x_ppm,
+        x_lim    = [user_input['spectral_limits'][0],user_input['spectral_limits'][1]]
     )
-    #-----------------------------------------------------#   
+    logger.info('Extraction -- Complete')
+    #-----------------------------------------------------#
+    
+    if user_input['analysis_type'] == 'Pseudo2D':
+        idx_ref = int(user_input['reference_spectrum' ]) - 1  
+    else:            
+        idx_ref = user_input['data_exp_no'].index(int(user_input['reference_spectrum' ]))
 
     ######################################################
     ###########Extract the reference spectrum#############
     ######################################################
-    if Analysis_Type == 'Pseudo2D':
-        y_Spec_init_ = _Ext_data_[int(imputs_dic['Ref_Spec' ])-1,:]
-        x_Spec_init_ = _Ext_x_ppm_
-    elif Analysis_Type == '1D_Series':
-        y_Spec_init_ = _Ext_data_[int(imputs_dic['Ref_Spec' ])-1,:]
-        x_Spec_init_ = _Ext_x_ppm_[int(imputs_dic['Ref_Spec' ])-1,:]
-    elif Analysis_Type == '1D':
-        y_Spec_init_ = _Ext_data_
-        x_Spec_init_ = _Ext_x_ppm_
+    if user_input['analysis_type'] == 'Pseudo2D':
+        intensities_reference_spectrum = intensities[idx_ref,:]
+        x_ppm_reference_spectrum = x_ppm
+    elif user_input['analysis_type'] == '1D_Series':
+        intensities_reference_spectrum = intensities[idx_ref,:]
+        x_ppm_reference_spectrum = x_ppm[idx_ref,:]
     #-----------------------------------------------------#   
 
     ######################################################
-    ####################Peak Picking######################
+    ##############Peak Picking/ Clustering################
     ######################################################
-    Peak_Picking = nfu.Peak_Picking_1D(
-    x_data          =   x_Spec_init_, 
-    y_data          =   y_Spec_init_, 
-    threshold       =   imputs_dic['Threshold'],
-    )
-    #-----------------------------------------------------#   
+    threshold = user_input['threshold']
 
-    ######################################################
-    #############Manual Check of Peak Picking#############
-    ######################################################
-    #exit()
-    new_th, pp_res_Sel = nf.ui.gui_peak_picking(x_Spec_init_,y_Spec_init_,imputs_dic['Threshold'],Peak_Picking)
-    check_for_nt = new_th.isnull().values.any()
-    while check_for_nt == False:
-        new_th = new_th.apply(pd.to_numeric, errors='coerce')
-        pp_t = new_th.nt.values[0]
+    clustering_results = pd.DataFrame(columns=['Peak_Position','Peak_Intensity','Selection','Cluster','Options'])
 
-        Peak_Picking = nfu.Peak_Picking_1D(
-            x_data          =   x_Spec_init_, 
-            y_data          =   y_Spec_init_, 
-            threshold       =   pp_t,
+    app_clustering = nui.App_Clustering(
+        x_spec = x_ppm_reference_spectrum,
+        y_spec = intensities_reference_spectrum,
+        peak_picking_threshold = threshold,
+        clustering_table = clustering_results
         )
-        
-        new_th, pp_res_Sel = nf.ui.gui_peak_picking(x_Spec_init_,y_Spec_init_,pp_t,Peak_Picking)
-        check_for_nt = new_th.isnull().values.any()
-        if check_for_nt == True:
-            break
-    #print(pp_res_Sel)
-    #print(pp_res_Sel["Selection"].values)
-    #exit()
-    pp_res_Sel = pp_res_Sel[pp_res_Sel["Selection"].values]
-    #print(pp_res_Sel)
-    #exit()
-    scaling_factor = pp_res_Sel.Peak_Amp.mean()
-    #cluster_list =  pp_res_Sel.Cluster.unique()
+    app_clustering.start()
+
+    user_picked_data = clustering_results[clustering_results["Selection"].values]
+    user_picked_data = nfu.filter_multiple_clusters(user_picked_data)
+    scaling_factor = user_picked_data.Peak_Intensity.mean()
+
+    ######################################################
+    #Prepare spectral list with all required indices##
+    ######################################################
+    # (id, expno, procno, rowno, output_name)
+    if user_input['analysis_type'] == "Pseudo2D" : 
+        if not len(user_input.get('option_data_row_no',[])):
+            user_input['option_data_row_no'] = np.arange(1,len(intensities)+1,1)
+        spectra_to_fit = [(j-1, i, user_input['data_exp_no'][0], user_input['data_proc_no'], j, j) for i,j in enumerate(user_input['option_data_row_no'])]
+    elif user_input['analysis_type'] == '1D_Series':
+            spectra_to_fit = [(i, i, j, user_input['data_proc_no'], 1, j) for i, j in enumerate(user_input['data_exp_no'])]
+
+    ######################################################
+    #Check to use the previpous fit as initial values for fitting##
+    ######################################################
+    use_previous_fit = user_input['option_previous_fit']
+
+    offset = user_input['option_offset']
+    merged_pdf = user_input['option_merge_pdf']
+    return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset, merged_pdf
+
+def run_analysis(user_input, gui=False):
+    logger.info('Loading NMR Data')
+
+    spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset, merged_pdf = prepare_data(user_input)
     #-----------------------------------------------------#   
     ######################################################
     #######################Fitting########################
     ######################################################
-    if Analysis_Type in ['1D','1D_Series','Pseudo2D']:
-        Fit_results = nff.Pseudo2D_PeakFitting(
-                    Intensities  =   _Ext_data_,
-                    x_Spec       =   x_Spec_init_,
-                    ref_spec     =   imputs_dic['Ref_Spec'],
-                    peak_picking_data = pp_res_Sel,
-                    scaling_factor=scaling_factor,
-                    gui=gui
-            )
-
+    logger.info('Fit spectra')
+    fit_results_table, stat_results_table = nff.full_fitting_procedure(
+        intensities         =   intensities,
+        x_spec              =   x_ppm_reference_spectrum,
+        ref_spec            =   idx_ref,
+        peak_picking_data   =   user_picked_data,
+        scaling_factor      =   scaling_factor,
+        spectra_to_fit      =   spectra_to_fit,
+        use_previous_fit    =   use_previous_fit,
+        offset              =   offset
+    )
     #-----------------------------------------------------#   
     ######################################################
     #######################Output#########################
     ######################################################
-    nf.ui.Plot_All_Spectrum(
-        pdf_path = imputs_dic['pdf_path'],
-        pdf_folder = imputs_dic['pdf_folder'],
-        pdf_name = imputs_dic['pdf_name'],
-        Fit_results= Fit_results,
-        Int_Pseudo_2D_Data = _Ext_data_,
-        x_ppm = x_Spec_init_,
-        Peak_Picking_data= pp_res_Sel,
-        scaling_factor=scaling_factor,
-        gui=gui,
-        id_spectra=Exp_List
+    logger.info('Save results')
+    nio.save_output_data(
+        user_input          ,
+        fit_results_table   ,
+        stat_results_table,
+        intensities         ,
+        x_ppm_reference_spectrum,
+        spectra_to_fit,
+        user_picked_data,
+        scaling_factor,
+        offset=offset,
+        merged_pdf = merged_pdf
     )
-    print('Full Analysis is done')
-    print('#--------#')  
-    print('##########')
-    return Peak_Picking
+    logger.info('Full Analysis is complete')
+    exit()
 
-
-#analysis_Pseudo2D(Inputs_dic)
-#exit()
-
-
-
-
+     

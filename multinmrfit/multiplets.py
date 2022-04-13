@@ -1,6 +1,7 @@
 ﻿# This script contains all the information for mulitplets definition
-import numpy as np
 
+import numpy as np
+import pandas as pd
 
 def Singlet( x, x0, a, h_s, lw ):
     #Lorentzian + Gaussian    
@@ -26,35 +27,106 @@ def DoubletOfDoublet( x, x0, a, h_s, lw, J1, J2):
 
 def DoubletofDoubletAsymetric( x, x0, a, h_s, lw, J1, J2, dH):
     #Lorentzian + Gaussian
-    S1 = a * h_s  / ( 1 + (( x - x0 - ((J1+J2)/2))/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 - ((J1+J2)/2))**2/(2*lw**2))
+    S1 = a * (h_s-dH)  / ( 1 + (( x - x0 - ((J1+J2)/2))/lw)**2) + (1-a)*(h_s-dH)*np.exp(-(x - x0 - ((J1+J2)/2))**2/(2*lw**2))
     S2 = a * (h_s+dH)  / ( 1 + (( x - x0 - ((J1-J2)/2))/lw)**2) + (1-a)*(h_s+dH)*np.exp(-(x - x0 - ((J1-J2)/2))**2/(2*lw**2))
-    S3 = a * h_s  / ( 1 + (( x - x0 + ((J1+J2)/2))/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 + ((J1+J2)/2))**2/(2*lw**2))
+    S3 = a * (h_s-dH)  / ( 1 + (( x - x0 + ((J1+J2)/2))/lw)**2) + (1-a)*(h_s-dH)*np.exp(-(x - x0 + ((J1+J2)/2))**2/(2*lw**2))
     S4 = a * (h_s+dH)  / ( 1 + (( x - x0 + ((J1-J2)/2))/lw)**2) + (1-a)*(h_s+dH)*np.exp(-(x - x0 + ((J1-J2)/2))**2/(2*lw**2))
     Signal = S1+S2+S3+S4
     return Signal
 
-def Triplet( x, x0, a, h_s, lw, J1, I_ratio):
+def Triplet( x, x0, a, h_s, lw, J1):
     #Lorentzian + Gaussian
     S1 = a * h_s  / ( 1 + (( x - x0 - J1/2)/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 - J1/2)**2/(2*lw**2))
-    S2 = a * I_ratio* h_s  / ( 1 + (( x - x0 )/lw)**2) + (1-a)*I_ratio*h_s*np.exp(-(x - x0 )**2/(2*lw**2))
+    S2 = a * 2* h_s  / ( 1 + (( x - x0 )/lw)**2) + (1-a)*2*h_s*np.exp(-(x - x0 )**2/(2*lw**2))
     S3 = a * h_s  / ( 1 + (( x - x0 + J1/2)/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 + J1/2)**2/(2*lw**2))
     Signal = S1+S2+S3
     return Signal
 
-# to be checked:
-#    - constraints on coupling constants are sufficient
-#    - error check on multiple peaks (duplicates lines in panda)
-def mapping_multiplets():
+def mapping_multiplets(lw_constraints = (1e-3,1e-2), x0_constraints = (1e-6,12), a_constraints = (1e-3,1), Amp_constraints = (1e-6,np.inf), dH_constraints= (0, np.inf), J_constraints = (2.5e-3,0.25)):
     d_mapping = {
-        "Singlet":{"f_function":Singlet,"n_peaks" : "1", "option":"", "params":['x0','a','Amp','lw'],"n_params" : 4, "constraints":[(1e-6,12),(0.1,1),(1e-6,np.inf),(1e-6,0.5)]},
-        "Doublet":{"f_function":Doublet,"n_peaks" : "2", "option":"","params":['x0','a','Amp','lw','J1'],"n_params" : 5, "constraints":[(1e-6,12),(1e-6,1),(1e-6,np.inf),(1e-6,1),(2e-3,0.5)]},
-        "DoubletofDoublet":{"f_function":DoubletOfDoublet,"n_peaks" : "4", "option":"","params":['x0','a','Amp','lw','J1','J2'],"n_params" : 6, "constraints":[(1e-6,12),(1e-6,1),(1e-6,np.inf),(1e-6,1),(2e-3,1),(2e-3,1)]},
-        "DoubletofDoubletAsymetric":{"f_function":DoubletofDoubletAsymetric,"n_peaks" : "4", "option":"Roof","params":['x0','a','Amp','lw','J1','J2', 'dH'],"n_params" : 7, "constraints":[(1e-6,12),(1e-6,1),(1e-6,np.inf),(1e-6,1),(2e-3,1),(2e-3,1), (-np.inf, np.inf)]},
-        "Triplet":{"f_function":Triplet,"n_peaks" : "3", "option":"","params":['x0','a','Amp','lw','J1','I_ratio'],"n_params" : 6, "constraints":[(1e-6,12),(1e-6,1),(1e-6,np.inf),(1e-6,1),(2e-3,0.5),(1,10)]},
+        "Singlet":{"f_function":Singlet,"n_peaks" : "1", "option":"", "params":['x0','a','Amp','lw'],"n_params" : 4, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints]},
+        "Doublet":{"f_function":Doublet,"n_peaks" : "2", "option":"","params":['x0','a','Amp','lw','J1'],"n_params" : 5, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints,J_constraints]},
+        "DoubletofDoublet":{"f_function":DoubletOfDoublet,"n_peaks" : "4", "option":"","params":['x0','a','Amp','lw','J1','J2'],"n_params" : 6, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints,J_constraints,J_constraints]},
+        "DoubletofDoubletAsymetric":{"f_function":DoubletofDoubletAsymetric,"n_peaks" : "4", "option":"Roof","params":['x0','a','Amp','lw','J1','J2', 'dH'],"n_params" : 7, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints,J_constraints,J_constraints, dH_constraints]},
+        "Triplet":{"f_function":Triplet,"n_peaks" : "3", "option":"","params":['x0','a','Amp','lw','J1'],"n_params" : 5, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints,J_constraints]},
         }
-    # add id to d_mapping, and create d_clustering with id as keys
+    #  create d_clustering with 'n_peaks + option' as keys (so must be unique, otherwise construction of this dict must be modified)
     d_clustering = {(d_mapping[k]["n_peaks"]+d_mapping[k]["option"]):k for k in d_mapping.keys()}
+    return d_mapping, d_clustering
+
+def Peak_Initialisation(
+    Peak_Type='Peak_Type',
+    Peak_Picking_Results = 'Peak_Picking_Results',
+    scaling_factor=None
+    ):
     
-    d_parameters = {d_mapping[k]["n_params"]:k for k in d_mapping.keys()}
-    
-    return d_mapping, d_clustering, d_parameters
+    Line_Width = 0.001
+    Ratio_Lorentzian_Gaussian = 0.5
+
+    Peak_Picking_Results[["Peak_Position", "Peak_Intensity"]] = Peak_Picking_Results[["Peak_Position", "Peak_Intensity"]].apply(pd.to_numeric)
+
+    if Peak_Type == 'Singlet':
+        Init_Val= [
+        Peak_Picking_Results.Peak_Position.values[0], 
+        Ratio_Lorentzian_Gaussian,
+        Peak_Picking_Results.Peak_Intensity.values[0]/scaling_factor, 
+        Line_Width
+        ]
+
+    elif Peak_Type =='Doublet':
+        x0 = np.mean(Peak_Picking_Results.Peak_Position)
+        J1 = 2*(np.abs(Peak_Picking_Results.Peak_Position.max())-np.abs(x0))
+        Amp = np.mean(Peak_Picking_Results.loc[:,'Peak_Intensity'])/scaling_factor
+        Init_Val= [
+                x0, 
+                Ratio_Lorentzian_Gaussian,
+                Amp, 
+                Line_Width,
+                J1
+                ]
+
+    elif Peak_Type =='DoubletofDoublet':
+        x0_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Position'])
+        J_small = Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position.diff().iloc[1]
+        J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'Peak_Position').Peak_Position)-np.mean(Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position))
+        Amp_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Intensity'])/scaling_factor
+        Init_Val= [
+                x0_init, 
+                Ratio_Lorentzian_Gaussian,
+                Amp_init, 
+                Line_Width,
+                J_small,
+                J_large
+                ]
+
+    elif Peak_Type =='DoubletofDoubletAsymetric':
+        x0_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Position'])
+        J_small = Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position.diff().iloc[1]
+        J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'Peak_Position').Peak_Position)-np.mean(Peak_Picking_Results.nsmallest(2, 'Peak_Position').Peak_Position))
+        Amp_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Intensity'])/scaling_factor
+        Init_Val= [
+                x0_init, 
+                Ratio_Lorentzian_Gaussian,
+                Amp_init, 
+                Line_Width,
+                J_small,
+                J_large,
+                0
+                ]
+
+    elif Peak_Type =='Triplet':
+        x0 = np.mean(Peak_Picking_Results.Peak_Position)
+        J1 = (np.abs(Peak_Picking_Results.Peak_Position.max())-np.abs(x0))
+        Amp = Peak_Picking_Results.loc[:,'Peak_Intensity'].min()/scaling_factor
+        Init_Val= [
+                x0, 
+                Ratio_Lorentzian_Gaussian,
+                Amp, 
+                Line_Width,
+                J1
+                ]
+    else:
+        raise ValueError("Unknown multiplicity provided, please check 'Peak_Type'.")
+
+    return Init_Val
+

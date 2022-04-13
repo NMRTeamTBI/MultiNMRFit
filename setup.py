@@ -10,20 +10,22 @@ with open("multinmrfit/__init__.py") as f:
         raise RuntimeError('Unable to determine version.')
 
 setuptools.setup(
-    name="MultiNMRFit",
+    name="multinmrfit",
     version=VERSION,
     author="Cyril Charlier, Pierre Millard",
     author_email="charlier@insa-toulouse.fr",
-    description="MultiNMRFit: Fitting NMR spectra",
+    description="multinmrfit: Fit NMR spectra",
     long_description="add long description here",
     long_description_content_type="text/markdown",
     url="https://github.com/NMRTeamTBI/NMRFit",
     packages=setuptools.find_packages(),
     python_requires='>=3.5',
-    install_requires=['pandas>=0.17.1', 'scipy>=0.12.1', 'tqdm>=4.51.0', 'matplotlib>=3.3.4', 'nmrglue>=0.6', 'numpy>=1.14.0'],
+    install_requires=['pandas>=0.17.1', 'scipy>=0.12.1', 'matplotlib>=3.3.4','nmrglue>=0.6', 'numpy>=1.14.0', 'PyPDF2>=1.26.0', 'natsort>=8.1.0'],
     package_data={'': ['data/*.png', ], },
     include_package_data=True,
     classifiers=[
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
@@ -33,10 +35,10 @@ setuptools.setup(
         ],
     entry_points={
         'console_scripts': [
-            'multinmrfitcli = multinmrfit.ui:start_cli',
+            'multinmrfit = multinmrfit.run:main'
         ],
         'gui_scripts': [
-            'multinmrfit = multinmrfit.ui:start_gui',
+            'multinmrfit = multinmrfit.run:main'
         ]
     }
 )

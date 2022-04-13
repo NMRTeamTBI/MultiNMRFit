@@ -1,8 +1,6 @@
 import numpy as np
 import nmrglue as ng
-import os
-
-import tkinter as tk
+from pathlib import Path 
 import pandas as pd
 
 def find_nearest(array, value):
@@ -10,14 +8,14 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx, array[idx]
 
-def Read_Raw_NMR_Data_Bruker(
+def read_nmr_data_bruker(
         path_nmr_data   =   'path_nmr_data',
         expno_data      =   'expno_data',
         procno_data     =   'procno_data',
         ):
-    path = os.path.join(path_nmr_data,str(expno_data),'pdata',str(procno_data))
+    path = Path(path_nmr_data,str(expno_data),'pdata',str(procno_data))
     dic, data = ng.bruker.read_pdata(
-        path,
+        str(path),
         read_procs=True,
         read_acqus=False,
         scale_data = True,
@@ -28,7 +26,7 @@ def Read_Raw_NMR_Data_Bruker(
         udic = ng.bruker.guess_udic(dic,data)
         uc_F1 = ng.fileiobase.uc_from_udic(udic, 0)
         ppm_scale_F1 = uc_F1.ppm_scale()
-        output = [data,dic,ppm_scale_F1]
+        output = [data,ppm_scale_F1]
     if n_dim == 2:
         udic = ng.bruker.guess_udic(dic,data)
         uc_F2 = ng.fileiobase.uc_from_udic(udic, 1)
@@ -36,28 +34,23 @@ def Read_Raw_NMR_Data_Bruker(
         # Clean data for data stopped before the end!
         data = data[~np.all(data == 0, axis=1)]
 
-        output = (data,dic,ppm_scale_F2)
+        output = (data,ppm_scale_F2)
     return output
 
-def Extract_Data(
-    data = 'data',
-    x_ppm = 'x_ppm',
-    x_lim = 'x_lim'
-    ):
-    n_dim = len(data.shape) 
+def Extract_Data(data, x_ppm, x_lim):
+    n_dim = len(data.shape)
     if n_dim == 1:     
         idx_x0_F1, x0_F1 = find_nearest(x_ppm,x_lim[0])
         idx_x1_F1, x1_F1 = find_nearest(x_ppm,x_lim[1])
-        data_ext = data[idx_x0_F1:idx_x1_F1]
-        x_ppm_ext = x_ppm[idx_x0_F1:idx_x1_F1]
-        output = [data_ext, x_ppm_ext]
+        data_ext = np.vstack([data[idx_x0_F1:idx_x1_F1],])
+        x_ppm_ext = np.vstack([x_ppm[idx_x0_F1:idx_x1_F1],])
+        
     if n_dim == 2:
         if x_ppm.ndim == 1:
             idx_x0_F2, x0_F2 = find_nearest(x_ppm,x_lim[0])
             idx_x1_F2, x1_F2 = find_nearest(x_ppm,x_lim[1])
             data_ext = data[:,idx_x0_F2:idx_x1_F2]
             x_ppm_ext = x_ppm[idx_x0_F2:idx_x1_F2]
-            output = [data_ext, x_ppm_ext]
         if x_ppm.ndim != 1:
             n_s = x_ppm.shape[0]
             for k in range(n_s):
@@ -74,8 +67,7 @@ def Extract_Data(
                         idx_x0_F2 += 1
                     data_ext= np.vstack([data_ext,data[k,idx_x0_F2:idx_x1_F2]])
                     x_ppm_ext= np.vstack([x_ppm_ext,x_ppm[k,idx_x0_F2:idx_x1_F2]])
-        output = [data_ext, x_ppm_ext]
-
+    output = data_ext, x_ppm_ext
     return output
 
 def Peak_Picking_1D(
@@ -83,13 +75,13 @@ def Peak_Picking_1D(
     y_data          =   'y_data', 
     threshold       =   'threshold',
     ):
-    
     try: 
         peak_table = ng.peakpick.pick(
             y_data, 
             pthres=threshold, 
             algorithm='downward',
             )
+
         # Find peak locations in ppm
         peak_locations_ppm = []
         for i in range(len(peak_table['X_AXIS'])):
@@ -99,21 +91,78 @@ def Peak_Picking_1D(
         # Find the peak amplitudes
         peak_amplitudes = y_data[peak_table['X_AXIS'].astype('int')]
 
-        results = pd.DataFrame(columns=['ppm_H_AXIS','Peak_Amp'],index=np.arange(1,len(peak_table)+1))
-        results.loc[:,'ppm_H_AXIS'] = peak_locations_ppm
-        results.loc[:,'Peak_Amp'] = peak_amplitudes
-        results = results.sort_values(by='ppm_H_AXIS', ascending=True)
+        results = pd.DataFrame(columns=['Peak_Position','Peak_Intensity'],index=np.arange(1,len(peak_table)+1))
+        results.loc[:,'Peak_Position'] = peak_locations_ppm
+        results.loc[:,'Peak_Intensity'] = peak_amplitudes
+        results = results.sort_values(by='Peak_Position', ascending=True)
     except:
-        main = tk.Tk()
-        main.title("Error")
-        
-        str_var = tk.StringVar()
-        #Message Function
-        label = tk.Message( main, textvariable=str_var, 
-            relief=tk.RAISED,width=400,foreground='red')
-        str_var.set("No signal were found \n Lower the threshold") 
-        label.pack()
-        main.mainloop()
-        exit()
-
+        results = pd.DataFrame(columns=['Peak_Position','Peak_Intensity'],index=[])
+    
     return results
+
+def sort_peak_picking_data(peak_picking_data, n_peak_max):
+    if len(peak_picking_data) >= n_peak_max:
+        peak_picking_data = peak_picking_data.sort_values(by='Peak_Intensity', ascending=False).head(n_peak_max)
+        peak_picking_data = peak_picking_data.sort_values(by='Peak_Position', ascending=True)
+    return peak_picking_data
+
+def filter_multiple_clusters(Res):
+    #print(Res)
+    Res_upd = pd.DataFrame(columns=Res.columns)
+    for i,j in enumerate(Res.Cluster):
+        cluster_num = j.split(',')
+        if len(cluster_num) > 1:
+            for k in cluster_num:
+                new_pk = {
+                    'Peak_Position': Res.iloc[i].Peak_Position,
+                    'Peak_Intensity': Res.iloc[i].Peak_Intensity,
+                    'Selection': Res.iloc[i].Selection,
+                    'Options': Res.iloc[i].Options,
+                    'Cluster': k
+
+                    }
+                #Res = Res.append(new_pk, ignore_index = True)
+                #Res = Res.drop(Res.index[i])
+                Res_upd = Res_upd.append(new_pk, ignore_index = True)
+        else:
+            tt = Res.iloc[i]
+            #print(tt)
+            Res_upd = pd.concat([Res_upd, tt.to_frame().T], ignore_index = True)
+    #print(Res_upd)
+    #exit()
+    return Res_upd
+
+def retrieve_nmr_data(user_input):
+    if user_input['analysis_type'] == 'Pseudo2D':
+        [y_intensities_all, x_ppm_all] = read_nmr_data_bruker(
+                path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
+                expno_data      =   user_input['data_exp_no'][0],
+                procno_data     =   user_input['data_proc_no']
+        )
+
+    elif user_input['analysis_type'] == '1D_Series':
+        if len(user_input['data_exp_no']) == 1:
+            [y_intensities_all, x_ppm_all] = read_nmr_data_bruker(
+                    path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
+                    expno_data      =   user_input['data_exp_no'][0],
+                    procno_data     =   user_input['data_proc_no']
+            )
+        else:
+            raw_y_data = []
+            raw_x_data = []
+            for n in  user_input['data_exp_no']:
+                [y_intensity, x_ppm] = read_nmr_data_bruker(
+                        path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
+                        expno_data      =   n,
+                        procno_data     =   user_input['data_proc_no']
+                )       
+                raw_x_data.append(x_ppm)  
+                raw_y_data.append(y_intensity)  
+
+            x_ppm_all = np.array(raw_x_data)
+            y_intensities_all = np.array(raw_y_data)
+    else:
+        raise ValueError("Wrong type of experiment in 'Analysis Type' (expected 'Pseudo2D' or '1D_Series', got '{}').".format(user_input['analysis_type']))
+    print(y_intensities_all.shape)
+
+    return y_intensities_all, x_ppm_all

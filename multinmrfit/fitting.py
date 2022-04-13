@@ -1,88 +1,16 @@
-﻿import numpy as np
+﻿import warnings
+import logging
+import threading
+
+warnings.filterwarnings('ignore')
+import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
 
+import multinmrfit.multiplets as nfm
+import multinmrfit.ui as nfui
 
-import multinmrfit.multiplets as nmrm
-
-# Set Initial Values for fitting
-
-def Peak_Initialisation(
-    Peak_Type='Peak_Type',
-    Peak_Picking_Results = 'Peak_Picking_Results',
-    scaling_factor=None
-    ):
-    Line_Width = 0.001
-    Ratio_Lorentzian_Gaussian = 0.5
-
-    Peak_Picking_Results[["ppm_H_AXIS", "Peak_Amp"]] = Peak_Picking_Results[["ppm_H_AXIS", "Peak_Amp"]].apply(pd.to_numeric)
-
-    if Peak_Type == 'Singlet':
-        Init_Val= [
-        Peak_Picking_Results.ppm_H_AXIS.values[0], 
-        Ratio_Lorentzian_Gaussian,
-        Peak_Picking_Results.Peak_Amp.values[0]/scaling_factor, 
-        Line_Width
-        ]
-
-    elif Peak_Type =='Doublet':
-        x0 = np.mean(Peak_Picking_Results.ppm_H_AXIS)
-        J1 = 2*(np.abs(Peak_Picking_Results.ppm_H_AXIS.max())-np.abs(x0))
-        Amp = np.mean(Peak_Picking_Results.loc[:,'Peak_Amp'])/scaling_factor
-
-        Init_Val= [
-                x0, 
-                Ratio_Lorentzian_Gaussian,
-                Amp, 
-                Line_Width,
-                J1
-                ]
-    #print(Init_Val);exit()
-    elif Peak_Type =='DoubletofDoublet':
-
-        x0_init = np.mean(Peak_Picking_Results.loc[:,'ppm_H_AXIS'])
-        J_small = Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').ppm_H_AXIS.diff().iloc[1]
-        J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'ppm_H_AXIS').ppm_H_AXIS)-np.mean(Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').ppm_H_AXIS))
-        Amp_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Amp'])/scaling_factor
-        Init_Val= [
-                x0_init, 
-                Ratio_Lorentzian_Gaussian,
-                Amp_init, 
-                Line_Width,
-                J_small,
-                J_large
-                ]
-    elif Peak_Type =='DoubletofDoubletAsymetric':
-
-        x0_init = np.mean(Peak_Picking_Results.loc[:,'ppm_H_AXIS'])
-        J_small = Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').ppm_H_AXIS.diff().iloc[1]
-        J_large = (np.mean(Peak_Picking_Results.nlargest(2, 'ppm_H_AXIS').ppm_H_AXIS)-np.mean(Peak_Picking_Results.nsmallest(2, 'ppm_H_AXIS').ppm_H_AXIS))
-        Amp_init = np.mean(Peak_Picking_Results.loc[:,'Peak_Amp'])/scaling_factor
-        Init_Val= [
-                x0_init, 
-                Ratio_Lorentzian_Gaussian,
-                Amp_init, 
-                Line_Width,
-                J_small,
-                J_large,
-                0
-                ]
-    elif Peak_Type =='Triplet':
-        x0 = np.mean(Peak_Picking_Results.ppm_H_AXIS)
-        J1 = (np.abs(Peak_Picking_Results.ppm_H_AXIS.max())-np.abs(x0))
-        Amp = Peak_Picking_Results.loc[:,'Peak_Amp'].min()/scaling_factor
-        I_ratio = Peak_Picking_Results.loc[:,'Peak_Amp'].max()/Peak_Picking_Results.loc[:,'Peak_Amp'].min()
-        Init_Val= [
-                x0, 
-                Ratio_Lorentzian_Gaussian,
-                Amp, 
-                Line_Width,
-                J1,
-                I_ratio
-                ]
-    else:
-        raise ValueError("Peak type is not defined.")
-    return Init_Val
+logger = logging.getLogger(__name__)
 
 def update_resolution(constraints, x_fit_):
     delta = abs(x_fit_[1]-x_fit_[0])
@@ -93,34 +21,35 @@ def update_position(constraints, x_fit_):
     constraints[0] = (np.min(x_fit_), np.max(x_fit_))
     return constraints
 
-def Initial_Values(
+def get_fitting_parameters(
     peakpicking_data,
     x_fit_,
-    scaling_factor
+    scaling_factor,
+    offset=False
     ):
-    ini_params, ini_constraints = [], []
+    ini_params, ini_constraints, name_parameters = [], [], []
     cluster_list =  peakpicking_data.Cluster.unique()
     d_id = {k:[] for k in cluster_list}
-    d_mapping, d_clustering, _ = nmrm.mapping_multiplets()
+    d_mapping, d_clustering = nfm.mapping_multiplets()
     Initial_offset = 0
     for n in cluster_list:
         _cluster_ = peakpicking_data.loc[peakpicking_data.Cluster==n]
         id_cluster = str(len(_cluster_)) + "".join(i for i in set(_cluster_.Options.values.tolist()))
         _multiplet_type_ = d_clustering[id_cluster]
         _multiplet_type_function = d_mapping[_multiplet_type_]["f_function"]
-
-        Init_Val = Peak_Initialisation(_multiplet_type_,Peak_Picking_Results=_cluster_,scaling_factor=scaling_factor)
-        #Init_Cons = Constraints_Initialisation(_multiplet_type_)
-        d_id[n] = (_multiplet_type_function, [len(ini_params),len(ini_params)+len(Init_Val)])
+        Init_Val = nfm.Peak_Initialisation(_multiplet_type_,Peak_Picking_Results=_cluster_,scaling_factor=scaling_factor)
+        d_id[n] = (_multiplet_type_function, [len(ini_params), len(ini_params)+len(Init_Val)], _multiplet_type_)
         ini_params.extend(Init_Val)
-        upd_cons = update_resolution(d_mapping[_multiplet_type_]["constraints"], x_fit_)
-        upd_cons = update_position(d_mapping[_multiplet_type_]["constraints"], x_fit_)
+        upd_cons = update_resolution(d_mapping[_multiplet_type_]['constraints'], x_fit_)
+        upd_cons = update_position(upd_cons, x_fit_)
         ini_constraints.extend(upd_cons)
-    ini_params.extend([Initial_offset])
-    ini_constraints.extend([(-0.1, 0.1)])
-    return d_id, ini_params, ini_constraints
+        name_parameters.extend(d_mapping[_multiplet_type_]['params'])
+    if offset:
+        ini_params.extend([Initial_offset])
+        ini_constraints.extend([(-0.1, 0.1)])
+    return d_id, ini_params, ini_constraints, name_parameters
 
-def simulate_data(x_fit_, fit_par, d_id, scaling_factor):
+def simulate_data(x_fit_, fit_par, d_id, scaling_factor, offset=False):
     # initialize simulated spectrum at 0
     sim_intensity = np.zeros(len(x_fit_))
     # add subspectrum of each spin system
@@ -130,7 +59,8 @@ def simulate_data(x_fit_, fit_par, d_id, scaling_factor):
         # simulate and add corresponding subspectrum
         sim_intensity += d_id[n][0](x_fit_, *params)
     # add offset (corresponds to 0-order baseline correction)
-    sim_intensity += fit_par[-1]
+    if offset:
+        sim_intensity += fit_par[-1]
     # multiply by scaling factor (required for stable minimization)
     sim_intensity *= scaling_factor
     return sim_intensity
@@ -138,117 +68,210 @@ def simulate_data(x_fit_, fit_par, d_id, scaling_factor):
 def fit_objective(
     fit_par,
     x_fit_,
-    peakpicking_data,
     y_fit_,
     d_id,
-    scaling_factor
+    scaling_factor,
+    offset=False
     ):
-    sim_intensity = simulate_data(x_fit_,fit_par, d_id, scaling_factor)
+    sim_intensity = simulate_data(x_fit_,fit_par, d_id, scaling_factor, offset=offset)
     rmsd = np.sqrt(np.mean((sim_intensity - y_fit_)**2))
     return rmsd
 
-def Fitting_Function(
-    x_fit_,
-    peakpicking_data,
-    y_fit_,
-    scaling_factor,
-    Initial_Val=None):
+def refine_constraints(initial_fit_values, bounds_fit, name_parameters):
+    logger.debug(f"old bounds: {bounds_fit}")
+    # update parameters based on dict(k, v) where k is a string used to identify the parameter, and v is the allowed (relative) parameter window
+    relative_window = {"x0":0.01, "J":0.05, "lw":0.3}
+    for k, v in relative_window.items():
+        idx = [i for i,j in enumerate(name_parameters) if k in j]
+        for i in idx:
+            ini_val = initial_fit_values[i]
+            bounds_fit[i] = (ini_val*(1-v), ini_val*(1+v))
+    logger.debug(f"new bounds: {bounds_fit}")
+    return bounds_fit
 
-    if Initial_Val is not None:        
-        init_ = Initial_Val
-    else:
-        init_=Initial_Values(peakpicking_data, x_fit_, scaling_factor)[1]
-    #bounds_fit_ = Initial_Values(peakpicking_data, x_fit_, d_clustering, d_mapping)[2]
-    d_id, _, bounds_fit_ = Initial_Values(peakpicking_data, x_fit_, scaling_factor)
-    res_fit = minimize(
-                fit_objective,
-                x0=init_,                
-                bounds=bounds_fit_,
-                method='L-BFGS-B',
-                #options={'ftol': 1e-6},#,'maxiter':0},
-                args=(x_fit_,peakpicking_data,y_fit_, d_id, scaling_factor),
-    )
-    return res_fit
+def compute_statistics(res, ftol=2.220446049250313e-09):
+    npar = len(res.x)
+    tmp_i = np.zeros(npar)
+    standard_deviations = np.array([np.inf]*npar)
+    for i in range(npar):
+        tmp_i[i] = 1.0
+        hess_inv_i = res.hess_inv(tmp_i)[i]
+        sd_i = np.sqrt(max(1.0, res.fun) * ftol * hess_inv_i)
+        tmp_i[i] = 0.0
+        logger.debug('sd p{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
+        logger.debug(f"   (rsd = {sd_i/res.x[i]}")
+        standard_deviations[i] = sd_i
+    return standard_deviations
 
-def Pseudo2D_PeakFitting(   
-    Intensities =   'Intensities'           ,
-    x_Spec      =   'x_Spec'                ,    
-    ref_spec    =   'ref_spec'              ,
-    peak_picking_data = 'peak_picking_data',
-    scaling_factor=None,
-    gui=False
-    ): 
-    if Intensities.ndim == 1:
-        n_spec = 1
-    else:
-        n_spec = Intensities.shape[0]
 
-    id_spec_ref = int(ref_spec)-1
-    id_spec_sup = np.arange(id_spec_ref+1,n_spec,1)
-    id_spec_inf = np.arange(0,id_spec_ref,1)
+def run_single_fit_function(up, 
+                            fit, 
+                            intensities, 
+                            fit_results, 
+                            stat_results, 
+                            x_spectrum_fit, 
+                            peak_picking_data, 
+                            scaling_factor,
+                            use_previous_fit,
+                            writing_to_file=True,
+                            offset=False
+                            ):
 
-    if Intensities.ndim == 1:
-        y_Spec_init_ = Intensities
-    else:
-        y_Spec_init_ = Intensities[id_spec_ref,:]
-    #Fitting of the reference 1D spectrum -- This function can be used for 1D spectrum alone
-    print('Reference Spectrum Fitting : reference spectrum: '+str(ref_spec))
-    Initial_Fit_ = Fitting_Function(
-        x_Spec,
-        peak_picking_data,
-        y_Spec_init_,
-        scaling_factor)
-    print('Reference Spectrum Fitting -- Complete')
-    print('#--------#')
-    Fit_results = pd.DataFrame(
-        index=np.arange(0,n_spec,1),
-        columns=np.arange(0,len(Initial_Fit_.x.tolist()),1)
+    d_id, initial_fit_values, bounds_fit, name_parameters = get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor, offset=offset)
+    if use_previous_fit :
+        initial_fit_values = list(fit_results.iloc[fit[1]-1 if up else fit[1]+1].values)
+        bounds_fit = refine_constraints(initial_fit_values, bounds_fit, name_parameters)
+    
+    try:
+        intensities = intensities[fit[0],:]
+        res_fit = minimize(
+            fit_objective,
+            x0=initial_fit_values,                
+            bounds=bounds_fit,
+            method='L-BFGS-B',
+            options={'maxcor': 30},
+            args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset),
             )
-    if Intensities.ndim == 1:
-        Fit_results.loc[0,:] = Initial_Fit_.x.tolist()
-    if gui:
-        from tqdm.gui import tqdm
-        leave=False
+        logger.debug(res_fit)
+        res_stats = compute_statistics(res_fit)
+        logger.debug(res_stats)
+        res_fit.res_stats = res_stats.tolist()
+        
+        if not writing_to_file:
+            return res_fit
+        else:
+            fit_results.loc[fit[1],:] = res_fit.x.tolist()
+            stat_results.loc[fit[1],:] = res_stats.tolist()
+
+    except:
+        logger.error('An unknown error has occured when fitting spectra: '+str(fit[1]))
+
+def full_fitting_procedure(   
+    intensities         =   'intensities',
+    x_spec              =   'x_Spec',
+    ref_spec            =   'ref_spec',
+    peak_picking_data   =   'peak_picking_data',
+    scaling_factor      =    None,
+    spectra_to_fit      =   'spectra_to_fit',
+    use_previous_fit    =   'use_previous_fit',
+    offset=False
+    ): 
+    
+    # Handling spectra list for multi-threading
+    id_spec_part2 = [i for i in spectra_to_fit if i[0] < ref_spec]
+    id_spec_part1 = [i for i in spectra_to_fit if i[0] > ref_spec]
+    id_ref_spec = [i for i in spectra_to_fit if i[0] == ref_spec ]
+
+    # Fitting the reference 1D spectrum -- This function can be used for 1D spectrum alone
+    logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]})')
+    res_fit_reference_spectrum = run_single_fit_function(
+        None, # No need of up or down here
+        id_ref_spec[0],
+        intensities,
+        None,  
+        None,  
+        x_spec, 
+        peak_picking_data,  
+        scaling_factor,
+        False,
+        writing_to_file=False,
+        offset=offset
+        ) 
+    logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]}) -- Complete')
+
+    # Creation of the data frame containing fitting results
+    fit_results_table = pd.DataFrame(
+        index=[i[1] for i in spectra_to_fit],
+        columns=np.arange(0,len(res_fit_reference_spectrum.x.tolist()),1)
+            )
+    stat_results_table = pd.DataFrame(
+        index=[i[1] for i in spectra_to_fit],
+        columns=np.arange(0,len(res_fit_reference_spectrum.res_stats),1)
+            )
+    # Filling the dataframe for the reference spectrum 
+    fit_results_table.loc[id_ref_spec[0][1],:] = res_fit_reference_spectrum.x.tolist()
+    stat_results_table.loc[id_ref_spec[0][1],:] = res_fit_reference_spectrum.res_stats
+
+    root, close_button, progress_bars = nfui.init_progress_bar_windows(
+        len_progresses = [len(id_spec_part1), len(id_spec_part2)],
+        title='Fitting in progress...',
+        progress_bar_label=['Spectra part 1','Spectra part 2']
+        ) 
+    n_spec = intensities.shape[0]
+
+    if n_spec == 1:
+        pass
     else:
-        from tqdm import tqdm
-        leave=True
-    if Intensities.ndim != 1:
-        Fit_results.loc[id_spec_ref,:] = Initial_Fit_.x.tolist()
-        if ref_spec != str(n_spec):
-            print('Ascending Spectrum Fitting : from: '+str(ref_spec)+' to '+str(np.max(id_spec_sup)))
-            for s in tqdm(id_spec_sup, leave=leave):
-                y_Spec = Intensities[s,:]
-                Initial_Fit_Values = list(Fit_results.loc[s-1].iloc[:].values) #!!!!!!!!!!!!!!!!!!!!!!! config if initial values
-                try:
-                    _1D_Fit_ = Fitting_Function(
-                                x_Spec,
-                                peak_picking_data,
-                                y_Spec,
-                                scaling_factor,
-                                Initial_Fit_Values)                   
-                    
-                    # for n in range(len(Col_Names)-1):
-                    Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
+        threads = []
 
-                except:
-                    print('Error'+str(s))
-        print('#--------#')
-        if ref_spec != '1':
-            print('Descending Spectrum Fitting : from: '+str(np.min(id_spec_inf))+' to '+str(np.max(id_spec_inf)))
-            for s in tqdm(id_spec_inf[::-1], leave=leave):
-                # print(s,s+1)
-                y_Spec = Intensities[s,:]   
-                Initial_Fit_Values = list(Fit_results.loc[s+1].iloc[:].values) #!!!!!!!!!!!!!!!!!!!!!!! config if initial values
-                try:
-                    _1D_Fit_ = Fitting_Function(
-                                x_Spec,
-                                peak_picking_data,
-                                y_Spec,
-                                scaling_factor,
-                                Initial_Fit_Values) 
+        if len(id_spec_part1):
+            logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {np.max(id_spec_part1[-1][5])}')
+            threads.append(MyApp_Fitting(data={
+                "up"                  : True,
+                "spec_list"           : id_spec_part1,
+                "intensities"         : intensities,
+                "fit_results"         : fit_results_table,
+                "stat_results"         : stat_results_table,
+                "x_spectrum_fit"      : x_spec,
+                "peak_picking_data"   : peak_picking_data,
+                "scaling_factor"      : scaling_factor,
+                "use_previous_fit"    : use_previous_fit,
+                "offset"              : offset
+            },
+            threads=threads,
+            close_button=close_button,
+            progressbar=progress_bars[0]
+            ))
+            logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {id_spec_part1[-1][5]} -- Complete')
+        else:
+            logger.info(f'No spectra to fit above the reference spectrum') 
 
-                    Fit_results.loc[s,:] = _1D_Fit_.x.tolist()
-                except:
-                    print('Error'+str(s))
-        print('#--------#')
-    return Fit_results
+        if len(id_spec_part2):
+            logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]}')
+            threads.append(MyApp_Fitting(data={
+                "up"                  : False,
+                "spec_list"           : id_spec_part2[::-1],
+                "intensities"         : intensities,
+                "fit_results"         : fit_results_table,
+                "stat_results"         : stat_results_table,
+                "x_spectrum_fit"      : x_spec,
+                "peak_picking_data"   : peak_picking_data,
+                "scaling_factor"      : scaling_factor,
+                "use_previous_fit"    : use_previous_fit,
+                "offset"              : offset
+            },
+            threads=threads,
+            close_button=close_button,
+            progressbar=progress_bars[1]
+            ))
+            logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]} -- Complete')
+        else:
+            logger.info(f'No spectra to fit below the reference spectrum') 
+
+        root.mainloop()
+    
+    return fit_results_table, stat_results_table
+
+class MyApp_Fitting(threading.Thread):
+
+    def __init__(self, data, threads, close_button, progressbar):
+        self.finished = False
+        self.threads = threads
+        self.data = data
+        self.close_button = close_button
+        # self.progress_label = progress_label
+        self.progressbar = progressbar
+        threading.Thread.__init__(self)
+        self.start()
+
+    def run(self):
+        spec_list = self.data.pop("spec_list")
+        for fit in spec_list:
+            self.progressbar["value"] += 1
+            run_single_fit_function(fit=fit, **self.data)
+        self.finished = True
+        finished = True
+        for thread in self.threads:
+            finished = thread.finished if thread.finished == False else finished
+        if finished:
+            self.close_button.invoke()

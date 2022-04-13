@@ -1,8 +1,13 @@
 import sys
-import multinmrfit.ui
+import multinmrfit.ui as nui
+import multinmrfit.io as nio
+import multinmrfit.run as nrun
 
-# start CLI if arguments provided, otherwise switch to GUI
-if len(sys.argv) > 1:
-    multinmrfit.ui.start_cli(sys.argv)
+
+if not len(sys.argv) == 2:
+    app = nui.App(user_input=nio.create_user_input())
+    app.start()
 else:
-    multinmrfit.ui.start_gui()
+    user_input = nio.load_config_file(None,config_file_path=sys.argv[1]) 
+    user_input = nio.check_input_file(user_input,None)       
+    nrun.run_analysis(user_input,None)

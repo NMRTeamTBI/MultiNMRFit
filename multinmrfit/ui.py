@@ -1,614 +1,449 @@
-# Import system libraries
-import pkg_resources
+from re import L
+import tkinter
+import tkinter.messagebox
 import random
-import json
-import sys
-import os 
-import logging
-import argparse
-from pathlib import Path
 
-# Import display libraries
+import sys
+import json
+from pathlib import Path 
 import tkinter as tk
-from tkinter import simpledialog, ttk, filedialog
-from PIL import Image, ImageTk
+from tkinter import simpledialog, ttk, messagebox
+import logging
+import webbrowser
 
 # Import plot libraries
-import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.backends.backend_pdf import PdfPages
 
-# Import math libraries
-import pandas as pd
-import numpy as np
+import multinmrfit
+import multinmrfit.io as nio
+import multinmrfit.run as nrun
+import multinmrfit.utils_nmrdata as nfu
 
-# Import our own libraries
-import multinmrfit.run as nmrr
-import multinmrfit.multiplets as nmrm
-import multinmrfit.fitting as nmrf
+# initialize logger
+logger = logging.getLogger(__name__)
 
-matplotlib.use("TkAgg")
+def openDoc():
+    webbrowser.open_new(r"https://multinmrfit.readthedocs.io/en/latest/")
 
-tk_wdw = None 
-logger = logging.getLogger()
+def openGit():
+    webbrowser.open_new(r"https://github.com/NMRTeamTBI/MultiNMRFit/")
 
-class MyOptionMenu(tk.OptionMenu):
-    def __init__(self, master, status, *options):
-        self.var = tk.StringVar(master)
-        self.var.set(status)
-        tk.OptionMenu.__init__(self, master, self.var, *options)
-        self.config(font=('calibri',(10)),bg='white',width=12)
-        self['menu'].config(font=('calibri',(10)),bg='white')
-###################################
-# Peak Picking window
-###################################
+class App:
 
-def save_info_clustering(r,dic, Res):
-    Res.Peak_Amp = dic['Intensity']
-    Res.ppm_H_AXIS = dic['Peak_Position']
-    Res.Options = [i.get() for i in dic["Options"]]
-    Res.Cluster = [i.get() for i in dic["Cluster"]]
-    Res.Selection = [True if i.get() != '' else False for i in dic["Cluster"]]
-    r.destroy()
-    plt.close()
-
-def refresh_threshold(r, dic, new_threshold):
-    for n in dic['th']:
-        nt = n.get()
-    new_threshold.nt.loc[1] = nt
-    r.destroy()
-    plt.close()
-    return new_threshold
-
-def Exit(r):
-    r.destroy()
-    plt.close()
-    exit()
-
-def wdw_peak_picking(PeakPicking_Threshold, pp_results,figure,pts_Color,Res,new_threshold):
-    wdw = tk.Tk()
-    wdw.title('Peak Picking Visualisation and Validation')
-    graph = FigureCanvasTkAgg(figure, master=wdw)
-    canvas = graph.get_tk_widget()
-    canvas.grid(row=0, column=0,columnspan = 8,rowspan=1)
-
-    pp_names = ['ppm_H_AXIS','Peak_Amp']
-    data_cols_names = ['1H ppm','Peak Intensity','Cluster','Options']
-    # Multiplicity_Choice = ('Singlet','Doublet')
-    
-    for c in range(len(data_cols_names)):
-        tk.Label(wdw, text=str(data_cols_names[c]), ).grid(column=c+1, row=2)
-
-    dic = {
-        'Cluster': [],
-        'Selection': [],
-        'Intensity':[],
-        'Peak_Position':[],
-        'Options':[]
-    }
-    dic_par = {
-        'th':[]
-    }
-    npeaks = len(pp_results)
-    for i in range(npeaks):
-        tk.Label(wdw, text="Peak "+str(i+1),fg=pts_Color[i]).grid(column=0, row=i+3)
-        en = tk.Entry(wdw,justify = "center")
-       
-        # Clustering
-        en_cluster = tk.Entry(wdw,justify = "center")
-        en_cluster.insert(0, '')
-        dic['Cluster'].append(en_cluster)
-        en_cluster.grid(column=len(data_cols_names)-1,row=i+3,ipadx=5)
+    def __init__(self, user_input, *args, **kwargs):
+        APP_NAME = f"Multinmrfit Interface (v{multinmrfit.__version__})"
         
-        listofoptions=['Roof'] # options
-        en_options = ttk.Combobox(wdw, values=listofoptions) # Combobox
-        en_options.grid(row=i+3,column=len(data_cols_names),ipadx=6) # adding to grid
-        dic['Options'].append(en_options)
+        super().__init__(*args, **kwargs)
+        self.master = tk.Tk()
+        self.master.title(APP_NAME)
+        self.master.resizable(False, False)
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        for c in range(len(pp_names)):
-            col = pp_names[c]
-            en_c = tk.Entry(wdw,justify = "center")
-            data = pp_results.iloc[i].loc[col]
-            if col == 'ppm_H_AXIS':
-                dic['Peak_Position'].append(data)
-            if col == 'Peak_Amp':
-                dic['Intensity'].append(data)
-            en_c.insert(0, round(data,3))
-            en_c.grid(column=c+1,row=i+3,sticky=tk.N+tk.S+tk.E+tk.W)
-    
-    disp = tk.Entry(wdw, readonlybackground="white")
-    tk.Label(wdw, text="Threshold", fg='#f00').grid(column=0, row=1)
-    disp.insert(0, PeakPicking_Threshold)
-    disp.grid(column=1, row=1)
-    dic_par['th'].append(disp)
+        self.toplevel = None
+        if sys.platform == "darwin":
+            self.master.bind("<Command-q>", self.on_closing)
+            self.master.bind("<Command-w>", self.on_closing)
 
-    tk.Button(wdw, text="Refresh & Close", fg = "orange", command=lambda: refresh_threshold(wdw, dic_par, new_threshold)).grid()  
-    tk.Button(wdw, text="Save & Close", fg = "blue", command=lambda: save_info_clustering(wdw, dic, Res)).grid() 
-    tk.Button(wdw, text="Exit", fg = "black", command=lambda: Exit(wdw)).grid() 
+        # Create Menu     
+        menubar = tk.Menu(self.master)
+        self.master.config(menu = menubar)
+        filemenu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=filemenu)
+        filemenu.add_command(label="Exit", command=self.master.quit)
+        helpmenu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=helpmenu)
 
-    wdw.mainloop()
+        # Add options here if needed
+        helpmenu.add_command(label = "MultiNMRFit project", command=openGit)
+        helpmenu.add_command(label = "Documentation", command=openDoc)
 
-def initialize_results_clustering():
-    Res = pd.DataFrame(columns=['ppm_H_AXIS','Peak_Amp','Selection','Cluster','Options'])
-    return Res
+        # ============ create TkFrames ============
+        self.frame_inputs = tk.LabelFrame(self.master,width=250,height=250,text="Inputs",foreground='red')
+        self.frame_analysis = tk.LabelFrame(self.master,width=250,height=250,text="Analysis",foreground='red')
+        self.frame_output = tk.LabelFrame(self.master,width=250,height=200,text="Outputs",foreground='red')
+        self.frame_options = tk.LabelFrame(self.master,width=250,height=200,text="Options",foreground='red')
 
-def filter_multiple_clusters(Res):
-    for i,j in enumerate(Res.Cluster):
-        cluster_num = j.split(',')
-        if len(cluster_num) > 1:
-            for k in cluster_num:
-                new_pk = {'ppm_H_AXIS': Res.iloc[i].ppm_H_AXIS,'Peak_Amp': Res.iloc[i].Peak_Amp,'Selection': Res.iloc[i].Selection,'Cluster': k}
-                Res = Res.append(new_pk, ignore_index = True)
-            Res = Res.drop(Res.index[i])
-    print(Res)
-    return Res
+        self.frame_inputs.grid(row=0,column=0, columnspan=2, padx=3, pady=3)
+        self.frame_analysis.grid(row=0,column=2, columnspan=2, padx=3, pady=3)
+        self.frame_output.grid(row=1,column=0, columnspan=2, padx=3, pady=3)
+        self.frame_options.grid(row=1,column=2, columnspan=2, padx=3, pady=3)
 
-def gui_peak_picking(x_Spec,y_Spec,PeakPicking_Threshold,PeakPicking_data):
+        # ============ create Labels and entries ============
+        data_inputs = ['data_path', 'data_folder', 'data_exp_no', 'data_proc_no']
+        for i in range(len(data_inputs)):
+            data_input_label = tk.Label(self.frame_inputs,text=data_inputs[i].replace("_", " ").capitalize() + ":",foreground='black')
+            data_input_label.place(relx=0.1, rely=0.05+i*0.25, anchor="w")
 
-    n_peak = len(PeakPicking_data)
-    if n_peak >=10:
-        PeakPicking_data = PeakPicking_data.sort_values(by='Peak_Amp', ascending=False).head(10)
-        PeakPicking_data = PeakPicking_data.sort_values(by='ppm_H_AXIS', ascending=True)
-        n_peak = len(PeakPicking_data)
+            self.input_var = tk.StringVar() 
+            self.input_entry = tk.Entry(self.frame_inputs,textvariable=self.input_var,bg='white',borderwidth=0,foreground='black')
+            self.input_entry.place(relx=0.1, rely=0.15+i*0.25,width=200, anchor=tkinter.W)
+            user_input[data_inputs[i]]  = self.input_var
 
-    #Res = pd.DataFrame(columns=['ppm_H_AXIS','Peak_Amp','Check','Cluster'],index=np.arange(1,n_peak+1))
-    Res = initialize_results_clustering()
-    new_threshold = pd.DataFrame(columns=['nt'],index=[1])
+        analysis_info = ['analysis_type','reference_spectrum','spectral_limits','threshold']
+        for i in range(len(analysis_info)):
+            analysis_info_label = tk.Label(self.frame_analysis,text=analysis_info[i].replace("_", " ").capitalize() + ":",foreground='black')
+            analysis_info_label.place(relx=0.1, rely=0.05+i*0.25, anchor="w")
 
-    # Create a list of colors
-    colors = []
-    for i in range(n_peak):
-        colors.append('#%06X' % random.randint(0, 0xFFFFFF))
-
-    #Plot Spectrum with peak picking
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(x_Spec, y_Spec, '-',color='teal')
-    for i in range(n_peak):
-        ax.plot(PeakPicking_data.ppm_H_AXIS.iloc[i],PeakPicking_data.Peak_Amp.iloc[i],c=colors[i],ls='none',marker='o')
-    ax.axhline(PeakPicking_Threshold,c='r')
-    ax.invert_xaxis()
-    ax.set_xlabel(r'$^1H$ $(ppm)$')
-
-    wdw_peak_picking(
-        PeakPicking_Threshold,
-        PeakPicking_data, 
-        fig,
-        colors,
-        Res,
-        new_threshold
-        )
-    Res = filter_multiple_clusters(Res)
-    return new_threshold, Res
-
-###################################
-# Final Plots
-###################################
-
-def getList(dict):
-    return [k for k in dict.keys()]
-
-def getIntegral(x_fit_, _multiplet_type_, fit_par):
-    d_mapping = nmrm.mapping_multiplets()[0]
-    _multiplet_type_function = d_mapping[_multiplet_type_]["f_function"]
-    y = _multiplet_type_function(x_fit_, *fit_par)
-    integral = np.sum(y)*(x_fit_[1]-x_fit_[0])
-    return integral
-
-def Plot_All_Spectrum(
-    pdf_path = 'pdf_path',
-    pdf_folder = 'pdf_folder',
-    pdf_name = 'pdf_name',
-    Fit_results = 'Fit_results', 
-    Int_Pseudo_2D_Data = 'Int_Pseudo_2D_Data',
-    x_ppm = 'x_ppm',
-    Peak_Picking_data = None,
-    scaling_factor=None,
-    gui=False,
-    id_spectra=None
-    ):
-
-    print('Plot in pdf file')  
-    x_fit = np.linspace(np.min(x_ppm),np.max(x_ppm),2048)
-    d_id = nmrf.Initial_Values(Peak_Picking_data, x_fit, scaling_factor)[0]
-    #d_id = {k:[] for k in Peak_Picking_data.Cluster.unique()}
-    cluster_list = getList(d_id)
-    if id_spectra is None:
-        id_spectra = np.arange(1,len(Fit_results)+1)
-    Fit_results = Fit_results.apply(pd.to_numeric)
-    Fit_results_text= Fit_results.round(9)
-    
-    if not os.path.exists(os.path.join(pdf_path,pdf_folder)):
-        os.makedirs(os.path.join(pdf_path,pdf_folder))
-    d_mapping, _, d_parameters = nmrm.mapping_multiplets()
-    for i in cluster_list:        
-        col = range(d_id[i][1][0],d_id[i][1][1])
-        _multiplet_type_ = d_parameters[len(col)]
-        _multiplet_params_ = d_mapping[_multiplet_type_]['params']
-        mutliplet_results = Fit_results_text[Fit_results_text.columns.intersection(col)]
-        mutliplet_results.columns = _multiplet_params_
-        mutliplet_results["integral"] = [scaling_factor*getIntegral(x_fit, _multiplet_type_, row.tolist()) for index, row in mutliplet_results.iterrows()]
-        mutliplet_results["Amp"] = scaling_factor*mutliplet_results["Amp"]
-        mutliplet_results['exp_no'] = id_spectra
-        mutliplet_results.set_index('exp_no', inplace=True)
-        mutliplet_results.to_csv(
-            os.path.join(pdf_path,pdf_folder,pdf_name+'_'+str(_multiplet_type_)+'_'+str(i)+'.txt'), 
-            index=True, 
-            sep = '\t'
-            )
-        
-    speclist = Fit_results.index.values.tolist()
-    
-    if gui:
-        from tqdm.gui import tqdm
-        leave=False
-    else:
-        from tqdm import tqdm
-        leave=True
-    
-    with PdfPages(os.path.join(pdf_path,pdf_folder,pdf_name+'.pdf')) as pdf:           
-        for r in tqdm(speclist, leave=leave):
-            fig, (ax) = plt.subplots(1, 1)
-            fig.set_size_inches([11.7,8.3])
-            ax.plot(
-                x_ppm,
-                Int_Pseudo_2D_Data[r,:],
-                color='b',
-                ls='None',
-                marker='o',
-                markersize=0.5
-                )    
-            ax.invert_xaxis()
-            # ax[r].set_xlabel('PPM')
-            #ax.set_ylim(top=1.1,bottom=-0.1)
-            res = Fit_results.loc[r].iloc[:].values.tolist()
-
-            sim = nmrf.simulate_data(
-                x_fit,
-                res,
-                d_id,
-                scaling_factor
-                )
-
-            ax.plot(
-                x_fit, 
-                sim,#/Norm, 
-                'r-', 
-                lw=0.6,
-                label='fit')
-            ax.text(0.05,0.9,"Spectra : " +str(id_spectra[r]),transform=ax.transAxes,fontsize=20)  
-            ax.set_ylabel('Intensity')
-            ax.set_xlabel(r'$^1H$ $(ppm)$')
-
-
-            plt.subplots_adjust(
-                left = 0.1,
-                #bottom = 0.04,
-                right = 0.96,
-                top = 0.96,
-                wspace = 0.3,
-                hspace = 0.3,
-            )
-            pdf.savefig(fig)
-            plt.close(fig)
-    print('#--------#')
-
-###################################
-# Error interface
-###################################
-
-def error_interface(message, critical_error=False):
-    if tk_wdw:
-        error_window = tk.Tk()
-        error_window.title("Error")
-        error_window.configure(bg='#FFFFFF')
-
-        label = tk.Label(error_window, text=message, font=("Helvetica",18),bg='#FFFFFF',borderwidth=20)
-        label.pack()
-
-        close_button = tk.Button(
-            error_window,
-            text="Close ",
-            # fg='#FFFFFF',
-            font=("Helvetica", 14),
-            # highlightbackground = "#0000FF",
-            command=lambda:error_window.destroy()
-
-        )
-        close_button.pack()
-    elif logger:
-        logger.error(message)
-    
-    if critical_error:
-        exit(1)
-
-###################################
-# Loading Data interface
-###################################
-def create_experiments_list(user_input):
-    Exp_List = []
-    for i in user_input.get('data_exp_no').split(','):
-        if "-" in i:
-            spectra = i.split('-')
-            Exp_List += range(int(spectra[0]), int(spectra[1])+1)
-        else:
-            Exp_List.append(int(i))
-    return Exp_List
-
-def check_path(path):
-    """
-    check if 'path' exists, and create it if it doesn't exist
-    """
-    sub_path = os.path.dirname(path)
-    if not os.path.exists(sub_path):
-        check_path(sub_path)
-    if not os.path.exists(path):
-        os.mkdir(path)
-
-def launch_analysis(user_input):
-    is_gui = (tk_wdw != None)
-    is_not_gui = (tk_wdw == None)
-
-    try:
-        output_dir = os.path.join(user_input.get('output_path'),user_input.get('output_folder'))
-        if not output_dir:
-            return error_interface("Argument : 'output_folder' is missing", critical_error=is_not_gui)
-
-        if not Path(output_dir).exists():
-            check_path(output_dir)
-
-        # create logger (should be root to catch builder and simulator loggers)
-        # logger = logging.getLogger()
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', "%Y-%m-%d %H:%M:%S")
-        # sends logging output to 'process_log.txt' file
-        file_handler = logging.FileHandler(str(Path(output_dir, "process_log.txt")), mode='w+')
-        file_handler.setFormatter(formatter)
-        # sends logging output to sys.stderr
-        strm_handler = logging.StreamHandler()
-        strm_handler.setFormatter(formatter)
-        # add handlers to logger
-        logger.addHandler(strm_handler)
-        logger.addHandler(file_handler)
-        logger.setLevel(logging.INFO)
-
-        if not Path(user_input.get('data_path')).exists():
-            return error_interface("Argument : 'data_path' does not exist", critical_error=is_not_gui)
-
-        if not Path(user_input.get('data_path'),user_input.get('data_folder')).exists():
-            return error_interface("Argument : 'data_folder' does not exist", critical_error=is_not_gui)
-
-        if float(user_input.get('threshold', 1)) <= float(0):
-            return error_interface("Argument : 'threshold' is too low (should be > 0)", critical_error=is_not_gui)
-
-        if user_input.get('analysis_type') not in ['Pseudo2D', '1D', '1D_Series']:
-            return error_interface("Argument : 'analysis_type' expected as 'Pseudo2D','1D' or '1D_Series", critical_error=is_not_gui)
-
-        if not user_input.get('spectral_limits'):
-            return error_interface("Argument : 'spectral_limits' is missing" , critical_error=is_not_gui)
-
-        spec_lim = [float(i) for i in user_input.get('spectral_limits').split(',')]
-
-        if len(spec_lim)%2 != 0 and len(spec_lim) != 0:
-            return error_interface("Argument : 'spectral_limits' is incomplete", critical_error=is_not_gui)
-
-        exp_list = create_experiments_list(user_input)
-        for exp in exp_list:
-            if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp)).exists():
-                return error_interface(f"Argument : experiment <{exp}> does not exist", critical_error=is_not_gui)
+            if analysis_info[i] == 'analysis_type':
+                self.analysis_info_var = tk.StringVar()
+                self.analysis_type_cb = ttk.Combobox(self.frame_analysis,textvariable=self.analysis_info_var, values=['Pseudo2D','1D_Series'], state="readonly")
+                self.analysis_type_cb.place(relx=0.1, rely=0.15+i*0.25, anchor=tkinter.W)
+                user_input[analysis_info[i]]  = self.analysis_info_var
+                self.analysis_type_cb.bind("<<ComboboxSelected>>", self.update_analysis_type)
             else:
-                if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp),'pdata',user_input.get('data_proc_no')).exists():
-                    return error_interface(f"Argument : experiment/procno <{exp}/{user_input.get('data_proc_no')}> does not exist", critical_error=is_not_gui)
+                self.analysis_info_var = tk.StringVar()
+                analysis_info_entry = tk.Entry(self.frame_analysis,textvariable=self.analysis_info_var,bg='white',borderwidth=0,foreground='black')
+                analysis_info_entry.place(relx=0.1, rely=0.15+i*0.25,width=200, anchor=tkinter.W)
+                user_input[analysis_info[i]]  = self.analysis_info_var
 
-        if int(user_input.get('reference_spectrum')) not in exp_list:
-            return error_interface(f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in experiment list", critical_error=is_not_gui)
+        outputs = ['output_path','output_folder','output_name']
+        for i in range(len(outputs)):
+            text_opt = outputs[i].replace("_", " ").capitalize() + ":" if not 'Options' in outputs[i] else outputs[i].replace("_", " ") 
+            output_label = tk.Label(self.frame_output,text=text_opt,foreground='black')
+            output_label.place(relx=0.1, rely=0.08+i*0.32, anchor="w")
 
-        config = {
-            'Data_Path'     :   user_input.get('data_path'),
-            'Data_Folder'   :   user_input.get('data_folder'),
-            'ExpNo'         :   exp_list,
-            'ProcNo'        :   user_input.get('data_proc_no'),
-            'Ref_Spec'      :   user_input.get('reference_spectrum'),
-            'Data_Type'     :   user_input.get('analysis_type'),
-            'Spec_Lim'      :   spec_lim,
-            'Threshold'     :   float(user_input.get('threshold', 0)),
-            'pdf_path'      :   user_input.get('output_path'),
-            'pdf_folder'    :   user_input.get('output_folder'),
-            'pdf_name'      :   user_input.get('output_name'),
+            self.outputs_var = tk.StringVar()
+            outputs_entry = tk.Entry(self.frame_output,textvariable=self.outputs_var,bg='white',borderwidth=0,foreground='black')
+            outputs_entry.place(relx=0.1, rely=0.2+i*0.32,width=200, anchor=tkinter.W)
+            user_input[outputs[i]]  = self.outputs_var
 
+        # # ============ create Buttons ============
+        self.load_button = tk.Button(self.master,text=" Load ",command=lambda:nio.load_config_file(self.master,user_input),foreground='black')
+        #self.load_button.place(relx=0.1, rely=0.9)
+        self.load_button.grid(row=2, column=0, padx=3, pady=5)
+
+        self.save_button = tk.Button(self.master,text=" Save ",command=lambda:self.save_config_file({k: v.get() for k, v in user_input.items()}),foreground='black')
+        #self.save_button.place(relx=0.3, rely=0.9)
+        self.save_button.grid(row=2, column=1, padx=3, pady=5)
+
+        self.run_button = tk.Button(self.master,text=" Run ",command=lambda:self.App_Run(user_input),foreground='black')
+        #self.run_button.place(relx=0.5, rely=0.9)
+        self.run_button.grid(row=2, column=2, padx=3, pady=5)
+
+        self.close_button = tk.Button(self.master,text=" Close ",command=lambda:self.on_closing(),foreground='black')
+        #self.close_button.place(relx=0.7, rely=0.9)
+        self.close_button.grid(row=2, column=3, padx=3, pady=5)
+
+        # # ============ Options ============
+
+        self.input_raws_label = tk.Label(self.frame_options,text='Data row no (* 2D only):',justify=tk.CENTER,foreground='black')
+        self.input_raws_label.place(relx=0.05, rely=0.08, anchor="w")
+
+        self.input_raws = tk.StringVar()
+        self.input_raws_entry = tk.Entry(self.frame_options,textvariable=self.input_raws,bg='white',fg='black',borderwidth=0,state='disabled' if user_input['analysis_type'] == '1D_Series' else 'normal')
+        self.input_raws_entry.place(relx=0.1, rely=0.2, width=200, anchor=tkinter.W)
+        user_input['option_data_row_no'] = self.input_raws
+
+        # Use previous fit results as starting parameters
+        self.TimeSeries = tk.BooleanVar()
+        self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries,foreground='black')
+        self.check_box_opt2.place(relx=0.05, rely=0.37, anchor=tkinter.W)
+        user_input['option_previous_fit'] = self.TimeSeries
+
+        # if (user_input['analysis_type'] == 'Pseudo2D' or user_input.get('option_previous_fit', False)):
+        #     self.check_box_opt2.select()
+        # else:
+        #     self.check_box_opt2.deselect()
+        #self.update_analysis_type(None)
+        
+        # Use Offset in Fitting
+        self.Offset = tk.BooleanVar()
+        self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset,foreground='black')
+        self.check_box_opt3.place(relx=0.05, rely=0.52, anchor=tkinter.W)
+        user_input['option_offset'] = self.Offset
+
+        # # Verbose Log
+        self.VerboseLog = tk.BooleanVar()
+        self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog,foreground='black')
+        self.check_box_opt4.place(relx=0.05, rely=0.67, anchor=tkinter.W)
+        user_input['option_verbose_log'] = self.VerboseLog
+
+        # # Verbose Log
+        self.mergepdf = tk.BooleanVar()
+        self.check_box_opt5 = tk.Checkbutton(self.frame_options,text="Merge pdf(s)",variable=self.mergepdf,foreground='black')
+        self.check_box_opt5.place(relx=0.05, rely=0.82, anchor=tkinter.W)
+        user_input['option_merge_pdf'] = self.mergepdf
+
+    def update_analysis_type(self, event):
+        if self.analysis_type_cb.get() == "Pseudo2D":
+            self.check_box_opt2.select()
+        else:
+            self.check_box_opt2.deselect()
+
+    def App_Run(self, user_input):
+        user_input = nio.check_input_file({k: v.get() for k, v in user_input.items()},self.master)
+        nrun.run_analysis(user_input,self)
+        self.on_closing()
+
+    def ask_filename(self,config_path, event=0):
+        wdw = tk.Tk()
+        wdw.withdraw()
+        # the input dialog
+        file_name = simpledialog.askstring(
+            title="Config File Name",
+            prompt="Config Input File Name:",
+            initialvalue="Inputs_Spec_Fitting"
+            )
+        if file_name is None:
+            wdw.destroy()
+            config_file = None
+        else:
+            config_file = Path(config_path,str(file_name)+'.json')
+            wdw.destroy()
+        return config_file
+
+    def save_config_file(self,user_input): 
+        config_path = Path(user_input['output_path'], user_input['output_folder'])
+        file_name = self.ask_filename(config_path)
+
+        if not 'option_data_row_no' in user_input:
+            pass
+        else:
+            if not user_input['option_data_row_no']:
+                del user_input['option_data_row_no']
+        if file_name :
+            f = open(str(Path(file_name)), "a")
+            f.seek(0)
+            f.truncate()
+            f.write(json.dumps(user_input, indent=4))
+            f.close()  
+
+    def activateCheck(self):
+        if  self.PartialPseudo2D.get():          #whenever checked
+            self.input_entry.config(state='normal')
+        else:        #whenever unchecked
+            self.input_entry.config(state='disabled')
+
+    def on_closing(self, event=0):
+        self.master.destroy()
+        exit()
+
+    def start(self):
+        self.master.mainloop()
+
+class App_Clustering:
+    
+    def __init__(self, x_spec, y_spec, peak_picking_threshold, clustering_table, *args, **kwargs):
+        self.APP_NAME = f"Peak Picking Visualisation and Clustering (v{multinmrfit.__version__})"
+       
+        super().__init__(*args, **kwargs)
+        self.master = tk.Tk()
+        self.peak_picking_threshold = peak_picking_threshold
+        self.master.title(self.APP_NAME)
+        self.master.resizable(False, False)
+        
+        self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.widget = None
+        
+        self.df_var = tk.StringVar()
+
+        self.toplevel = None
+        if sys.platform == "darwin":
+            self.master.bind("<Command-q>", self.on_closing)
+            self.master.bind("<Command-w>", self.on_closing)
+
+        # # ============ create TkFrames ============
+        self.frame_graph = tk.LabelFrame(self.master,width=500,height=500,text="Reference spectrum",foreground='red')
+        self.frame_threshold = tk.LabelFrame(self.master,width=500,height=70,text="Threshold",foreground='red')
+        self.frame_peak_Table = tk.LabelFrame(self.master,width=640,height=570,text="Clustering information",foreground='red')
+
+        self.frame_graph.grid(row=0,column=0, sticky="nsew", padx=3, pady=5)
+        self.frame_threshold.grid(row=1,column=0, padx=3, pady=5)
+        # self.frame_peak_Table.grid(row=0,column=2)
+        self.frame_peak_Table.grid(row=0, column=1, sticky="nsew", padx=3, pady=5, columnspan=3)
+
+        # # ============ Figure ============
+        peak_picking_data = self.peak_picking(x_spec, y_spec, self.peak_picking_threshold)
+        colors = self.create_plot(x_spec, y_spec, self.peak_picking_threshold,peak_picking_data)
+        self.clustering_information = self.create_table(peak_picking_data,colors) 
+
+        # # ============ Entry ============
+        self.threshold_var = tk.StringVar()
+        self.threshold_entry = tk.Entry(self.frame_threshold,justify = "center",bg='white',borderwidth=0,foreground='black')
+        self.threshold_entry.insert(0, self.peak_picking_threshold)                                  
+        self.threshold_entry.place(relx=.5, rely=.3, anchor="c")
+        
+        # # ============ Buttons ============
+        self.refresh_th = tk.Button(self.master,text=" Update Threshold ",command=lambda:self.refresh_ui(x_spec, y_spec, self.threshold_entry.get(),colors),foreground='black')          
+        self.refresh_th.grid(row=1, column=1, padx=3, pady=5)
+
+        self.run = tk.Button(self.master,text=" Run Fitting ",command=lambda:self.save_info_clustering(clustering_table),foreground='black')
+        self.run.grid(row=1, column=2, padx=3, pady=5)
+
+        self.close_button = tk.Button(self.master,text=" Close ",command=lambda:self.on_closing(),foreground='black')
+        self.close_button.grid(row=1, column=3, padx=3, pady=5)
+
+    def peak_picking(self, x_spec_ref, y_spec_ref, threshold):
+        peak_picking = nfu.Peak_Picking_1D(
+            x_data          =   x_spec_ref, 
+            y_data          =   y_spec_ref, 
+            threshold       =   threshold,
+        )
+        peak_picking = nfu.sort_peak_picking_data(peak_picking, 15)        
+        return peak_picking
+
+    def create_table(self,peak_picking_data,colors):
+        n_peak = len(peak_picking_data)
+
+        clustering_information = {
+            'Peak Position'    :   [],
+            'Peak Intensity'   :   [],
+            'Cluster ID'       :   [],
+            'Options'          :   []
         }
-    except Exception as e:
-        return error_interface(e, critical_error=is_not_gui)
-    for key, conf in config.items():
-        if not conf:
-            return error_interface(f"Argument : '{key}' is missing", critical_error=is_not_gui)
-    if is_gui:
-        tk_wdw.destroy()
-    logger.info(json.dumps(config,indent=4))
-    nmrr.run_analysis(config, gui = is_gui)
 
-def on_closing():
-    tk_wdw.destroy()
-    exit(0)
+        options = ['Roof'] # options
+        
+        if not n_peak:
+            self.th_label = tk.Label(
+                self.frame_threshold, 
+                text='No peak found, please lower the threshold',
+                foreground='red'
+            )
+            self.th_label.place(relx=0.25, rely=0.7, anchor=tkinter.W)   
+        else:
+            try:
+                self.th_label.destroy()
+            except:
+                pass
 
-def ask_filename(config_path):
-    wdw = tk.Tk()
-    wdw.withdraw()
-    # the input dialog
-    file_name = simpledialog.askstring(
-        title="Config File Name",
-        prompt="Config Input File Name:",
-        initialvalue="Inputs_Spec_Fitting")
-    if file_name is None:
-        wdw.destroy()
-    else:
-        config_file = os.path.join(config_path,str(file_name)+'.json')
-        wdw.destroy()
-    return config_file
+            c = 0 
+            for label in clustering_information.keys():
+                tk.Label(self.frame_peak_Table, text=label,foreground='black').grid(column=c+1, row=2,padx=2)
+                c +=1
+                
+            for i in range(n_peak):
+                peak_label = tk.Label(self.frame_peak_Table, text="Peak "+str(i+1),fg=colors[i])
+                peak_label.grid(column=0, row=i+3,pady=5)
 
-def save_config_file(user_input):
-    config_path = os.path.join(user_input['output_path'], user_input['output_folder'])
-    file_name = ask_filename(config_path)
-    f = open(file_name, "a")
-    f.seek(0)
-    f.truncate()
-    f.write(json.dumps(user_input, indent=4))
-    f.close()    
+                # Clustering
+                self.cluster_entry = tk.Entry(self.frame_peak_Table,justify = "center",background='white',foreground='black')
+                clustering_information['Cluster ID'].append(self.cluster_entry)
+                self.cluster_entry.grid(row=i+3,column=3)
 
-def create_entry(label, x, y, width=210):
-    # Label
-    create_label(label, x, y)
+                # Options
+                self.options_entry = ttk.Combobox(self.frame_peak_Table, values=options,width=12)
+                clustering_information['Options'].append(self.options_entry)
+                self.options_entry.grid(row=i+3,column=4)
 
-    # Entry
-    if label == 'analysis_type':
-        analysis_var = tk.StringVar()
-        analysis_options = ttk.Combobox(
-            textvariable=analysis_var, 
-            values=['1D','Pseudo2D','1D_Series'], 
-            state="readonly"
-        ).place(x=x, y=y+20, width=width)
-        return analysis_var
+                # Positions and Intensities
+                for col in peak_picking_data.columns:
+                    self.entry_c = tk.Entry(
+                                            self.frame_peak_Table,
+                                            justify = "center",
+                                            width=12,
+                                            bg='white',
+                                            fg='black',
+                                            )
+                    data = peak_picking_data.iloc[i].loc[col]
+                    if col == 'Peak_Position':
+                        clustering_information['Peak Position'].append(data)
+                        cc = 0
+                    if col == 'Peak_Intensity':
+                        clustering_information['Peak Intensity'].append(data)
+                        cc = 1
+                    self.entry_c.insert(0, round(data,3))
+                    self.entry_c.grid(column=cc+1,row=i+3)
 
-    imput_var = tk.StringVar()
-    input_entry = tk.Entry(textvariable=imput_var)
-    input_entry.place(x=x, y=y+20, width=width)
+        return clustering_information
 
-    return imput_var
-    
-def create_label(label, x, y, font_size=14, font_weight='normal'):
-    tk.Label(
-        tk_wdw,
-        text=label.replace("_", " ").capitalize(),
-        font=("Helvetica", font_size, font_weight),
-        bg='#FFFFFF',
-        fg='#8B0000',
-        borderwidth=0
-    ).place(x=x, y=y)
+    def save_info_clustering(self, clustering_table):
+        clustering_table.Peak_Intensity = self.clustering_information['Peak Intensity']
+        clustering_table.Peak_Position = self.clustering_information['Peak Position']
+        clustering_table.Options = [i.get() for i in self.clustering_information["Options"]]
+        clustering_table.Cluster = [i.get() for i in self.clustering_information["Cluster ID"]]
+        clustering_table.Selection = [True if i.get() != '' else False for i in self.clustering_information["Cluster ID"]]
+        if not True in clustering_table.Selection.tolist():
+            messagebox.showerror("Error", 'No peak selected. Select at least one signal.')
+        else:
+            self.master.destroy()
 
-def load_config_file(user_input=None, config_file_path=None):
-    if tk_wdw:
-        config_file_path = filedialog.askopenfilename()    
-        if not config_file_path:
-            return None
+    def create_plot(self, x_spec, y_spec, threshold,peak_picking_data):
+        
+        # remove old widgets
+        if self.widget:
+            self.widget.destroy()
 
-    try:
-        f = open(config_file_path,"r")    
-    except FileNotFoundError:
-        error_interface('Config file not found')
-        return None
+        n_peak = len(peak_picking_data)
 
-    try:
-        config = json.loads(f.read())
-    except json.decoder.JSONDecodeError as e:
-        error_interface('Json config file must be reformated')
-        return None
-    except UnicodeDecodeError as e:
-        error_interface('Wrong config file type (not a json file, see example)')
-        return None
+        # Create a list of colors
+        colors = []
+        for i in range(n_peak):
+            colors.append('#%06X' % random.randint(0, 0xFFFFFF))
 
-    if tk_wdw:
-        for label in user_input.keys():
-            user_input[label].set(config.get(label, ''))
-        return user_input
-    else:
-        return config
+        fig = plt.Figure(figsize=(6,5), dpi=100)
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x_spec, y_spec, '-',color='teal')
+        for i in range(n_peak):
+            ax1.plot(
+                peak_picking_data.Peak_Position.iloc[i],
+                peak_picking_data.Peak_Intensity.iloc[i],
+                c=colors[i],
+                ls='none',
+                marker='o'
+                )
+        ax1.axhline(float(threshold),c='r')
+        ax1.invert_xaxis()
+        ax1.set_xlabel(r'$chemical$ $shift$ $(ppm)$')
 
-def start_gui():
+        self.graph = FigureCanvasTkAgg(fig, self.frame_graph)
+        self.graph_canvas = self.graph.get_tk_widget()
+        self.graph_canvas.grid(row=0, column=0)
+        return colors
 
-    user_input = {
-        'data_path':            None,
-        'data_folder':          None,
-        'data_exp_no':          None,
-        'data_proc_no':         None,
-        'analysis_type':        None,
-        'reference_spectrum':   None,    
-        'spectral_limits':      None,
-        'threshold':            None,
-        'output_path':          None,
-        'output_folder':        None,    
-        'output_name':          None,
-    }
-    global tk_wdw
-    tk_wdw = tk.Tk()
-    tk_wdw.title("MultiNMRFit Interface")
-    tk_wdw.geometry("700x600")
-    tk_wdw.configure(bg='#FFFFFF')
+    def refresh_ui(self, x_spec, y_spec, threshold, colors):
+        peak_picking = self.peak_picking(x_spec, y_spec, float(threshold))
+        colors = self.create_plot(x_spec, y_spec, threshold, peak_picking)
+        self.clear_frame()
+        self.clustering_information = self.create_table(peak_picking,colors)
 
-    path_image = pkg_resources.resource_filename('multinmrfit', 'data/')
-    # Set bottom picture
-    img_network = Image.open(os.path.join(path_image, 'network.png'))
-    img_network_ = ImageTk.PhotoImage(img_network.resize((700, 160))) 
-    img_network_label = tk.Label(tk_wdw, image = img_network_)
-    img_network_label.place(x = 00, y = 440)
+    def clear_frame(self):
+        for widgets in self.frame_peak_Table.winfo_children():
+            widgets.destroy()
+        
+    def add_frame(self):
+        self.test = tk.LabelFrame(self.master,width=500,height=100,text="Test",foreground='red')
+        self.test.grid(row=2,column=0, sticky="nsew", padx=3, pady=5)
 
-    # Import Logo
-    img_logo = Image.open(os.path.join(path_image, 'logo_small.png'))
-    img_logo_ = ImageTk.PhotoImage(img_logo.resize((300, 100))) 
-    img_logo_logo = tk.Label(tk_wdw,image=img_logo_)
-    img_logo_logo.place(x = 200, y = 0)
+    def on_closing(self, event=0):
+        self.master.destroy()
+        exit()
 
+    def start(self):
+        self.master.mainloop()
 
-    title = ['Inputs','Analysis','Outputs']
-    i = 0
-    for label in user_input.keys():
-        x = 10 + int(i / 4) * 240
-        y = 160 + int(i % 4) * 60
-        if int(i%4) == 0:
-            create_label(title[int(i/4)], x + 50, 120, 18, 'bold')
-        user_input[label] = create_entry(label, x, y)
-        i += 1
-
-    ## ----- General Buttons ----- ##
-    LoadButton = tk.Button(
-        tk_wdw,
-        text=" Load ",
-        fg='#FFFFFF',
-        font=("Helvetica", 20),
-        highlightbackground = "#8B0000",
-        command=lambda:load_config_file(user_input)
+##########
+def init_progress_bar_windows(len_progresses, title, progress_bar_label):
+    root = tk.Tk()
+    root_height= len(len_progresses)*120
+    root.geometry(f'300x{root_height}')
+    root.title(title)
+    progress_bars = []
+    for len_progress in len_progresses:
+        pg_bar = ttk.Progressbar(
+            root,
+            orient='horizontal',
+            mode='determinate',
+            maximum=len_progress,
+            length=280
         )
-    LoadButton.place(x=20, y=400,width=80,height=30)
-    
-    SaveButton = tk.Button(
-        tk_wdw,
-        text=" Save ",
-        fg='#FFFFFF',
-        font=("Helvetica", 20),
-        highlightbackground = "#0000FF",
-        command=lambda:save_config_file({k: v.get() for k, v in user_input.items()})
-        )
-    SaveButton.place(x=200, y=400,width=80,height=30)
+        value_label = tk.Label(
+                        root,
+                        text=progress_bar_label[len(progress_bars)],
+                        fg='black',
+                        justify=tk.CENTER
+)
+        value_label.grid(column=0, row=len(len_progresses)*len(progress_bars), columnspan=2)
 
-    RunButton = tk.Button(
-        tk_wdw,
-        text=" Run ",
-        fg='#FFFFFF',
-        font=("Helvetica", 20),
-        highlightbackground = "#8B0000",
-        command=lambda:launch_analysis({k: v.get() for k, v in user_input.items()})
-    )
-    RunButton.place(x=380, y=400,width=80,height=30)
-    
-    CloseButton = tk.Button(
-        tk_wdw,
-        text=" Close ",
-        fg='#FFFFFF',
-        font=("Helvetica", 20),
-        highlightbackground = "#0000FF",
-        command=lambda:on_closing()
-        )
-    CloseButton.place(x=560, y=400,width=80,height=30)
-    
-    tk_wdw.mainloop()
-    
+        pg_bar.grid(column=0, row=len(len_progresses)*len(progress_bars)+1, columnspan=2, padx=10, pady=20)
+        progress_bars.append(pg_bar)
 
-def start_cli():
-    if not len(sys.argv) == 2:
-        error_interface('usage: multinmrfitcli <path/config/file>  ', critical_error=True)
-    user_input = load_config_file(config_file_path=sys.argv[1])
-    if not user_input:
-        exit(1)
-    launch_analysis(user_input)
-    exit()
+    close_button = tk.Button(root, text="Close", fg = "black", command=lambda: progress_bar_exit(root))
+    close_button.grid(column = 1, row = len(len_progresses)+5)
+    return root, close_button, progress_bars
+
+def progress_bar_exit(root):
+    root.destroy()
 
 
