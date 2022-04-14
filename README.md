@@ -6,7 +6,7 @@
 
 
 ## What is MultiNMRFit?
-MultiNMRFit is a scientific tool designed to fit a serie of 1D spectra (acquired individually or as pseudo 2D spectra).
+MultiNMRFit is a scientific tool designed to extract quantitative information (chemical shifts, signal intensity, coupling constants, etc) from a serie of 1D spectra (acquired individually or as pseudo 2D spectra) by fitting.
 
 It is one of the routine tools that we use for NMR studies of metabolic systems at the [NMR](http://www.toulouse-biotechnology-institute.fr/en/research/physiology-and-engineering-of-microbial-metabolism/rmn.html) and [MetaSys](http://www.toulouse-biotechnology-institute.fr/en/research/physiology-and-engineering-of-microbial-metabolism/metasys.html) teams and at [MetaToul platform](http://www.metatoul.fr) of the [Toulouse Biotechnology Institute](http://www.toulouse-biotechnology-institute.fr/en/).
 
@@ -16,7 +16,7 @@ Detailed documentation can be found online at Read the Docs ([https://multinmrfi
 
 ## Key features
 * **fitting of a series of 1D spectra (acquired individually or as a pseudo 2D spectra)**,
-* estimation of several parameters (intensity, area, chemical shift, linewidth, coupling constant(s), offset, etc) for each signal of interest,
+* estimation of several parameters (**intensity**, **area**, **chemical shift**, **linewidth**, **coupling constant(s)**, **offset**, etc) for each signal of interest,
 * **semi-automated analysis** for **peak picking** and **definition of multiplicity** for each signal,
 * account for **overlaps** between peaks and **zero-order baseline correction**,
 * **visual inspection of the fitted curves**,
