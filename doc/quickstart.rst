@@ -47,10 +47,10 @@ but it will be more difficult to update MultiNMRFit later on.
 Usage
 ------------------------------------------------
 
-*Data Loading* via Graphical User Interface
+Define dataset and processing options via the Graphical User Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To start the Graphical User Interface, type in a terminal (Windows: *Anaconda Prompt*):
+To start the Graphical User Interface, type in a terminal (e.g. *Anaconda Prompt* on Windows):
 
 .. code-block:: bash
 
@@ -61,9 +61,9 @@ The MultiNMRFit window will open. If the window fails to open, have a look at ou
 
 .. image:: _static/multinmrfit_load_gui.png
 
-Fill al the required entries from the **inputs**, **analysis** and **outputs** sections. **Options** might me used accordingly to your need and 
-click on :samp:`Run`. If you want to save your configuration file click on :samp:`Save` and a small window will pop up in which you can specify the file name. 
-If your confconfigurationig file is already created, click on :samp:`Load` that will fill all fields. 
+Fill the required information in the **inputs**, **analysis** and **outputs** sections, adapt **Options** accordingly to your need, and 
+click on :samp:`Run`. If you want to save your configuration for latter (re)analysis, click on :samp:`Save` and a window will pop up in which you can specify the file name. 
+If your json configuration file is already created, click on :samp:`Load` and select the file. 
 
 .. note:: The configuration file is not saved automatically.
 
@@ -71,7 +71,7 @@ Click on the :samp:`Run` button to go to the next step and display the visualiza
 
 .. note:: MultiNMRFit silently overwrites (results and log) files if they already exist. So take care to copy your results elsewhere if you want to protect them from overwriting.
 
-*Data Loading* via Command Line Interface
+Define dataset and processing options via the Command Line Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To process your data, type in a terminal:
@@ -80,22 +80,23 @@ To process your data, type in a terminal:
 
   multinmrfit [path/to/your/configuration_file.json]
 
-where :samp:`path/configuration_file.json` is the path to the file that contains all processing options.
+where :samp:`path/to/your/configuration_file.json` is the path to the json file that contains all processing options.
 
-MultiNMRFit will directly display the visualization and clustering window (see below).
+MultiNMRFit will display the visualization and clustering window (see below).
 
-.. seealso:: See tutorial :ref:`First time using MultiNMRFit` for an example of configuration file.
+.. seealso:: See our tutorial :ref:`First time using MultiNMRFit` for an example of configuration file.
 
 *Peak Picking visualisation and Clustering* via Graphical User Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. image:: _static/multinmrfit_clustering_gui.png
 
-MultiNMRFit automatically detects peaks above the threshold given previously either through the loading ui or in the configuration file. 
-If the **threshold** is too low (c.a no peaks are detected) you need to decrease the threshold value (bottom left entry) and click on :samp:`Update Threshold`
+MultiNMRFit automatically detects peaks above the threshold given previously through the Graphical user interface or via the configuration file. 
+If the **threshold** value is too low (i.e. some peaks are below this value and thus not detected) you can decrease the threshold value (bottom left entry) and click on :samp:`Update Threshold`
 to perform the peak picking with the updated threshold value. Detected peaks are marked with a colored dot on the spectrum and appear in the **clustering information** table. 
-Peaks are labeled with the same color as on the plot and appear in the chemical shift ascending manner (c.a from right to left).
+Peaks are labeled with the same color as on the plot and appear in the chemical shift ascending manner (c.a from right to left). Provide the same **cluster ID** for all peaks of a given signal. In case of overlaps, a peak can be attributed 
+to several clusters (the different cluster IDs should be separated by a coma)
 
-Once you have filled at least one **cluster ID** click on :samp:`Run Fitting` to start data analysis. A progress bars will display the fitting progress and more information are displayed in the terminal.
+Once you have filled at least one **cluster ID** click on :samp:`Run Fitting` to start data analysis. A progress bars will display the fitting progress and more information on the process are displayed in the terminal.
 
 
 Library
