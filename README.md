@@ -10,7 +10,7 @@ MultiNMRFit is a scientific tool designed to extract quantitative information (c
 
 It is one of the routine tools that we use for NMR studies of metabolic systems at the [NMR](http://www.toulouse-biotechnology-institute.fr/en/research/physiology-and-engineering-of-microbial-metabolism/rmn.html) and [MetaSys](http://www.toulouse-biotechnology-institute.fr/en/research/physiology-and-engineering-of-microbial-metabolism/metasys.html) teams and at [MetaToul platform](http://www.metatoul.fr) of the [Toulouse Biotechnology Institute](http://www.toulouse-biotechnology-institute.fr/en/).
 
-The code is open-source, and available under a GPLv3 license. Additional information can be found in the following [publication](https://doi.org/xxx.xxx).
+The code is open-source, and available under a GPLv3 license. Additional information will be available in an upcoming [publication](https://doi.org/xxx.xxx).
 
 Detailed documentation can be found online at Read the Docs ([https://multinmrfit.readthedocs.io/](https://multinmrfit.readthedocs.io/)).
 
@@ -72,7 +72,7 @@ The PDF documentation can be built locally by replacing `html` by `latexpdf`
 in the command above. You will need a recent latex installation.
 
 ## How to cite
-Ref, 2022, [doi: xxx.xxxx](https://doi.org/xxx.xxxx)
+In preparation, 2022, [doi: xxx.xxxx](https://doi.org/xxx.xxxx)
 
 ## Authors
 Cyril Charlier, Pierre Millard
