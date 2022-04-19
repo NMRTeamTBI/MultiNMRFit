@@ -10,13 +10,13 @@ Welcome to MultiNMRFit documentation!
 
 |
 
-**MultiNMRFit is a scientific software dedicated to the analysis of 1H NMR data **.
+**MultiNMRFit is a scientific software dedicated to the analysis of 1D NMR spectra.**
 
 MultiNMRFit is a scientific tool designed to extract quantitative information (chemical shifts, signal intensity, coupling constants, etc) from a serie of 1D spectra (acquired individually or as pseudo 2D spectra) by fitting.
 
-It is one of the routine tools that we use for NMR studies of metabolic systems at the [NMR](http://www.toulouse-biotechnology-institute.fr/en/research/physiology-and-engineering-of-microbial-metabolism/rmn.html) and [MetaSys](http://www.toulouse-biotechnology-institute.fr/en/research/physiology-and-engineering-of-microbial-metabolism/metasys.html) teams and at [MetaToul platform](http://www.metatoul.fr) of the [Toulouse Biotechnology Institute](http://www.toulouse-biotechnology-institute.fr/en/).
+It is one of the routine tools that we use for NMR studies of metabolic systems at the `NMR <http://www.toulouse-biotechnology-institute.fr/en/research/physiology-and-engineering-of-microbial-metabolism/rmn.html>`_ and `MetaSys <http://www.toulouse-biotechnology-institute.fr/en/research/physiology-and-engineering-of-microbial-metabolism/metasys.html>`_ teams and at `MetaToul platform <http://www.metatoul.fr>`_ of the `Toulouse Biotechnology Institute <http://www.toulouse-biotechnology-institute.fr/en/>`_.
 
-The code is open-source, and available under a GPLv3 license. Additional information can be found in the following [publication](https://doi.org/xxx.xxx).
+The code is open-source, and available under a GPLv3 license. Additional information can be found in the following `publication <https://doi.org/xxx.xxx>`_.
 
 This documentation is available on Read the Docs (`https://multinmrfit.readthedocs.io <https://multinmrfit.readthedocs.io/>`_)
 and can be downloaded as a `PDF file <https://multinmrfit.readthedocs.io/_/downloads/en/latest/pdf/>`_.
