@@ -15,7 +15,7 @@ Then, open a terminal (e.g. run *Anaconda Prompt* if you have installed Anaconda
 
 .. code-block:: bash
 
-  pip install multinmrfit
+  python -m pip install git+https://github.com/NMRTeamTBI/MultiNMRFit
 
 You are now ready to start MultiNMRFit.
 
@@ -30,14 +30,14 @@ you can install MultiNMRFit into your user directory using the :samp:`--user` fl
 
 .. code-block:: bash
 
-  pip install --user multinmrfit
+  python -m pip install --user git+https://github.com/NMRTeamTBI/MultiNMRFit
 
 
 If you already have a previous version of MultiNMRFit installed, you can upgrade it to the latest version with:
 
 .. code-block:: bash
 
-  pip install --upgrade multinmrfit
+  python -m pip install --upgrade git+https://github.com/NMRTeamTBI/MultiNMRFit
 
 
 Alternatively, you can also download all sources in a tarball from `GitHub <https://github.com/NMRTeamTBI/MultiNMRFit>`_,

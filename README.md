@@ -35,7 +35,7 @@ installation and usage instructions.
 Use `pip` to **install PhysioFit from PyPi**:
 
 ```bash
-$ pip install multinmrfit
+$ python -m pip install git+https://github.com/NMRTeamTBI/MultiNMRFit
 ```
 
 Then, start the graphical interface with:
