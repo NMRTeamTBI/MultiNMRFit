@@ -1,8 +1,7 @@
 # MultiNMRFit
 
-[![PyPI version](https://badge.fury.io/py/multinmrfit.svg)](https://badge.fury.io/py/multinmrfit)
-[![PyPI pyversions](https://img.shields.io/pypi/pyversions/multinmrfit.svg)](https://pypi.python.org/pypi/multinmrfit/)
 [![Documentation Status](https://readthedocs.org/projects/multinmrfit/badge/?version=latest)](http://multinmrfit.readthedocs.io/?badge=latest)
+[![Python 3.6+](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 
 
 ## What is MultiNMRFit?
@@ -32,7 +31,7 @@ MultiNMRFit requires Python 3.6 or higher and run on all platforms (Windows, Mac
 Please check [the documentation](https://multinmrfit.readthedocs.io/en/latest/quickstart.html) for complete
 installation and usage instructions.
 
-Use `pip` to **install PhysioFit from PyPi**:
+Use `pip` to **install PhysioFit from GitHub**:
 
 ```bash
 $ python -m pip install git+https://github.com/NMRTeamTBI/MultiNMRFit
