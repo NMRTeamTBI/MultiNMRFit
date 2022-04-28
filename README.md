@@ -37,6 +37,8 @@ Use `pip` to **install PhysioFit from GitHub**:
 $ python -m pip install git+https://github.com/NMRTeamTBI/MultiNMRFit
 ```
 
+Note: Git must be installed on your computer. Have a look to the detailed [documentation](https://multinmrfit.readthedocs.io/en/latest/quickstart.html) for help on installing Git in an Anaconda environment.
+
 Then, start the graphical interface with:
 
 ```bash

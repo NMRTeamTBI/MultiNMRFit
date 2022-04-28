@@ -195,6 +195,12 @@ class App:
 
     def save_config_file(self,user_input): 
         config_path = Path(user_input['output_path'], user_input['output_folder'])
+
+        try:
+            config_path.mkdir(parents=True,exist_ok=True)
+        except:
+            print("Cannot create output folder.")
+
         file_name = self.ask_filename(config_path)
 
         if not 'option_data_row_no' in user_input:

@@ -11,6 +11,12 @@ MultiNMRFit requires Python 3.6 or higher. If you do not have a Python environme
 configured on your computer, we recommend that you follow the instructions
 from `Anaconda <https://www.anaconda.com/download/>`_.
 
+Installation of MultiNMRFit also requires Git, which can be installed from Anaconda with the following command:
+
+.. code-block:: bash
+
+  conda install -c anaconda git
+
 Then, open a terminal (e.g. run *Anaconda Prompt* if you have installed Anaconda) and type:
 
 .. code-block:: bash
