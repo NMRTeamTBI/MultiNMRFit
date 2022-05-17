@@ -374,7 +374,11 @@ def build_output(d_id_i, x_fit, fit_results, stat_results, scaling_factor, spect
     mutliplet_stats.columns = d_mapping[_multiplet_type_]['params']
 
     # calculate integral & intensity
-    mutliplet_results["integral"] = [scaling_factor*getIntegral(x_fit, _multiplet_type_, row.tolist()) for _, row in mutliplet_results.iterrows()]
+    cs_min = np.min([-2, np.min(x_fit)])
+    cs_max = np.max([10, np.max(x_fit)])
+    cs_step = (cs_max - cs_min) / 10000.
+    cs = np.arange(cs_min, cs_max, cs_step)
+    mutliplet_results["integral"] = [scaling_factor*getIntegral(cs, _multiplet_type_, row.tolist()) for _, row in mutliplet_results.iterrows()]
     mutliplet_results["Amp"] *= scaling_factor
 
     mutliplet_stats["Amp"] *= scaling_factor
