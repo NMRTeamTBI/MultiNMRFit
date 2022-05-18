@@ -10,6 +10,9 @@ import tkinter as tk
 from tkinter import simpledialog, ttk, messagebox
 import logging
 import webbrowser
+import urllib.request as urlrequest
+import re
+import threading
 
 # Import plot libraries
 import matplotlib.pyplot as plt
@@ -29,6 +32,19 @@ def openDoc():
 def openGit():
     webbrowser.open_new(r"https://github.com/NMRTeamTBI/MultiNMRFit/")
 
+def check_up_to_date():
+    """Compare local and distant MultiNMRFit versions."""
+    try:
+        # Get the distant __init__.py and read its version as it done in setup.py
+        response = urlrequest.urlopen("https://github.com/NMRTeamTBI/MultiNMRFit/raw/master/multinmrfit/__init__.py")
+        data = response.read()
+        txt = data.decode('utf-8').rstrip()
+        lastversion = re.findall(r"^__version__ = ['\"]([^'\"]*)['\"]", txt, re.M)[0]
+        if lastversion != multinmrfit.__version__:
+            messagebox.showwarning('Version {} available'.format(lastversion), f'A new version ({lastversion}) is available!\n\nYou can update MultiNMRFit with:\n\n   python -m pip install --upgrade git+https://github.com/NMRTeamTBI/MultiNMRFit\n\nCheck the documentation for more information.')
+    except :
+        pass  # silently ignore everything that just happened
+
 class App:
 
     def __init__(self, user_input, *args, **kwargs):
@@ -39,6 +55,9 @@ class App:
         self.master.title(APP_NAME)
         self.master.resizable(False, False)
         self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        threadUpd = threading.Thread(target=check_up_to_date)
+        threadUpd.start()
 
         self.toplevel = None
         if sys.platform == "darwin":
