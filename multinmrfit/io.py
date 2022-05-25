@@ -418,6 +418,9 @@ def output_txt_file(x_fit,fit_results, stat_results, d_id, scaling_factor,spectr
         # update results file if already exists
         fname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'_fit.txt')
         sname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'_stat.txt')
+
+        pname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'_plot_integral.pdf')
+
         if fname.is_file():
             mutliplet_results = update_results(mutliplet_results, fname)
         if sname.is_file():
@@ -425,6 +428,18 @@ def output_txt_file(x_fit,fit_results, stat_results, d_id, scaling_factor,spectr
         # sort results by exp_no, proc_no & row_id
         mutliplet_results = mutliplet_results.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
         mutliplet_stats = mutliplet_stats.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
+
+        # plot integrals 
+        if 1 in mutliplet_results.row_id.unique():
+            x_plot = mutliplet_results.exp_no.tolist()
+            plt.xlabel('exp no')
+        else:
+            x_plot = mutliplet_results.row_id.tolist()
+            plt.xlabel('row id')
+        plt.plot(x_plot, mutliplet_results.integral,ls='none',marker='o',color='darkblue')
+        plt.ylabel('Integral')
+        plt.savefig(pname)
+        plt.close()
         # save to tsv
         mutliplet_results.to_csv(
             str(fname), 
