@@ -42,7 +42,7 @@ def Triplet( x, x0, a, h_s, lw, J1):
     Signal = S1+S2+S3
     return Signal
 
-def mapping_multiplets(lw_constraints = (1e-3,1e-2), x0_constraints = (1e-6,12), a_constraints = (1e-3,1), Amp_constraints = (1e-6,np.inf), dH_constraints= (0, np.inf), J_constraints = (2.5e-3,0.25)):
+def mapping_multiplets(lw_constraints = (1e-3,1e-2), x0_constraints = (1e-6,12), a_constraints = (1e-3,1), Amp_constraints = (1e-6,1e30), dH_constraints= (0, 1e30), J_constraints = (2.5e-3,0.25)):
     d_mapping = {
         "Singlet":{"f_function":Singlet,"n_peaks" : "1", "option":"", "params":['x0','a','Amp','lw'],"n_params" : 4, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints]},
         "Doublet":{"f_function":Doublet,"n_peaks" : "2", "option":"","params":['x0','a','Amp','lw','J1'],"n_params" : 5, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints,J_constraints]},
