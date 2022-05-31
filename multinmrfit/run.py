@@ -101,12 +101,13 @@ def prepare_data(user_input):
 
     offset = user_input['option_offset']
     merged_pdf = user_input['option_merge_pdf']
-    return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset, merged_pdf
+    option_optimizer = user_input['option_optimizer']
+    return spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset, merged_pdf, option_optimizer
 
 def run_analysis(user_input, gui=False):
     logger.info('Loading NMR Data')
 
-    spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset, merged_pdf = prepare_data(user_input)
+    spectra_to_fit, intensities, x_ppm_reference_spectrum, idx_ref, user_picked_data, scaling_factor, use_previous_fit, offset, merged_pdf, option_optimizer = prepare_data(user_input)
     #-----------------------------------------------------#   
     ######################################################
     #######################Fitting########################
@@ -120,7 +121,8 @@ def run_analysis(user_input, gui=False):
         scaling_factor      =   scaling_factor,
         spectra_to_fit      =   spectra_to_fit,
         use_previous_fit    =   use_previous_fit,
-        offset              =   offset
+        offset              =   offset,
+        option_optimizer    =   option_optimizer
     )
     #-----------------------------------------------------#   
     ######################################################
