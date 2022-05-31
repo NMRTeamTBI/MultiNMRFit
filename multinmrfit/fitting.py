@@ -134,7 +134,7 @@ def run_single_fit_function(up,
                 options={'maxcor': 30},
                 args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset),
                 )
-        elif option_optimizer=='L-BFGS-B':
+        elif option_optimizer=='DE + L-BFGS-B':
             res_fit = differential_evolution(
                 fit_objective,
                 x0=initial_fit_values,                
