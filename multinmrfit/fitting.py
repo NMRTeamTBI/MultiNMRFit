@@ -5,7 +5,7 @@ import threading
 warnings.filterwarnings('ignore')
 import numpy as np
 import pandas as pd
-from scipy.optimize import minimize
+from scipy.optimize import minimize, differential_evolution
 
 import multinmrfit.multiplets as nfm
 import multinmrfit.ui as nfui
@@ -114,7 +114,8 @@ def run_single_fit_function(up,
                             scaling_factor,
                             use_previous_fit,
                             writing_to_file=True,
-                            offset=False
+                            offset=False,
+                            option_optimizer='L-BFGS-B'
                             ):
 
     d_id, initial_fit_values, bounds_fit, name_parameters = get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor, offset=offset)
@@ -124,14 +125,24 @@ def run_single_fit_function(up,
     
     try:
         intensities = intensities[fit[0],:]
-        res_fit = minimize(
-            fit_objective,
-            x0=initial_fit_values,                
-            bounds=bounds_fit,
-            method='L-BFGS-B',
-            options={'maxcor': 30},
-            args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset),
-            )
+        if option_optimizer=='L-BFGS-B':
+            res_fit = minimize(
+                fit_objective,
+                x0=initial_fit_values,                
+                bounds=bounds_fit,
+                method='L-BFGS-B',
+                options={'maxcor': 30},
+                args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset),
+                )
+        elif option_optimizer=='L-BFGS-B':
+            res_fit = differential_evolution(
+                fit_objective,
+                x0=initial_fit_values,                
+                bounds=bounds_fit,
+                args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset),
+                )
+        else:
+            logger.error('Wrong optimizer selected: '+option_optimizer)
         logger.debug(res_fit)
         res_stats = compute_statistics(res_fit)
         logger.debug(res_stats)
@@ -154,7 +165,8 @@ def full_fitting_procedure(
     scaling_factor      =    None,
     spectra_to_fit      =   'spectra_to_fit',
     use_previous_fit    =   'use_previous_fit',
-    offset=False
+    offset=False,
+    option_optimizer='L-BFGS-B'
     ): 
     
     # Handling spectra list for multi-threading
@@ -175,7 +187,8 @@ def full_fitting_procedure(
         scaling_factor,
         False,
         writing_to_file=False,
-        offset=offset
+        offset=offset,
+        option_optimizer=option_optimizer
         ) 
     logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]}) -- Complete')
 
@@ -216,7 +229,8 @@ def full_fitting_procedure(
                 "peak_picking_data"   : peak_picking_data,
                 "scaling_factor"      : scaling_factor,
                 "use_previous_fit"    : use_previous_fit,
-                "offset"              : offset
+                "offset"              : offset,
+                "option_optimizer"    : option_optimizer
             },
             threads=threads,
             close_button=close_button,
@@ -238,7 +252,8 @@ def full_fitting_procedure(
                 "peak_picking_data"   : peak_picking_data,
                 "scaling_factor"      : scaling_factor,
                 "use_previous_fit"    : use_previous_fit,
-                "offset"              : offset
+                "offset"              : offset,
+                "option_optimizer"    : option_optimizer
             },
             threads=threads,
             close_button=close_button,

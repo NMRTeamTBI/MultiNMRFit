@@ -58,7 +58,7 @@ def load_config_file(gui=None, user_input=None, config_file_path=None):
             return None
 
         if gui and gui.winfo_exists():
-            options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf']
+            options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf','option_optimizer']
             for label in user_input.keys():                
                 if label in options_list:
                     if label not in config.keys():
@@ -256,6 +256,10 @@ def check_input_file(user_input,gui=None):
             row_list = create_spectra_list(user_input.get('option_data_row_no'))
             if int(user_input.get('reference_spectrum')) not in row_list :
                 return error_handling(gui,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in row list")
+
+        if user_input.get('option_optimizer'):
+            if user_input.get('option_optimizer') not in ['L-BFGS-B', 'DE + L-BFGS-B']:
+                return error_handling(gui,f"Argument : option_optimizer <{user_input.get('option_optimizer')}> should be 'L-BFGS-B' or 'DE + L-BFGS-B'")
         ########################################################################
 
         config = {
@@ -274,15 +278,15 @@ def check_input_file(user_input,gui=None):
             'option_previous_fit'   :   user_input.get('option_previous_fit', False),
             'option_offset'         :   user_input.get('option_offset', False),
             'option_verbose_log'    :   user_input.get('option_verbose_log', False),
-            'option_merge_pdf'      :   user_input.get('option_merge_pdf', False)
-
+            'option_merge_pdf'      :   user_input.get('option_merge_pdf', False),
+            'option_optimizer'      :   user_input.get('option_optimizer', 'L-BFGS-B')
         }
 
     except Exception as e:
         return error_handling(gui,e)
 
     # Options
-    options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf']
+    options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf', 'option_optimizer']
 
     if config['analysis_type'] != 'Pseudo2D': 
         config.pop("option_data_row_no")

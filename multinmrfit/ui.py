@@ -151,13 +151,13 @@ class App:
 
         self.input_raws = tk.StringVar()
         self.input_raws_entry = tk.Entry(self.frame_options,textvariable=self.input_raws,bg='white',fg='black',borderwidth=0,state='disabled' if user_input['analysis_type'] == '1D_Series' else 'normal')
-        self.input_raws_entry.place(relx=0.1, rely=0.2, width=200, anchor=tkinter.W)
+        self.input_raws_entry.place(relx=0.1, rely=0.18, width=200, anchor=tkinter.W)
         user_input['option_data_row_no'] = self.input_raws
 
         # Use previous fit results as starting parameters
         self.TimeSeries = tk.BooleanVar()
         self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries,foreground='black')
-        self.check_box_opt2.place(relx=0.05, rely=0.37, anchor=tkinter.W)
+        self.check_box_opt2.place(relx=0.05, rely=0.33, anchor=tkinter.W)
         user_input['option_previous_fit'] = self.TimeSeries
 
         # if (user_input['analysis_type'] == 'Pseudo2D' or user_input.get('option_previous_fit', False)):
@@ -169,21 +169,33 @@ class App:
         # Use Offset in Fitting
         self.Offset = tk.BooleanVar()
         self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset,foreground='black')
-        self.check_box_opt3.place(relx=0.05, rely=0.52, anchor=tkinter.W)
+        self.check_box_opt3.place(relx=0.05, rely=0.43, anchor=tkinter.W)
         user_input['option_offset'] = self.Offset
 
         # # Verbose Log
         self.VerboseLog = tk.BooleanVar()
         self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog,foreground='black')
-        self.check_box_opt4.place(relx=0.05, rely=0.67, anchor=tkinter.W)
+        self.check_box_opt4.place(relx=0.05, rely=0.53, anchor=tkinter.W)
         user_input['option_verbose_log'] = self.VerboseLog
 
         # # Verbose Log
         self.mergepdf = tk.BooleanVar()
         self.check_box_opt5 = tk.Checkbutton(self.frame_options,text="Merge pdf(s)",variable=self.mergepdf,foreground='black')
-        self.check_box_opt5.place(relx=0.05, rely=0.82, anchor=tkinter.W)
+        self.check_box_opt5.place(relx=0.05, rely=0.63, anchor=tkinter.W)
         user_input['option_merge_pdf'] = self.mergepdf
 
+        # optimization algorithm
+        self.optimizer_label = tk.Label(self.frame_options,text='Optimization algorithm:',justify=tk.CENTER,foreground='black')
+        self.optimizer_label.place(relx=0.05, rely=0.78, anchor="w")
+        vals = ['L-BFGS-B', 'DE + L-BFGS-B']
+        self.optimizer = tk.StringVar()
+        self.optimizer.set(vals[0])
+        self.optimizer_BFGS = tk.Radiobutton(self.frame_options, variable=self.optimizer, text=vals[0], value=vals[0])
+        self.optimizer_BFGS.place(relx=0.05, rely=0.90, anchor=tkinter.W)
+        self.optimizer_DE_BFGS = tk.Radiobutton(self.frame_options, variable=self.optimizer, text=vals[1], value=vals[1])
+        self.optimizer_DE_BFGS.place(relx=0.55, rely=0.90, anchor=tkinter.W)
+        user_input['option_optimizer'] = self.optimizer
+        
     def update_analysis_type(self, event):
         if self.analysis_type_cb.get() == "Pseudo2D":
             self.check_box_opt2.select()
