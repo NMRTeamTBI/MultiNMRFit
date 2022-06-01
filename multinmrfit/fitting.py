@@ -133,20 +133,26 @@ def run_single_fit_function(up,
                 method='L-BFGS-B',
                 options={'maxcor': 30},
                 args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
-                )
-            res_stats = compute_statistics(res_fit)
+                )            
         elif option_optimizer=='DE + L-BFGS-B':
-            res_fit = differential_evolution(
+            res_fit_de = differential_evolution(
                 fit_objective,
                 x0=initial_fit_values,                
                 bounds=bounds_fit,
-                args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset),
-                polish=True
+                args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
                 )
-            res_stats = np.array([np.nan]*len(res_fit.x))
+            res_fit = minimize(
+                fit_objective,
+                x0=res_fit_de.x,                
+                bounds=bounds_fit,
+                method='L-BFGS-B',
+                options={'maxcor': 30},
+                args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
+                )
         else:
             logger.error('Wrong optimizer selected: '+option_optimizer)
         logger.debug(res_fit)
+        res_stats = compute_statistics(res_fit)
         logger.debug(res_stats)
         res_fit.res_stats = res_stats.tolist()
         
