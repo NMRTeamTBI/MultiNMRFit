@@ -391,6 +391,9 @@ def build_output(d_id_i, x_fit, fit_results, stat_results, scaling_factor, spect
     if offset:
         mutliplet_results["offset"] = scaling_factor*fit_results.iloc[: , -1]
         mutliplet_stats["offset"] = scaling_factor*stat_results.iloc[: , -1]
+    else:
+        mutliplet_results["offset"] = 0
+        mutliplet_stats["offset"] = 0
     
     # append IDs
     mutliplet_results.insert(loc = 0, column = 'exp_no' , value = [i[2] for i in spectra_to_fit])
