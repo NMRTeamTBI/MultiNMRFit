@@ -5,7 +5,7 @@ import threading
 warnings.filterwarnings('ignore')
 import numpy as np
 import pandas as pd
-from scipy.optimize import minimize
+from scipy.optimize import minimize, differential_evolution
 
 import multinmrfit.multiplets as nfm
 import multinmrfit.ui as nfui
@@ -96,22 +96,26 @@ def compute_statistics(res, ftol=2.220446049250313e-09):
     for i in range(npar):
         tmp_i[i] = 1.0
         hess_inv_i = res.hess_inv(tmp_i)[i]
-        sd_i = np.sqrt(max(1, abs(res.fun)) * ftol * hess_inv_i)
+        sd_i = np.sqrt(max(1.0, res.fun) * ftol * hess_inv_i)
         tmp_i[i] = 0.0
-        logger.info('p{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
+        logger.debug('sd p{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
+        logger.debug(f"   (rsd = {sd_i/res.x[i]}")
         standard_deviations[i] = sd_i
     return standard_deviations
+
 
 def run_single_fit_function(up, 
                             fit, 
                             intensities, 
                             fit_results, 
+                            stat_results, 
                             x_spectrum_fit, 
                             peak_picking_data, 
                             scaling_factor,
                             use_previous_fit,
                             writing_to_file=True,
-                            offset=False
+                            offset=False,
+                            option_optimizer='L-BFGS-B'
                             ):
 
     d_id, initial_fit_values, bounds_fit, name_parameters = get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor, offset=offset)
@@ -121,22 +125,42 @@ def run_single_fit_function(up,
     
     try:
         intensities = intensities[fit[0],:]
-        res_fit = minimize(
-            fit_objective,
-            x0=initial_fit_values,                
-            bounds=bounds_fit,
-            method='L-BFGS-B',
-            options={'maxcor': 30},
-            args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset),
-            )
-        logger.info(res_fit)
+        if option_optimizer=='L-BFGS-B':
+            res_fit = minimize(
+                fit_objective,
+                x0=initial_fit_values,                
+                bounds=bounds_fit,
+                method='L-BFGS-B',
+                options={'maxcor': 30},
+                args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
+                )            
+        elif option_optimizer=='DE + L-BFGS-B':
+            res_fit_de = differential_evolution(
+                fit_objective,
+                x0=initial_fit_values,                
+                bounds=bounds_fit,
+                args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
+                )
+            res_fit = minimize(
+                fit_objective,
+                x0=res_fit_de.x,                
+                bounds=bounds_fit,
+                method='L-BFGS-B',
+                options={'maxcor': 30},
+                args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
+                )
+        else:
+            logger.error('Wrong optimizer selected: '+option_optimizer)
+        logger.debug(res_fit)
         res_stats = compute_statistics(res_fit)
-        logger.info(res_stats)
-
-        if writing_to_file is False:
+        logger.debug(res_stats)
+        res_fit.res_stats = res_stats.tolist()
+        
+        if not writing_to_file:
             return res_fit
         else:
             fit_results.loc[fit[1],:] = res_fit.x.tolist()
+            stat_results.loc[fit[1],:] = res_stats.tolist()
 
     except:
         logger.error('An unknown error has occured when fitting spectra: '+str(fit[1]))
@@ -149,7 +173,8 @@ def full_fitting_procedure(
     scaling_factor      =    None,
     spectra_to_fit      =   'spectra_to_fit',
     use_previous_fit    =   'use_previous_fit',
-    offset=False
+    offset=False,
+    option_optimizer='L-BFGS-B'
     ): 
     
     # Handling spectra list for multi-threading
@@ -164,12 +189,14 @@ def full_fitting_procedure(
         id_ref_spec[0],
         intensities,
         None,  
+        None,  
         x_spec, 
         peak_picking_data,  
         scaling_factor,
         False,
         writing_to_file=False,
-        offset=offset
+        offset=offset,
+        option_optimizer=option_optimizer
         ) 
     logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]}) -- Complete')
 
@@ -178,66 +205,75 @@ def full_fitting_procedure(
         index=[i[1] for i in spectra_to_fit],
         columns=np.arange(0,len(res_fit_reference_spectrum.x.tolist()),1)
             )
+    stat_results_table = pd.DataFrame(
+        index=[i[1] for i in spectra_to_fit],
+        columns=np.arange(0,len(res_fit_reference_spectrum.res_stats),1)
+            )
     # Filling the dataframe for the reference spectrum 
     fit_results_table.loc[id_ref_spec[0][1],:] = res_fit_reference_spectrum.x.tolist()
+    stat_results_table.loc[id_ref_spec[0][1],:] = res_fit_reference_spectrum.res_stats
 
-    root, close_button, progress_bars = nfui.init_progress_bar_windows(
-        len_progresses = [len(id_spec_part1), len(id_spec_part2)],
-        title='Fitting in progress...',
-        progress_bar_label=['Spectra part 1','Spectra part 2']
-        ) 
-    n_spec = intensities.shape[0]
+    # root, close_button, progress_bars = nfui.init_progress_bar_windows(
+    #     len_progresses = [len(id_spec_part1), len(id_spec_part2)],
+    #     title='Fitting in progress...',
+    #     progress_bar_label=['Spectra part 1','Spectra part 2']
+    #     ) 
+    # n_spec = intensities.shape[0]
 
-    if n_spec == 1:
-        pass
-    else:
-        threads = []
+    # if n_spec == 1:
+    #     pass
+    # else:
+    #     threads = []
 
-        if len(id_spec_part1):
-            logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {np.max(id_spec_part1[-1][5])}')
-            threads.append(MyApp_Fitting(data={
-                "up"                  : True,
-                "spec_list"           : id_spec_part1,
-                "intensities"         : intensities,
-                "fit_results"         : fit_results_table,
-                "x_spectrum_fit"      : x_spec,
-                "peak_picking_data"   : peak_picking_data,
-                "scaling_factor"      : scaling_factor,
-                "use_previous_fit"    : use_previous_fit,
-                "offset"              : offset
-            },
-            threads=threads,
-            close_button=close_button,
-            progressbar=progress_bars[0]
-            ))
-            logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {id_spec_part1[-1][5]} -- Complete')
-        else:
-            logger.info(f'No spectra to fit above the reference spectrum') 
+    #     if len(id_spec_part1):
+    #         logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {np.max(id_spec_part1[-1][5])}')
+    #         threads.append(MyApp_Fitting(data={
+    #             "up"                  : True,
+    #             "spec_list"           : id_spec_part1,
+    #             "intensities"         : intensities,
+    #             "fit_results"         : fit_results_table,
+    #             "stat_results"         : stat_results_table,
+    #             "x_spectrum_fit"      : x_spec,
+    #             "peak_picking_data"   : peak_picking_data,
+    #             "scaling_factor"      : scaling_factor,
+    #             "use_previous_fit"    : use_previous_fit,
+    #             "offset"              : offset,
+    #             "option_optimizer"    : option_optimizer
+    #         },
+    #         threads=threads,
+    #         close_button=close_button,
+    #         progressbar=progress_bars[0]
+    #         ))
+    #         logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {id_spec_part1[-1][5]} -- Complete')
+    #     else:
+    #         logger.info(f'No spectra to fit above the reference spectrum') 
 
-        if len(id_spec_part2):
-            logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]}')
-            threads.append(MyApp_Fitting(data={
-                "up"                  : False,
-                "spec_list"           : id_spec_part2[::-1],
-                "intensities"         : intensities,
-                "fit_results"         : fit_results_table,
-                "x_spectrum_fit"      : x_spec,
-                "peak_picking_data"   : peak_picking_data,
-                "scaling_factor"      : scaling_factor,
-                "use_previous_fit"    : use_previous_fit,
-                "offset"              : offset
-            },
-            threads=threads,
-            close_button=close_button,
-            progressbar=progress_bars[1]
-            ))
-            logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]} -- Complete')
-        else:
-            logger.info(f'No spectra to fit below the reference spectrum') 
+    #     if len(id_spec_part2):
+    #         logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]}')
+    #         threads.append(MyApp_Fitting(data={
+    #             "up"                  : False,
+    #             "spec_list"           : id_spec_part2[::-1],
+    #             "intensities"         : intensities,
+    #             "fit_results"         : fit_results_table,
+    #             "stat_results"         : stat_results_table,
+    #             "x_spectrum_fit"      : x_spec,
+    #             "peak_picking_data"   : peak_picking_data,
+    #             "scaling_factor"      : scaling_factor,
+    #             "use_previous_fit"    : use_previous_fit,
+    #             "offset"              : offset,
+    #             "option_optimizer"    : option_optimizer
+    #         },
+    #         threads=threads,
+    #         close_button=close_button,
+    #         progressbar=progress_bars[1]
+    #         ))
+    #         logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]} -- Complete')
+    #     else:
+    #         logger.info(f'No spectra to fit below the reference spectrum') 
 
-        root.mainloop()
+        # root.mainloop()
     
-    return fit_results_table
+    return fit_results_table, stat_results_table
 
 class MyApp_Fitting(threading.Thread):
 

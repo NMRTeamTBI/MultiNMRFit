@@ -282,7 +282,7 @@ class App_Clustering:
         )
         peak_picking = nfu.sort_peak_picking_data(peak_picking, 15)        
         return peak_picking
-
+    
     def create_table(self,peak_picking_data,colors):
         n_peak = len(peak_picking_data)
 
