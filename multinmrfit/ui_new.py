@@ -3,17 +3,20 @@ import tkinter
 import tkinter.messagebox
 import random
 
+import os
 import sys
 import json
 from pathlib import Path 
 import tkinter as tk
 from tkinter import simpledialog, ttk, messagebox
+import PyPDF2
 import logging
 import webbrowser
 import pandas as pd
 # Import plot libraries
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from tkPDFViewer import tkPDFViewer as pdf
 
 import multinmrfit
 import multinmrfit.io as nio
@@ -177,9 +180,9 @@ class LoadingUI:
         nrun.run_analysis(user_input,self)
         self.on_closing()
 
-class ClusteringUI:
+class ProcessingUI:
 
-    def __init__(self, user_input, frame, *args, **kwargs):
+    def __init__(self, master, user_input, frame, *args, **kwargs):
 
         self.frame = frame
         # # self.peak_picking_threshold = peak_picking_threshold
@@ -242,8 +245,8 @@ class ClusteringUI:
         self.create_table(peak_picking_data,colors)
         # print(clustering_res)
 
-        self.run = tk.Button(frame,text=" Run Fitting ",foreground='black',command=lambda:[self.save_info_clustering(clustering_results),self.prepare_data_to_fit(self.clustering_table, user_input)])
-        self.run.grid(row=2, column=0, padx=3, pady=5)
+        self.run = tk.Button(frame,text=" Run Fitting ",foreground='black',command=lambda:[self.save_info_clustering(clustering_results),self.prepare_data_to_fit(master, frame, self.clustering_table, user_input)])
+        self.run.place(relx=0.1, rely=0.97,width=150, anchor=tkinter.W)
 
     def peak_picking(self, x_spec_ref, y_spec_ref, threshold):
         peak_picking = nfu.Peak_Picking_1D(x_data = x_spec_ref, y_data = y_spec_ref, threshold = threshold)
@@ -376,7 +379,7 @@ class ClusteringUI:
         self.graph_canvas.grid(row=0, column=0)
         return colors
 
-    def prepare_data_to_fit(self, clustering_table, user_input):
+    def prepare_data_to_fit(self, master, frame, clustering_table, user_input):
         self.user_picked_data = clustering_table[clustering_table["Selection"].values]
         self.user_picked_data = nfu.filter_multiple_clusters(self.user_picked_data)
         self.user_picked_data.Peak_Intensity = self.user_picked_data.Peak_Intensity.apply(pd.to_numeric)
@@ -402,7 +405,7 @@ class ClusteringUI:
         self.offset = user_input['option_offset']
         self.merged_pdf = user_input['option_merge_pdf']
  
-        self.fit_results_table, self.stat_results_table = nff.full_fitting_procedure(
+        fit_results_table, stat_results_table = nff.full_fitting_procedure(
             intensities         =   self.intensities,
             x_spec              =   self.x_ppm_reference_spectrum,
             ref_spec            =   self.idx_ref,
@@ -413,20 +416,109 @@ class ClusteringUI:
             offset              =   self.offset
         )
         nio.save_output_data(
-        user_input          ,
-        self.fit_results_table   ,
-        self.stat_results_table   ,
-        self.intensities         ,
-        self.x_ppm_reference_spectrum,
-        self.spectra_to_fit,
-        self.user_picked_data,
-        self.scaling_factor,
-        offset=self.offset,
-        merged_pdf = self.merged_pdf
-        )
-        print('hello')
+            user_input          ,
+            fit_results_table   ,
+            stat_results_table   ,
+            self.intensities         ,
+            self.x_ppm_reference_spectrum,
+            self.spectra_to_fit,
+            self.user_picked_data,
+            self.scaling_factor,
+            offset=self.offset,
+            merged_pdf = self.merged_pdf)
 
-        exit
+        self.plot_button = tk.Button(frame,text=" Visualization ",foreground='black',command=lambda:self.create_plot_frame(master, user_input))
+        self.plot_button.place(relx=0.6, rely=0.97,width=150, anchor=tkinter.W)
+
+    def create_plot_frame(self, master, user_input):
+        frame = tk.LabelFrame(master,width=400,height=600,text=f"Visualisation",foreground='red')
+        frame.grid(row=0,column=2, sticky="nsew")
+
+        frame_spectra = tk.LabelFrame(frame,width=400,height=300,text=f"Spectra",foreground='red')
+        frame_spectra.grid(row=0,column=2, sticky="nsew")
+
+        frame_params = tk.LabelFrame(frame,width=400,height=300,text=f"Paremters",foreground='red')
+        frame_params.grid(row=1,column=2, sticky="nsew")
+
+        PlottingUI(
+            frame_spectra,
+            frame_params,
+            user_input, 
+            self.x_ppm_reference_spectrum, 
+            self.user_picked_data, 
+            self.scaling_factor
+
+            )
+
+class PlottingUI:
+    def __init__(self, frame_spectra, frame_params, user_input, x_scale, peak_picking_data, scaling_factor, *args, **kwargs):
+        
+        self.frame_params = frame_params
+        self.frame_spectra = frame_spectra
+
+        d_id = nff.get_fitting_parameters(peak_picking_data, x_scale, scaling_factor)[0]
+        cluster_list = nio.getList(d_id)
+
+        # self.cluster_id_List = cluster_list
+
+        output_path         =   user_input['output_path']
+        output_folder       =   user_input['output_folder']
+        output_name         =   user_input['output_name']
+
+        file_list = []
+        self.fname = Path(output_path,output_folder)#+'_'+str(_multiplet_type_)+'_'+str(self.cluster_id_variable.get())+'_fit.txt')
+        for file in os.listdir(self.fname):
+            if file.startswith(output_name) and file.endswith("fit.txt"):
+                for cluster in cluster_list:
+                    if cluster in file:
+                        file_list.append(file)
+
+
+        self.cluster_id_variable = tk.StringVar(frame_params)
+        # self.cluster_id_variable.set('')
+        self.cluster_id_opt = tk.OptionMenu(frame_params, self.cluster_id_variable, *file_list, command= self.OptionMenu_SelectionEvent)
+        self.cluster_id_opt.place(relx=0.05, rely=0.05,width=300, anchor=tkinter.W)
+        self.cluster_id_opt.config(fg="BLACK", activebackground="BLACK", activeforeground="BLACK")
+
+    def OptionMenu_SelectionEvent(self, event):
+        full_fname = Path(self.fname,str(self.cluster_id_variable.get()))
+        self.data = pd.read_csv(full_fname,sep='\t')
+        params = list(self.data.columns[3:])
+
+        self.parameters_List = params
+        self.parameters_variable = tk.StringVar(self.frame_params)
+        # self.parameters_variable.set(self.parameters_List[0])
+        self.parameters_opt = tk.OptionMenu(self.frame_params, self.parameters_variable, *self.parameters_List, command= self.OptionMenu_PlotEvent)
+        self.parameters_opt.config(fg="BLACK", activebackground="BLACK", activeforeground="BLACK")
+        self.parameters_opt.place(relx=0.05, rely=0.14,width=300, anchor=tkinter.W)
+
+    def OptionMenu_PlotEvent(self, event):
+        
+        fig = plt.Figure()
+        ax = fig.subplots(1,1)
+        ax.plot(
+            self.data.loc[:,'exp_no'].tolist(),
+            self.data.loc[:,self.parameters_variable.get()].tolist(),
+            marker='o',
+            color='blue'
+            )
+
+        canvas = FigureCanvasTkAgg(fig, self.frame_params)
+        canvas.draw()
+        canvas.get_tk_widget().place(relx=0.05, rely=0.6,width=380, height=200, anchor=tkinter.W)
+
+        v1 = pdf.ShowPdf()
+        
+        # Adding pdf location and width and height.
+        v2 = v1.pdf_view(self.frame_spectra,
+                        pdf_location = '~/Documents/Research/Data_Analysis/TEST_Multinmrfit/Guy/myself/plot_ind/MHET_4_1.pdf' , 
+                        width = 50, height = 100)
+
+        v2.pack()
+  
+
+        # nio.plot_gui(user_input, x_scale, peak_picking_data, scaling_factor,fit_results, stat_results, spectra_to_fit, offset=False)
+        # self.stat_results_table   ,
 
 class App:
 
@@ -465,27 +557,56 @@ class App:
         self.run_button = tk.Button(self.loading_frame,text=" Clustering ",foreground='black',command=lambda:[var.set(1),self.create_visu_frame(user_input)])
         self.run_button.grid(row=2, column=2, padx=3, pady=5)
         self.run_button.wait_variable(var)
-        # self.clustering = ClusteringUI(self.visualization_frame)
 
     def on_closing(self, event=0):
         self.master.destroy()
         exit()
 
-
     def create_visu_frame(self,user_input):
-        frame = tk.LabelFrame(self.master,width=800,height=600,text=f"Peak Picking Visualisation and Clustering",foreground='red')
-        frame.grid(row=0,column=1, sticky="nsew")
 
         user_input = nio.check_input_file({k: v.get() for k, v in user_input.items()},self.master)
-
-
-
-        # print(user_input)
-        ClusteringUI(user_input, frame)
+        if isinstance(user_input,dict):
+            if user_input.get('valid',False):   
+                frame = tk.LabelFrame(self.master,width=800,height=600,text=f"Peak Picking Visualisation and Clustering",foreground='red')
+                frame.grid(row=0,column=1, sticky="nsew")
+                ProcessingUI(self.master, user_input, frame)
 
     def start(self):
         self.master.mainloop()
 
 
-app = App(user_input=nio.create_user_input())
-app.start()
+# app = App(user_input=nio.create_user_input())
+# app.start()
+
+##########
+def init_progress_bar_windows(len_progresses, title, progress_bar_label):
+    root = tk.Tk()
+    root_height= len(len_progresses)*120
+    root.geometry(f'300x{root_height}')
+    root.title(title)
+    progress_bars = []
+    for len_progress in len_progresses:
+        pg_bar = ttk.Progressbar(
+            root,
+            orient='horizontal',
+            mode='determinate',
+            maximum=len_progress,
+            length=280
+        )
+        value_label = tk.Label(
+                        root,
+                        text=progress_bar_label[len(progress_bars)],
+                        fg='black',
+                        justify=tk.CENTER
+)
+        value_label.grid(column=0, row=len(len_progresses)*len(progress_bars), columnspan=2)
+
+        pg_bar.grid(column=0, row=len(len_progresses)*len(progress_bars)+1, columnspan=2, padx=10, pady=20)
+        progress_bars.append(pg_bar)
+
+    close_button = tk.Button(root, text="Close", fg = "black", command=lambda: progress_bar_exit(root))
+    close_button.grid(column = 1, row = len(len_progresses)+5)
+    return root, close_button, progress_bars
+
+def progress_bar_exit(root):
+    root.destroy()

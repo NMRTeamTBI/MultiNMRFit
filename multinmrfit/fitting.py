@@ -8,7 +8,7 @@ import pandas as pd
 from scipy.optimize import minimize, differential_evolution
 
 import multinmrfit.multiplets as nfm
-import multinmrfit.ui as nfui
+import multinmrfit.ui_new as nfui
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +102,6 @@ def compute_statistics(res, ftol=2.220446049250313e-09):
         logger.debug(f"   (rsd = {sd_i/res.x[i]}")
         standard_deviations[i] = sd_i
     return standard_deviations
-
 
 def run_single_fit_function(up, 
                             fit, 
@@ -248,30 +247,30 @@ def full_fitting_procedure(
     #     else:
     #         logger.info(f'No spectra to fit above the reference spectrum') 
 
-    #     if len(id_spec_part2):
-    #         logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]}')
-    #         threads.append(MyApp_Fitting(data={
-    #             "up"                  : False,
-    #             "spec_list"           : id_spec_part2[::-1],
-    #             "intensities"         : intensities,
-    #             "fit_results"         : fit_results_table,
-    #             "stat_results"         : stat_results_table,
-    #             "x_spectrum_fit"      : x_spec,
-    #             "peak_picking_data"   : peak_picking_data,
-    #             "scaling_factor"      : scaling_factor,
-    #             "use_previous_fit"    : use_previous_fit,
-    #             "offset"              : offset,
-    #             "option_optimizer"    : option_optimizer
-    #         },
-    #         threads=threads,
-    #         close_button=close_button,
-    #         progressbar=progress_bars[1]
-    #         ))
-    #         logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]} -- Complete')
-    #     else:
-    #         logger.info(f'No spectra to fit below the reference spectrum') 
-
+        # if len(id_spec_part2):
+        #     logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]}')
+        #     threads.append(MyApp_Fitting(data={
+        #         "up"                  : False,
+        #         "spec_list"           : id_spec_part2[::-1],
+        #         "intensities"         : intensities,
+        #         "fit_results"         : fit_results_table,
+        #         "stat_results"         : stat_results_table,
+        #         "x_spectrum_fit"      : x_spec,
+        #         "peak_picking_data"   : peak_picking_data,
+        #         "scaling_factor"      : scaling_factor,
+        #         "use_previous_fit"    : use_previous_fit,
+        #         "offset"              : offset,
+        #         "option_optimizer"    : option_optimizer
+        #     },
+        #     threads=threads,
+        #     close_button=close_button,
+        #     progressbar=progress_bars[1]
+        #     ))
+        #     logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]} -- Complete')
+        # else:
+        #     logger.info(f'No spectra to fit below the reference spectrum') 
         # root.mainloop()
+    # print(fit_results_table)
     
     return fit_results_table, stat_results_table
 

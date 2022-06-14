@@ -274,7 +274,8 @@ def check_input_file(user_input,gui=None):
             'option_previous_fit'   :   user_input.get('option_previous_fit', False),
             'option_offset'         :   user_input.get('option_offset', False),
             'option_verbose_log'    :   user_input.get('option_verbose_log', False),
-            'option_merge_pdf'      :   user_input.get('option_merge_pdf', False)
+            'option_merge_pdf'      :   user_input.get('option_merge_pdf', False),
+            'valid'                 :   True
 
         }
 
@@ -509,3 +510,64 @@ def save_output_data(user_input, fit_results, stat_results, intensities, x_scale
     if merged_pdf:
         merge_pdf(output_path,output_folder,output_name)
     logger.info('Save plot to pdf -- Complete')
+
+
+def plot_gui(user_input, x_scale, peak_picking_data, scaling_factor, fit_results, stat_results, spectra_to_fit, offset=False):
+
+    output_path         =   user_input['output_path']
+    output_folder       =   user_input['output_folder']
+    output_name         =   user_input['output_name']
+
+    x_fit = np.linspace(np.min(x_scale),np.max(x_scale),2048)
+    d_id = nff.get_fitting_parameters(peak_picking_data, x_fit, scaling_factor)[0]
+    cluster_list = getList(d_id)
+
+    for i in cluster_list:
+        _multiplet_type_, mutliplet_results, mutliplet_stats = build_output(d_id[i], x_fit, fit_results, stat_results, scaling_factor, spectra_to_fit, offset)
+    print(_multiplet_type_)
+
+    # for i in cluster_list:
+    #     # create output dataframe
+    #     _multiplet_type_, mutliplet_results, mutliplet_stats = build_output(d_id[i], x_fit, fit_results, stat_results, scaling_factor, spectra_to_fit, offset)
+    #     # update results file if already exists
+    #     fname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'_fit.txt')
+    #     sname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'_stat.txt')
+
+    #     mutliplet_results.to_csv(
+    #         str(fname), 
+    #         index=False, 
+    #         sep = '\t'
+    #         )
+
+        # pname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'_plot_integral.pdf')
+
+        # if fname.is_file():
+        #     mutliplet_results = update_results(mutliplet_results, fname)
+        # if sname.is_file():
+        #     mutliplet_stats = update_results(mutliplet_stats, fname)
+        # # sort results by exp_no, proc_no & row_id
+        # mutliplet_results = mutliplet_results.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
+        # mutliplet_stats = mutliplet_stats.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
+
+        # # plot integrals 
+        # if 1 in mutliplet_results.row_id.unique():
+        #     x_plot = mutliplet_results.exp_no.tolist()
+        #     plt.xlabel('exp no')
+        # else:
+        #     x_plot = mutliplet_results.row_id.tolist()
+        #     plt.xlabel('row id')
+        # plt.plot(x_plot, mutliplet_results.integral,ls='none',marker='o',color='darkblue')
+        # plt.ylabel('Integral')
+        # plt.savefig(pname)
+        # plt.close()
+        # # save to tsv
+        # mutliplet_results.to_csv(
+        #     str(fname), 
+        #     index=False, 
+        #     sep = '\t'
+        #     )
+        # mutliplet_stats.to_csv(
+        #     str(sname), 
+        #     index=False, 
+        #     sep = '\t'
+        #     )
