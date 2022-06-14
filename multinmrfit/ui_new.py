@@ -2,6 +2,7 @@ from re import L
 import tkinter
 import tkinter.messagebox
 import random
+import numpy as np
 
 import os
 import sys
@@ -9,7 +10,6 @@ import json
 from pathlib import Path 
 import tkinter as tk
 from tkinter import simpledialog, ttk, messagebox
-import PyPDF2
 import logging
 import webbrowser
 import pandas as pd
@@ -23,6 +23,8 @@ import multinmrfit.io as nio
 import multinmrfit.run as nrun
 import multinmrfit.utils_nmrdata as nfu
 import multinmrfit.fitting as nff
+
+logger = logging.getLogger(__name__)
 
 
 class LoadingUI:
@@ -405,7 +407,7 @@ class ProcessingUI:
         self.offset = user_input['option_offset']
         self.merged_pdf = user_input['option_merge_pdf']
  
-        fit_results_table, stat_results_table = nff.full_fitting_procedure(
+        fit_results_table, stat_results_table = self.full_fitting_procedure(
             intensities         =   self.intensities,
             x_spec              =   self.x_ppm_reference_spectrum,
             ref_spec            =   self.idx_ref,
@@ -427,8 +429,147 @@ class ProcessingUI:
             offset=self.offset,
             merged_pdf = self.merged_pdf)
 
-        self.plot_button = tk.Button(frame,text=" Visualization ",foreground='black',command=lambda:self.create_plot_frame(master, user_input))
-        self.plot_button.place(relx=0.6, rely=0.97,width=150, anchor=tkinter.W)
+        self.create_plot_frame(master, user_input)
+        # self.plot_button = tk.Button(frame,text=" Visualization ",foreground='black',command=lambda:self.create_plot_frame(master, user_input))
+        # self.plot_button.place(relx=0.6, rely=0.97,width=150, anchor=tkinter.W)
+
+    def full_fitting_procedure( self,  
+        intensities         =   'intensities',
+        x_spec              =   'x_Spec',
+        ref_spec            =   'ref_spec',
+        peak_picking_data   =   'peak_picking_data',
+        scaling_factor      =    None,
+        spectra_to_fit      =   'spectra_to_fit',
+        use_previous_fit    =   'use_previous_fit',
+        offset              =   False,
+        option_optimizer    =   'L-BFGS-B'
+        ): 
+
+        # Handling spectra list for multi-threading
+        id_spec_part2 = [i for i in spectra_to_fit if i[0] < ref_spec]
+        id_spec_part1 = [i for i in spectra_to_fit if i[0] > ref_spec]
+        id_ref_spec = [i for i in spectra_to_fit if i[0] == ref_spec ]
+
+        # Fitting the reference 1D spectrum -- This function can be used for 1D spectrum alone
+        logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]})')
+        res_fit_reference_spectrum = nff.run_single_fit_function(
+            None, # No need of up or down here
+            id_ref_spec[0],
+            intensities,
+            None,  
+            None,  
+            x_spec, 
+            peak_picking_data,  
+            scaling_factor,
+            False,
+            writing_to_file=False,
+            offset=offset,
+            option_optimizer=option_optimizer
+            ) 
+        logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]}) -- Complete')
+
+        # Creation of the data frame containing fitting results
+        fit_results_table = pd.DataFrame(
+            index=[i[1] for i in spectra_to_fit],
+            columns=np.arange(0,len(res_fit_reference_spectrum.x.tolist()),1)
+                )
+        stat_results_table = pd.DataFrame(
+            index=[i[1] for i in spectra_to_fit],
+            columns=np.arange(0,len(res_fit_reference_spectrum.res_stats),1)
+                )
+        # Filling the dataframe for the reference spectrum 
+        fit_results_table.loc[id_ref_spec[0][1],:] = res_fit_reference_spectrum.x.tolist()
+        stat_results_table.loc[id_ref_spec[0][1],:] = res_fit_reference_spectrum.res_stats
+
+        # #######
+
+        # Fitting the reference 1D spectrum -- This function can be used for 1D spectrum alone
+        logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {np.max(id_spec_part1[-1][5])}')
+
+        for i in id_spec_part1:
+            logger.info(f'Fitting Reference Spectrum (ExpNo {i[5]})')
+            res_fit = nff.run_single_fit_function(
+                True, # No need of up or down here
+                i,
+                intensities,
+                fit_results_table,  
+                stat_results_table,  
+                x_spec, 
+                peak_picking_data,  
+                scaling_factor,
+                use_previous_fit,
+                writing_to_file=False,
+                offset=offset,
+                option_optimizer=option_optimizer
+                ) 
+            logger.info(f'Fitting Reference Spectrum (ExpNo {i[5]}) -- Complete')
+
+            # Filling the dataframe for the reference spectrum 
+            fit_results_table.loc[i[1],:] = res_fit.x.tolist()
+            stat_results_table.loc[i[1],:] = res_fit.res_stats
+    
+        return fit_results_table, stat_results_table
+
+        # root, close_button, progress_bars = nfui.init_progress_bar_windows(
+        #     len_progresses = [len(id_spec_part1), len(id_spec_part2)],
+        #     title='Fitting in progress...',
+        #     progress_bar_label=['Spectra part 1','Spectra part 2']
+        #     ) 
+        # n_spec = intensities.shape[0]
+
+        # if n_spec == 1:
+        #     pass
+        # else:
+        #     threads = []
+
+        #     if len(id_spec_part1):
+        #         logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {np.max(id_spec_part1[-1][5])}')
+        #         threads.append(MyApp_Fitting(data={
+        #             "up"                  : True,
+        #             "spec_list"           : id_spec_part1,
+        #             "intensities"         : intensities,
+        #             "fit_results"         : fit_results_table,
+        #             "stat_results"         : stat_results_table,
+        #             "x_spectrum_fit"      : x_spec,
+        #             "peak_picking_data"   : peak_picking_data,
+        #             "scaling_factor"      : scaling_factor,
+        #             "use_previous_fit"    : use_previous_fit,
+        #             "offset"              : offset,
+        #             "option_optimizer"    : option_optimizer
+        #         },
+        #         threads=threads,
+        #         close_button=close_button,
+        #         progressbar=progress_bars[0]
+        #         ))
+        #         logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {id_spec_part1[-1][5]} -- Complete')
+        #     else:
+        #         logger.info(f'No spectra to fit above the reference spectrum') 
+
+            # if len(id_spec_part2):
+            #     logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]}')
+            #     threads.append(MyApp_Fitting(data={
+            #         "up"                  : False,
+            #         "spec_list"           : id_spec_part2[::-1],
+            #         "intensities"         : intensities,
+            #         "fit_results"         : fit_results_table,
+            #         "stat_results"         : stat_results_table,
+            #         "x_spectrum_fit"      : x_spec,
+            #         "peak_picking_data"   : peak_picking_data,
+            #         "scaling_factor"      : scaling_factor,
+            #         "use_previous_fit"    : use_previous_fit,
+            #         "offset"              : offset,
+            #         "option_optimizer"    : option_optimizer
+            #     },
+            #     threads=threads,
+            #     close_button=close_button,
+            #     progressbar=progress_bars[1]
+            #     ))
+            #     logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]} -- Complete')
+            # else:
+            #     logger.info(f'No spectra to fit below the reference spectrum') 
+            # root.mainloop()
+        # print(fit_results_table)
+    
 
     def create_plot_frame(self, master, user_input):
         frame = tk.LabelFrame(master,width=400,height=600,text=f"Visualisation",foreground='red')
@@ -516,10 +657,6 @@ class PlottingUI:
 
         v2.pack()
   
-
-        # nio.plot_gui(user_input, x_scale, peak_picking_data, scaling_factor,fit_results, stat_results, spectra_to_fit, offset=False)
-        # self.stat_results_table   ,
-
 class App:
 
     def __init__(self, user_input, *args, **kwargs):
@@ -575,38 +712,37 @@ class App:
         self.master.mainloop()
 
 
-# app = App(user_input=nio.create_user_input())
-# app.start()
+
 
 ##########
-def init_progress_bar_windows(len_progresses, title, progress_bar_label):
-    root = tk.Tk()
-    root_height= len(len_progresses)*120
-    root.geometry(f'300x{root_height}')
-    root.title(title)
-    progress_bars = []
-    for len_progress in len_progresses:
-        pg_bar = ttk.Progressbar(
-            root,
-            orient='horizontal',
-            mode='determinate',
-            maximum=len_progress,
-            length=280
-        )
-        value_label = tk.Label(
-                        root,
-                        text=progress_bar_label[len(progress_bars)],
-                        fg='black',
-                        justify=tk.CENTER
-)
-        value_label.grid(column=0, row=len(len_progresses)*len(progress_bars), columnspan=2)
+# def init_progress_bar_windows(len_progresses, title, progress_bar_label):
+#     root = tk.Tk()
+#     root_height= len(len_progresses)*120
+#     root.geometry(f'300x{root_height}')
+#     root.title(title)
+#     progress_bars = []
+#     for len_progress in len_progresses:
+#         pg_bar = ttk.Progressbar(
+#             root,
+#             orient='horizontal',
+#             mode='determinate',
+#             maximum=len_progress,
+#             length=280
+#         )
+#         value_label = tk.Label(
+#                         root,
+#                         text=progress_bar_label[len(progress_bars)],
+#                         fg='black',
+#                         justify=tk.CENTER
+# )
+#         value_label.grid(column=0, row=len(len_progresses)*len(progress_bars), columnspan=2)
 
-        pg_bar.grid(column=0, row=len(len_progresses)*len(progress_bars)+1, columnspan=2, padx=10, pady=20)
-        progress_bars.append(pg_bar)
+#         pg_bar.grid(column=0, row=len(len_progresses)*len(progress_bars)+1, columnspan=2, padx=10, pady=20)
+#         progress_bars.append(pg_bar)
 
-    close_button = tk.Button(root, text="Close", fg = "black", command=lambda: progress_bar_exit(root))
-    close_button.grid(column = 1, row = len(len_progresses)+5)
-    return root, close_button, progress_bars
+#     close_button = tk.Button(root, text="Close", fg = "black", command=lambda: progress_bar_exit(root))
+#     close_button.grid(column = 1, row = len(len_progresses)+5)
+#     return root, close_button, progress_bars
 
-def progress_bar_exit(root):
-    root.destroy()
+# def progress_bar_exit(root):
+#     root.destroy()
