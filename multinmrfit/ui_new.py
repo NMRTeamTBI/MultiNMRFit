@@ -720,35 +720,3 @@ class App:
 
 
 
-##########
-# def init_progress_bar_windows(len_progresses, title, progress_bar_label):
-#     root = tk.Tk()
-#     root_height= len(len_progresses)*120
-#     root.geometry(f'300x{root_height}')
-#     root.title(title)
-#     progress_bars = []
-#     for len_progress in len_progresses:
-#         pg_bar = ttk.Progressbar(
-#             root,
-#             orient='horizontal',
-#             mode='determinate',
-#             maximum=len_progress,
-#             length=280
-#         )
-#         value_label = tk.Label(
-#                         root,
-#                         text=progress_bar_label[len(progress_bars)],
-#                         fg='black',
-#                         justify=tk.CENTER
-# )
-#         value_label.grid(column=0, row=len(len_progresses)*len(progress_bars), columnspan=2)
-
-#         pg_bar.grid(column=0, row=len(len_progresses)*len(progress_bars)+1, columnspan=2, padx=10, pady=20)
-#         progress_bars.append(pg_bar)
-
-#     close_button = tk.Button(root, text="Close", fg = "black", command=lambda: progress_bar_exit(root))
-#     close_button.grid(column = 1, row = len(len_progresses)+5)
-#     return root, close_button, progress_bars
-
-# def progress_bar_exit(root):
-#     root.destroy()
