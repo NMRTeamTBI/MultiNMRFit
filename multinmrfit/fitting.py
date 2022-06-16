@@ -80,7 +80,7 @@ def fit_objective(
 def refine_constraints(initial_fit_values, bounds_fit, name_parameters):
     logger.debug(f"old bounds: {bounds_fit}")
     # update parameters based on dict(k, v) where k is a string used to identify the parameter, and v is the allowed (relative) parameter window
-    relative_window = {"x0":0.01, "J":0.05, "lw":0.3}
+    relative_window = {"x0":0.001, "J":0.05, "lw":0.3}
     for k, v in relative_window.items():
         idx = [i for i,j in enumerate(name_parameters) if k in j]
         for i in idx:
@@ -121,7 +121,6 @@ def run_single_fit_function(up,
     if use_previous_fit :
         initial_fit_values = list(fit_results.iloc[fit[1]-1 if up else fit[1]+1].values)
         bounds_fit = refine_constraints(initial_fit_values, bounds_fit, name_parameters)
-    
     try:
         intensities = intensities[fit[0],:]
         if option_optimizer=='L-BFGS-B':
