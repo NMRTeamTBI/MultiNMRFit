@@ -431,7 +431,8 @@ def output_txt_file(x_fit,fit_results, stat_results, d_id, scaling_factor,spectr
         mutliplet_stats = mutliplet_stats.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
 
         # plot integrals 
-        if 1 in mutliplet_results.row_id.unique():
+
+        if mutliplet_results.row_id.is_unique is False:
             x_plot = mutliplet_results.exp_no.tolist()
             plt.xlabel('exp no')
         else:

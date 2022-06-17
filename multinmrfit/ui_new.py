@@ -12,12 +12,10 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import simpledialog, ttk, messagebox
 import logging
-import webbrowser
 import pandas as pd
 # Import plot libraries
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from tkPDFViewer import tkPDFViewer as pdf
 
 import multinmrfit
 import multinmrfit.io as nio
@@ -641,12 +639,14 @@ class PlottingUI:
         
         fig = plt.Figure()
         ax = fig.subplots(1,1)
-
         ax.plot(
-            self.data.loc[:,"exp_no" if 1 in self.data.row_id.unique() else 'row id'].tolist(),
+            self.data.loc[:,"exp_no" if self.data.row_id.is_unique is False else 'row_id'].tolist(),
             self.data.loc[:,self.parameters_variable.get()].tolist(),
             marker='o',
-            color='blue'
+            color='blue',
+            ls='none',
+            ms='3'
+
             )
         ax.set_ylabel(self.parameters_variable.get())
         fig.tight_layout()
@@ -654,15 +654,6 @@ class PlottingUI:
         canvas.draw()
         canvas.get_tk_widget().place(relx=0.05, rely=0.6,width=380, height=200, anchor=tkinter.W)
 
-        v1 = pdf.ShowPdf()
-        
-        # Adding pdf location and width and height.
-        v2 = v1.pdf_view(self.frame_spectra,
-                        pdf_location = '~/Documents/Research/Data_Analysis/TEST_Multinmrfit/Guy/myself/plot_ind/MHET_4_1.pdf' , 
-                        width = 50, height = 100)
-
-        v2.pack()
-  
 class App:
 
     def __init__(self, user_input, *args, **kwargs):

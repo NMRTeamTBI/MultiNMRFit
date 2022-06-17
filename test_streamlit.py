@@ -32,7 +32,7 @@ def main():
         # st.header(file)
 
         fig = px.line(df, 
-            x = "exp_no" if 1 in df.row_id.unique() else 'row id', 
+            x = "exp_no" if 1 is df.row_id.unique() else 'row_id', 
             y = params,
             )
         st.plotly_chart(fig)
