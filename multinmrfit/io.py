@@ -314,13 +314,13 @@ def getIntegral(x_fit, _multiplet_type_, fit_par):
     return integral
     
 def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, output_path, output_folder, output_name, offset=False):    
-    fig, ax = plt.subplots(1, 1)
+    fig, [ax_rmsd,ax] = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1, 4]})
     fig.set_size_inches([11.7,8.3])
 
     ax.plot(
         x_scale,
         intensities[r[0],:],
-        color='b',
+        color='r',
         ls='None',
         marker='o',
         markersize=7
@@ -335,18 +335,42 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
         scaling_factor,
         offset=offset
         )
+    sim_rmsd = nff.simulate_data(
+        x_scale,
+        res,
+        d_id,
+        scaling_factor,
+        offset=offset
+    )
 
+    rmsd = sim_rmsd-intensities[r[0],:]
     ax.plot(
         x_fit, 
         sim, 
         'r-', 
         lw=1,
         label='fit')
+    ax.grid(axis='y')
+
+    ax_rmsd.axhline(y=0,color='black',lw=1)
+    ax_rmsd.grid(axis='y')
+    ax_rmsd.plot(
+        x_scale, 
+        rmsd, 
+        'r-', 
+        ls='none',
+        marker='o'
+        )
+    ax_rmsd.invert_xaxis()
+    rmsd_max = max (max(rmsd), abs(min(rmsd)))
+
+    ax_rmsd.set_ylim(-rmsd_max*1.3,rmsd_max*1.3)
+    ax_rmsd.set_ylabel('Residuals')
 
     res_num = r[5]
-    ax.text(0.05,0.9,"Spectra : " +str(res_num),transform=ax.transAxes,fontsize=20)  
+    ax_rmsd.set_title("Spectra : " +str(res_num),fontsize=20)  
     ax.set_ylabel('Intensity')
-    ax.set_xlabel(r'$chemical shift$ $(ppm)$')
+    ax.set_xlabel('chemical shift (ppm)')
 
     plt.subplots_adjust(
         left = 0.1,
@@ -512,63 +536,3 @@ def save_output_data(user_input, fit_results, stat_results, intensities, x_scale
         merge_pdf(output_path,output_folder,output_name)
     logger.info('Save plot to pdf -- Complete')
 
-
-def plot_gui(user_input, x_scale, peak_picking_data, scaling_factor, fit_results, stat_results, spectra_to_fit, offset=False):
-
-    output_path         =   user_input['output_path']
-    output_folder       =   user_input['output_folder']
-    output_name         =   user_input['output_name']
-
-    x_fit = np.linspace(np.min(x_scale),np.max(x_scale),2048)
-    d_id = nff.get_fitting_parameters(peak_picking_data, x_fit, scaling_factor)[0]
-    cluster_list = getList(d_id)
-
-    for i in cluster_list:
-        _multiplet_type_, mutliplet_results, mutliplet_stats = build_output(d_id[i], x_fit, fit_results, stat_results, scaling_factor, spectra_to_fit, offset)
-    print(_multiplet_type_)
-
-    # for i in cluster_list:
-    #     # create output dataframe
-    #     _multiplet_type_, mutliplet_results, mutliplet_stats = build_output(d_id[i], x_fit, fit_results, stat_results, scaling_factor, spectra_to_fit, offset)
-    #     # update results file if already exists
-    #     fname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'_fit.txt')
-    #     sname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'_stat.txt')
-
-    #     mutliplet_results.to_csv(
-    #         str(fname), 
-    #         index=False, 
-    #         sep = '\t'
-    #         )
-
-        # pname = Path(output_path,output_folder,output_name+'_'+str(_multiplet_type_)+'_'+str(i)+'_plot_integral.pdf')
-
-        # if fname.is_file():
-        #     mutliplet_results = update_results(mutliplet_results, fname)
-        # if sname.is_file():
-        #     mutliplet_stats = update_results(mutliplet_stats, fname)
-        # # sort results by exp_no, proc_no & row_id
-        # mutliplet_results = mutliplet_results.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
-        # mutliplet_stats = mutliplet_stats.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
-
-        # # plot integrals 
-        # if 1 in mutliplet_results.row_id.unique():
-        #     x_plot = mutliplet_results.exp_no.tolist()
-        #     plt.xlabel('exp no')
-        # else:
-        #     x_plot = mutliplet_results.row_id.tolist()
-        #     plt.xlabel('row id')
-        # plt.plot(x_plot, mutliplet_results.integral,ls='none',marker='o',color='darkblue')
-        # plt.ylabel('Integral')
-        # plt.savefig(pname)
-        # plt.close()
-        # # save to tsv
-        # mutliplet_results.to_csv(
-        #     str(fname), 
-        #     index=False, 
-        #     sep = '\t'
-        #     )
-        # mutliplet_stats.to_csv(
-        #     str(sname), 
-        #     index=False, 
-        #     sep = '\t'
-        #     )
