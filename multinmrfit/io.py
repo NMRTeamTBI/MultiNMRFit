@@ -158,42 +158,54 @@ def check_input_file(user_input,gui=None):
         ########################################################################
 
         ######### Check Data Path #########
+
         if not user_input.get('data_path'):
             return error_handling(gui,"Argument : 'data_path' is missing")
         else:
-            if not Path(user_input.get('data_path')).exists():
+            if user_input['data_path'].endswith('.csv'):
+                pass
+            elif not Path(user_input.get('data_path')).exists():
                 return error_handling(gui,"Argument : 'data_path' does not exist")
         ########################################################################
 
         ######### Check Data Folder #########
-        if not user_input.get('data_folder'):
-            return error_handling(gui,"Argument : 'data_folder' is missing")
+        if user_input['data_path'].endswith('.csv'):
+            pass
         else:
-            if not Path(user_input.get('data_path'),user_input.get('data_folder')).exists():
-                return error_handling(gui,"The path to the data is incorrect please check \n Argument : 'data_folder' or 'data_path' ")
+            if not user_input.get('data_folder'):
+                return error_handling(gui,"Argument : 'data_folder' is missing")
+            else:
+                if not Path(user_input.get('data_path'),user_input.get('data_folder')).exists():
+                    return error_handling(gui,"The path to the data is incorrect please check \n Argument : 'data_folder' or 'data_path' ")
         ########################################################################
 
         ######### Check ProcNo #########
-        if not user_input.get('data_proc_no'):
-            return error_handling(gui,"Argument : 'data_proc_no' is missing")                      
+        if user_input['data_path'].endswith('.csv'):
+            pass
         else:
-            data_proc_no_check = check_float(user_input.get('data_proc_no'))
-            if not data_proc_no_check:
-                return error_handling(gui,"Argument : 'data_proc_no' has a wrong type")
+            if not user_input.get('data_proc_no'):
+                return error_handling(gui,"Argument : 'data_proc_no' is missing")                      
+            else:
+                data_proc_no_check = check_float(user_input.get('data_proc_no'))
+                if not data_proc_no_check:
+                    return error_handling(gui,"Argument : 'data_proc_no' has a wrong type")
         ########################################################################
 
         ######### Check Exp List #########
-        if not user_input.get('data_exp_no'):
-            return error_handling(gui,"Argument : 'data_exp_no' is missing")
-        else:
-            # The function create_spectra_list needs to be updated for error handling
+        if user_input['data_path'].endswith('.csv'):
             exp_list = create_spectra_list(user_input.get('data_exp_no'),gui)
-        for exp in exp_list:
-            if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp)).exists():
-                return error_handling(gui,f"Argument : experiment <{exp}> does not exist")
+        else:
+            if not user_input.get('data_exp_no'):
+                return error_handling(gui,"Argument : 'data_exp_no' is missing")
             else:
-                if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp),'pdata',user_input.get('data_proc_no')).exists():
-                    return error_handling(gui,f"Argument : experiment/procno <{exp}/{user_input.get('data_proc_no')}> does not exist")
+                # The function create_spectra_list needs to be updated for error handling
+                exp_list = create_spectra_list(user_input.get('data_exp_no'),gui)
+            for exp in exp_list:
+                if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp)).exists():
+                    return error_handling(gui,f"Argument : experiment <{exp}> does not exist")
+                else:
+                    if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp),'pdata',user_input.get('data_proc_no')).exists():
+                        return error_handling(gui,f"Argument : experiment/procno <{exp}/{user_input.get('data_proc_no')}> does not exist")
 
         ########################################################################
 
@@ -223,7 +235,8 @@ def check_input_file(user_input,gui=None):
                 if not limit_check:
                     return error_handling(gui,"At lest one of the 'spectral_limits' has a wrong type")
             spec_lim = [float(i) for i in spec_lim]
-            spec_lim.sort(reverse=True)
+            if not user_input['data_path'].endswith('.csv'):
+                spec_lim.sort(reverse=True)
         ########################################################################
 
         ######### Check analysis type ######### 
@@ -312,7 +325,7 @@ def getIntegral(x_fit, _multiplet_type_, fit_par):
     y = _multiplet_type_function(x_fit, *fit_par)
     integral = np.sum(y)*(x_fit[1]-x_fit[0])
     return integral
-    
+
 def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, output_path, output_folder, output_name, offset=False):    
     fig, [ax_rmsd,ax] = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1, 4]})
     fig.set_size_inches([11.7,8.3])

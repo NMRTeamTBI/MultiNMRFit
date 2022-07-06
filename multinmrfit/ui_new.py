@@ -48,9 +48,6 @@ class LoadingUI:
         self.save_button = tk.Button(frame,text=" Save ",foreground='black',command=lambda:self.save_config_file({k: v.get() for k, v in user_input.items()}))
         self.save_button.grid(row=2, column=1, padx=3, pady=5)
 
-        # self.run_button = tk.Button(frame,text=" Run ",foreground='black',command=lambda:self.App_Run(user_input))
-        # self.run_button.grid(row=2, column=2, padx=3, pady=5)
-
         # ============ create Labels and entries ============
         data_inputs = ['data_path', 'data_folder', 'data_exp_no', 'data_proc_no']
         for i in range(len(data_inputs)):
@@ -176,11 +173,6 @@ class LoadingUI:
             f.write(json.dumps(user_input, indent=4))
             f.close() 
 
-    def App_Run(self, user_input):
-        user_input = nio.check_input_file({k: v.get() for k, v in user_input.items()},self.frame)
-        nrun.run_analysis(user_input,self)
-        self.on_closing()
-
 class ProcessingUI:
 
     def __init__(self, master, user_input, frame, *args, **kwargs):
@@ -226,12 +218,15 @@ class ProcessingUI:
         ######################################################
         if user_input['analysis_type'] == 'Pseudo2D':
             self.intensities_reference_spectrum = self.intensities[self.idx_ref,:]
-            self.x_ppm_reference_spectrum = x_ppm
+            if "simulated" in user_input:
+                self.x_ppm_reference_spectrum = x_ppm[self.idx_ref,:]
+            else:
+                self.x_ppm_reference_spectrum = x_ppm
+
         elif user_input['analysis_type'] == '1D_Series':
             self.intensities_reference_spectrum = self.intensities[self.idx_ref,:]
             self.x_ppm_reference_spectrum = x_ppm[self.idx_ref,:]
         #-----------------------------------------------------#   
-
         ######################################################
         ##############Peak Picking/ Clustering################
         ######################################################
@@ -245,7 +240,6 @@ class ProcessingUI:
         # self.clustering_information = self.create_table(peak_picking_data,colors) 
         self.create_table(peak_picking_data,colors)
         # print(clustering_res)
-
         self.run = tk.Button(frame,text=" Run Fitting ",foreground='black',command=lambda:[self.save_info_clustering(clustering_results),self.prepare_data_to_fit(master, frame, self.clustering_table, user_input)])
         self.run.place(relx=0.1, rely=0.97,width=150, anchor=tkinter.W)
 
@@ -405,9 +399,9 @@ class ProcessingUI:
 
         self.offset = user_input['option_offset']
         self.merged_pdf = user_input['option_merge_pdf']
- 
 
-        fit_results_table, stat_results_table = self.full_fitting_procedure(frame, master,
+
+        fit_results_table, stat_results_table = self.full_fitting_procedure(frame,
             intensities         =   self.intensities,
             x_spec              =   self.x_ppm_reference_spectrum,
             ref_spec            =   self.idx_ref,
@@ -417,6 +411,7 @@ class ProcessingUI:
             use_previous_fit    =   self.use_previous_fit,
             offset              =   self.offset
         )
+
         nio.save_output_data(
             user_input          ,
             fit_results_table   ,
@@ -449,7 +444,7 @@ class ProcessingUI:
         self.label=tk.Label(frame,text=self.stringvar.get(),font=('',12),fg="BLACK", activebackground="BLACK", activeforeground="BLACK")
         self.label.place(relx=0.5, rely=0.97,anchor=tkinter.W)
 
-    def full_fitting_procedure( self,  frame, master,
+    def full_fitting_procedure( self,  frame,
         intensities         =   'intensities',
         x_spec              =   'x_Spec',
         ref_spec            =   'ref_spec',
@@ -572,7 +567,6 @@ class ProcessingUI:
 
         return fit_results_table, stat_results_table
 
-    
     def create_plot_frame(self, master, user_input):
         frame = tk.LabelFrame(master,width=400,height=600,text=f"Visualisation",foreground='red')
         frame.grid(row=0,column=2, sticky="nsew")
@@ -686,10 +680,9 @@ class App:
 
         self.loading = LoadingUI(self.loading_frame, user_input)
 
-
         var = tk.IntVar()
-        self.run_button = tk.Button(self.loading_frame,text=" Clustering ",foreground='black',command=lambda:[var.set(1),self.create_visu_frame(user_input)])
-        self.run_button.grid(row=2, column=2, padx=3, pady=5)
+        self.run_button = tk.Button(self.loading_frame,text="Clustering",foreground='black',command=lambda:[var.set(1),self.create_visu_frame(user_input)])
+        self.run_button.grid(row=2, column=3, padx=3, pady=5)
         self.run_button.wait_variable(var)
 
     def on_closing(self, event=0):
@@ -697,14 +690,15 @@ class App:
         exit()
 
     def create_visu_frame(self,user_input):
-
         user_input = nio.check_input_file({k: v.get() for k, v in user_input.items()},self.master)
+        if user_input['data_path'].endswith('.csv'):
+            user_input['simulated'] = True
         if isinstance(user_input,dict):
-            if user_input.get('valid',False):   
+            if "simulated" in user_input or user_input.get('valid',False):
                 frame = tk.LabelFrame(self.master,width=800,height=600,text=f"Peak Picking Visualisation and Clustering",foreground='red')
                 frame.grid(row=0,column=1, sticky="nsew")
                 ProcessingUI(self.master, user_input, frame)
-
+   
     def start(self):
         self.master.mainloop()
 
