@@ -241,8 +241,45 @@ class ProcessingUI:
         self.create_table(peak_picking_data,colors)
         # print(clustering_res)
         self.run = tk.Button(frame,text=" Run Fitting ",foreground='black',command=lambda:[self.save_info_clustering(clustering_results),self.prepare_data_to_fit(master, frame, self.clustering_table, user_input)])
-        self.run.place(relx=0.1, rely=0.97,width=150, anchor=tkinter.W)
+        self.run.place(relx=0.05, rely=0.97,width=100, anchor=tkinter.W)
 
+        self.run = tk.Button(frame,text=" Sum 1D ",foreground='black',command=lambda:[self.sum_1D(user_input)])
+        self.run.place(relx=0.3, rely=0.97,width=75, anchor=tkinter.W)
+
+    def sum_1D(self,user_input):
+        logger.info(f'1D Sum')
+        sum_1D_all = []
+        for i in range(self.intensities.shape[0]):
+            sum_1D = sum(self.intensities[i,:])
+            sum_1D_all.append(sum_1D)
+        if user_input['analysis_type'] == "Pseudo2D" : 
+            if not len(user_input.get('option_data_row_no',[])):
+                user_input['option_data_row_no'] = np.arange(1,len(self.intensities)+1,1)
+            self.spectra_to_fit = [(j-1, i, user_input['data_exp_no'][0], user_input['data_proc_no'], j, j) for i,j in enumerate(user_input['option_data_row_no'])]
+        elif user_input['analysis_type'] == '1D_Series':
+                self.spectra_to_fit = [(i, i, j, user_input['data_proc_no'], 1, j) for i, j in enumerate(user_input['data_exp_no'])]
+
+        res = pd.DataFrame()
+        res.insert(loc = 0, column = 'exp_no' , value = [i[2] for i in self.spectra_to_fit])
+        res.insert(loc = 1, column = 'proc_no' , value = [int(i[3]) for i in self.spectra_to_fit])
+        res.insert(loc = 2, column = 'row_id' , value = [i[4] for i in self.spectra_to_fit])
+        res.insert(loc = 3, column = 'sum1D' , value = sum_1D_all)
+
+        output_path         =   user_input['output_path']
+        output_folder       =   user_input['output_folder']
+        output_name         =   user_input['output_name']
+
+        fname_sum = Path(output_path,output_folder,output_name+'_'+'1D_sum.txt')
+        
+        # save to csv
+        res.to_csv(
+            str(fname_sum), 
+            index=False, 
+            sep = '\t'
+            )
+
+        logger.info(f'1D Sum  -- Complete')
+            
     def peak_picking(self, x_spec_ref, y_spec_ref, threshold):
         peak_picking = nfu.Peak_Picking_1D(x_data = x_spec_ref, y_data = y_spec_ref, threshold = threshold)
         peak_picking = nfu.sort_peak_picking_data(peak_picking, 15)        
@@ -435,7 +472,7 @@ class ProcessingUI:
             maximum = len_progressbar,
             length=280
             )   
-        self.pb.place(relx=0.6, rely=0.97,width=150, anchor=tkinter.W)
+        self.pb.place(relx=0.7, rely=0.97,width=150, anchor=tkinter.W)
         # set zero percent
         # self.label.config(text=self.stringvar.get())
         self.stringvar=tk.StringVar()
