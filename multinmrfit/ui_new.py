@@ -380,7 +380,8 @@ class ProcessingUI:
 
         if not True in clustering_table.Selection.tolist():
             messagebox.showerror("Error", 'No peak selected. Select at least one signal.')
-        self.clustering_table = clustering_table
+        else:
+            self.clustering_table = clustering_table
 
     def create_plot(self, x_spec, y_spec, threshold,peak_picking_data):
         
