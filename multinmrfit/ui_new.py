@@ -23,6 +23,10 @@ import multinmrfit.run as nrun
 import multinmrfit.utils_nmrdata as nfu
 import multinmrfit.fitting as nff
 
+from tkinter import *
+#from tkdocviewer import *
+from PIL import ImageTk, Image
+
 logger = logging.getLogger(__name__)
 
 
@@ -161,11 +165,12 @@ class LoadingUI:
         config_path = Path(user_input['output_path'], user_input['output_folder'])
         file_name = self.ask_filename(config_path)
 
-        if not 'option_data_row_no' in user_input:
-            pass
-        else:
-            if not user_input['option_data_row_no']:
-                del user_input['option_data_row_no']
+        # not sure what you wanted to do here, but this bugs
+        #if not 'option_data_row_no' in user_input:
+        #    pass
+        #else:
+        #    if not user_input['option_data_row_no']:
+        #        del user_input['option_data_row_no']
         if file_name :
             f = open(str(Path(file_name)), "a")
             f.seek(0)
@@ -640,6 +645,9 @@ class PlottingUI:
         output_folder       =   user_input['output_folder']
         output_name         =   user_input['output_name']
 
+        print(f"output name:{output_name}")
+        print(f"output_folder:{output_folder}")
+        print(f"output_path:{output_path}")
         file_list = []
         self.fname = Path(output_path,output_folder)#+'_'+str(_multiplet_type_)+'_'+str(self.cluster_id_variable.get())+'_fit.txt')
         for file in os.listdir(self.fname):
@@ -655,8 +663,32 @@ class PlottingUI:
         self.cluster_id_opt.place(relx=0.05, rely=0.05,width=300, anchor=tkinter.W)
         self.cluster_id_opt.config(fg="BLACK", activebackground="BLACK", activeforeground="BLACK")
 
+        pdf_list = []
+        self.plot_dir = Path(self.fname, "plot_ind")
+        self.dir_pdf = Path(output_path, output_folder, "plot_ind")
+        for file in os.listdir(self.dir_pdf):
+            if file.startswith(output_name) and file.endswith(".png"):
+                pdf_list.append(Path(file))
+
+        self.pdf_files = tk.StringVar(self.frame_spectra)
+        self.pdf_list = tk.OptionMenu(self.frame_spectra, self.pdf_files, *pdf_list, command= self.OptionMenu_PlotFitEvent)
+        self.pdf_list.place(relx=0.05, rely=0.14,width=300, anchor=tkinter.W)
+
+    def OptionMenu_PlotFitEvent(self, file):
+
+        # displaying pdf directly works but requires ghostscript
+        #v = DocViewer(self.frame_spectra)
+        #v.place(relx=0.05, rely=0.6,width=380, height=200, anchor=tkinter.W)
+        #v.display_file(file)
+        # so let's do this with pil
+        self.img = ImageTk.PhotoImage(Image.open(Path(self.plot_dir, file)))
+        self.label = Label(self.frame_spectra, image = self.img)
+        self.label.place(relx=0.05, rely=0.6,width=380, height=200, anchor=tkinter.W)
+
+
     def OptionMenu_SelectionEvent(self, event):
         full_fname = Path(self.fname,str(self.cluster_id_variable.get()))
+        print(str(full_fname))
         self.data = pd.read_csv(full_fname,sep='\t')
         params = list(self.data.columns[3:])
 
@@ -664,8 +696,8 @@ class PlottingUI:
         self.parameters_variable = tk.StringVar(self.frame_params)
         # self.parameters_variable.set(self.parameters_List[0])
         self.parameters_opt = tk.OptionMenu(self.frame_params, self.parameters_variable, *self.parameters_List, command= self.OptionMenu_PlotEvent)
-        self.parameters_opt.config(fg="BLACK", activebackground="BLACK", activeforeground="BLACK")
         self.parameters_opt.place(relx=0.05, rely=0.14,width=300, anchor=tkinter.W)
+
 
     def OptionMenu_PlotEvent(self, event):
         
@@ -685,6 +717,7 @@ class PlottingUI:
         canvas = FigureCanvasTkAgg(fig, self.frame_params)
         canvas.draw()
         canvas.get_tk_widget().place(relx=0.05, rely=0.6,width=380, height=200, anchor=tkinter.W)
+
 
 class App:
 
