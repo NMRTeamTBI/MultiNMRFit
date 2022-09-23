@@ -678,6 +678,7 @@ class PlottingUI:
         self.cluster_id_opt.place(relx=0.05, rely=0.05,width=300, anchor=tkinter.W)
         self.cluster_id_opt.config()
 
+<<<<<<< HEAD
         #pdf_list = []
         #self.plot_dir = Path(self.fname, "plot_ind")
         #self.dir_pdf = Path(output_path, output_folder, "plot_ind")
@@ -688,6 +689,18 @@ class PlottingUI:
         #self.pdf_files = tk.StringVar(self.frame_spectra)
         #self.pdf_list = tk.OptionMenu(self.frame_spectra, self.pdf_files, *pdf_list, command= self.OptionMenu_PlotFitEvent)
         #self.pdf_list.place(relx=0.05, rely=0.14,width=300, anchor=tkinter.W)
+=======
+        # pdf_list = []
+        # self.plot_dir = Path(self.fname, "plot_ind")
+        # self.dir_pdf = Path(output_path, output_folder, "plot_ind")
+        # for file in os.listdir(self.dir_pdf):
+        #     if file.startswith(output_name) and file.endswith(".png"):
+        #         pdf_list.append(Path(file))
+
+        # self.pdf_files = tk.StringVar(self.frame_spectra)
+        # self.pdf_list = tk.OptionMenu(self.frame_spectra, self.pdf_files, *pdf_list, command= self.OptionMenu_PlotFitEvent)
+        # self.pdf_list.place(relx=0.05, rely=0.14,width=300, anchor=tkinter.W)
+>>>>>>> 9536a1a956034497537d32138f96c1062681e403
 
     def OptionMenu_PlotFitEvent(self, file):
 
