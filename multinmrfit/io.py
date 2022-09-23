@@ -405,13 +405,8 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     path_2_save.mkdir(parents=True,exist_ok=True)
 
     plt.savefig(str(Path(path_2_save,output_name+'_'+str(res_num)+'.pdf')))
-<<<<<<< HEAD
     #fig.set_size_inches([3,2])
     #plt.savefig(str(Path(path_2_save,output_name+'_'+str(res_num)+'.png')), format="png")
-=======
-    # fig.set_size_inches([3,2])
-    # plt.savefig(str(Path(path_2_save,output_name+'_'+str(res_num)+'.png')), format="png")
->>>>>>> 9536a1a956034497537d32138f96c1062681e403
     plt.close(fig)
 
 def build_output(d_id_i, x_fit, fit_results, stat_results, scaling_factor, spectra_to_fit, offset):
