@@ -77,10 +77,11 @@ def fit_objective(
     rmsd = np.sqrt(np.mean((sim_intensity - y_fit_)**2))
     return rmsd
 
-def refine_constraints(initial_fit_values, bounds_fit, name_parameters):
+def refine_constraints(initial_fit_values, bounds_fit, name_parameters, relative_window=None):
     logger.debug(f"old bounds: {bounds_fit}")
     # update parameters based on dict(k, v) where k is a string used to identify the parameter, and v is the allowed (relative) parameter window
-    relative_window = {"x0":0.001, "J":0.05, "lw":0.3}
+    if relative_window is None:
+        relative_window = {"x0":0.001, "J":0.05, "lw":0.3}
     for k, v in relative_window.items():
         idx = [i for i,j in enumerate(name_parameters) if k in j]
         for i in idx:
@@ -114,13 +115,14 @@ def run_single_fit_function(up,
                             use_previous_fit,
                             writing_to_file=True,
                             offset=False,
-                            option_optimizer='L-BFGS-B'
+                            option_optimizer='L-BFGS-B',
+                            relative_window=None
                             ):
 
     d_id, initial_fit_values, bounds_fit, name_parameters = get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor, offset=offset)
     if use_previous_fit :
         initial_fit_values = list(fit_results.iloc[fit[1]-1 if up else fit[1]+1].values)
-        bounds_fit = refine_constraints(initial_fit_values, bounds_fit, name_parameters)
+        bounds_fit = refine_constraints(initial_fit_values, bounds_fit, name_parameters, relative_window=relative_window)
     try:
         intensities = intensities[fit[0],:]
         if option_optimizer=='L-BFGS-B':

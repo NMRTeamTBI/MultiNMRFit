@@ -102,40 +102,49 @@ class LoadingUI:
             self.input_raws_entry.place(relx=0.1, rely=0.16, width=200, anchor=tkinter.W)
             user_input['option_data_row_no'] = self.input_raws
 
+            # constraints
+            self.input_constraints_label = tk.Label(self.frame_options,text='Relative constraints:',justify=tk.CENTER,foreground='black')
+            self.input_constraints_label.place(relx=0.05, rely=0.24, anchor="w")
+
+            self.input_constraints = tk.StringVar()
+            self.input_constraints_entry = tk.Entry(self.frame_options,textvariable=self.input_constraints,bg='white',fg='black',borderwidth=0,state='normal')
+            self.input_constraints_entry.place(relx=0.1, rely=0.32, width=200, anchor=tkinter.W)
+            user_input['option_constraints_window'] = self.input_constraints
+
             # Use previous fit results as starting parameters
             self.TimeSeries = tk.BooleanVar()
             self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries,foreground='black')
-            self.check_box_opt2.place(relx=0.05, rely=0.28, anchor=tkinter.W)
+            self.check_box_opt2.place(relx=0.05, rely=0.42, anchor=tkinter.W)
             user_input['option_previous_fit'] = self.TimeSeries
             
             # Use Offset in Fitting
             self.Offset = tk.BooleanVar()
             self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset,foreground='black')
-            self.check_box_opt3.place(relx=0.05, rely=0.40, anchor=tkinter.W)
+            self.check_box_opt3.place(relx=0.05, rely=0.52, anchor=tkinter.W)
             user_input['option_offset'] = self.Offset
 
             # # Verbose Log
             self.VerboseLog = tk.BooleanVar()
             self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog,foreground='black')
-            self.check_box_opt4.place(relx=0.05, rely=0.52, anchor=tkinter.W)
+            self.check_box_opt4.place(relx=0.05, rely=0.62, anchor=tkinter.W)
             user_input['option_verbose_log'] = self.VerboseLog
 
             # # Verbose Log
             self.mergepdf = tk.BooleanVar()
             self.check_box_opt5 = tk.Checkbutton(self.frame_options,text="Merge pdf(s)",variable=self.mergepdf,foreground='black')
-            self.check_box_opt5.place(relx=0.05, rely=0.64, anchor=tkinter.W)
+            self.check_box_opt5.place(relx=0.05, rely=0.72, anchor=tkinter.W)
             user_input['option_merge_pdf'] = self.mergepdf
 
             # optimization algorithm
             self.optimizer_label = tk.Label(self.frame_options,text='Optimization algorithm:',justify=tk.CENTER,foreground='black')
-            self.optimizer_label.place(relx=0.05, rely=0.76, anchor="w")
+            self.optimizer_label.place(relx=0.05, rely=0.82, anchor="w")
             vals = ['L-BFGS-B', 'DE + L-BFGS-B']
             self.optimizer = tk.StringVar()
             self.optimizer.set(vals[0])
             self.optimizer_BFGS = tk.Radiobutton(self.frame_options, variable=self.optimizer, text=vals[0], value=vals[0],foreground='black')
-            self.optimizer_BFGS.place(relx=0.05, rely=0.84, anchor=tkinter.W)
+            self.optimizer_BFGS.place(relx=0.05, rely=0.92, anchor=tkinter.W)
             self.optimizer_DE_BFGS = tk.Radiobutton(self.frame_options, variable=self.optimizer, text=vals[1], value=vals[1],foreground='black')
-            self.optimizer_DE_BFGS.place(relx=0.5, rely=0.84, anchor=tkinter.W)
+            self.optimizer_DE_BFGS.place(relx=0.5, rely=0.92, anchor=tkinter.W)
             user_input['option_optimizer'] = self.optimizer
 
     def update_analysis_type(self, event):
@@ -442,6 +451,7 @@ class ProcessingUI:
 
         self.offset = user_input['option_offset']
         self.merged_pdf = user_input['option_merge_pdf']
+        self.constraints_window = user_input['option_constraints_window']
 
 
         fit_results_table, stat_results_table = self.full_fitting_procedure(frame,
@@ -452,7 +462,8 @@ class ProcessingUI:
             scaling_factor      =   self.scaling_factor,
             spectra_to_fit      =   self.spectra_to_fit,
             use_previous_fit    =   self.use_previous_fit,
-            offset              =   self.offset
+            offset              =   self.offset,
+            relative_window=self.constraints_window
         )
 
         nio.save_output_data(
@@ -496,7 +507,8 @@ class ProcessingUI:
         spectra_to_fit      =   'spectra_to_fit',
         use_previous_fit    =   'use_previous_fit',
         offset              =   False,
-        option_optimizer    =   'L-BFGS-B'
+        option_optimizer    =   'L-BFGS-B',
+        relative_window = None
         ): 
 
         self.create_progress_bar(frame,len(spectra_to_fit))
@@ -524,7 +536,8 @@ class ProcessingUI:
             False,
             writing_to_file=False,
             offset=offset,
-            option_optimizer=option_optimizer
+            option_optimizer=option_optimizer,
+            relative_window=relative_window
             ) 
         logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]}) -- Complete')
 
@@ -566,7 +579,8 @@ class ProcessingUI:
                     use_previous_fit,
                     writing_to_file=False,
                     offset=offset,
-                    option_optimizer=option_optimizer
+                    option_optimizer=option_optimizer,
+                    relative_window=relative_window
                     ) 
                 logger.info(f'Fitting Reference Spectrum (ExpNo {i[5]}) -- Complete')
 
@@ -598,7 +612,8 @@ class ProcessingUI:
                     use_previous_fit,
                     writing_to_file=False,
                     offset=offset,
-                    option_optimizer=option_optimizer
+                    option_optimizer=option_optimizer,
+                    relative_window=relative_window
                     ) 
                 logger.info(f'Fitting Reference Spectrum (ExpNo {i[5]}) -- Complete')
 

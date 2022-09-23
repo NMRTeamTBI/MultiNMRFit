@@ -2,6 +2,7 @@
 from pathlib import Path 
 import logging
 from tkinter import filedialog, messagebox
+import ast
 # Import math libraries
 import pandas as pd
 import numpy as np
@@ -34,6 +35,7 @@ def create_user_input():
     'output_path':          None,
     'output_folder':        None,    
     'output_name':          None,
+    'option_constraints_window':   None
     }
     return user_input  
 
@@ -58,7 +60,7 @@ def load_config_file(gui=None, user_input=None, config_file_path=None):
             return None
 
         if gui and gui.winfo_exists():
-            options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf']
+            options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf', 'option_constraints_window']
             for label in user_input.keys():                
                 if label in options_list:
                     if label not in config.keys():
@@ -271,6 +273,11 @@ def check_input_file(user_input,gui=None):
                 return error_handling(gui,f"Argument : reference_spectrum <{user_input.get('reference_spectrum')}> not found in row list")
         ########################################################################
 
+        if user_input.get('option_constraints_window'):
+            user_input['option_constraints_window'] = ast.literal_eval(user_input.get('option_constraints_window'))
+        else:
+            user_input['option_constraints_window'] = {"x0":0.001, "J":0.05, "lw":0.3}
+
         config = {
             'data_path'             :   user_input.get('data_path'),
             'data_folder'           :   user_input.get('data_folder'),
@@ -288,19 +295,20 @@ def check_input_file(user_input,gui=None):
             'option_offset'         :   user_input.get('option_offset', False),
             'option_verbose_log'    :   user_input.get('option_verbose_log', False),
             'option_merge_pdf'      :   user_input.get('option_merge_pdf', False),
+            'option_constraints_window'    :   user_input['option_constraints_window'],
             'valid'                 :   True
 
         }
-
+    
     except Exception as e:
         return error_handling(gui,e)
 
     # Options
-    options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf']
+    options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf', 'option_constraints_window']
 
     if config['analysis_type'] != 'Pseudo2D': 
         config.pop("option_data_row_no")
-    if config['analysis_type'] == 'Pseudo2D': 
+    else: 
         config["option_previous_fit"] = True
         if config['option_data_row_no'] == []:
            config.pop("option_data_row_no") 
@@ -397,8 +405,8 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     path_2_save.mkdir(parents=True,exist_ok=True)
 
     plt.savefig(str(Path(path_2_save,output_name+'_'+str(res_num)+'.pdf')))
-    fig.set_size_inches([3,2])
-    plt.savefig(str(Path(path_2_save,output_name+'_'+str(res_num)+'.png')), format="png")
+    #fig.set_size_inches([3,2])
+    #plt.savefig(str(Path(path_2_save,output_name+'_'+str(res_num)+'.png')), format="png")
     plt.close(fig)
 
 def build_output(d_id_i, x_fit, fit_results, stat_results, scaling_factor, spectra_to_fit, offset):
