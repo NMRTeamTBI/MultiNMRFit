@@ -55,7 +55,7 @@ class LoadingUI:
         # ============ create Labels and entries ============
         data_inputs = ['data_path', 'data_folder', 'data_exp_no', 'data_proc_no']
         for i in range(len(data_inputs)):
-            data_input_label = tk.Label(self.frame_inputs,text=data_inputs[i].replace("_", " ").capitalize() + ":")
+            data_input_label = tk.Label(self.frame_inputs,text=data_inputs[i].replace("_", " ").capitalize() + ":",foreground='black')
             data_input_label.place(relx=0.1, rely=0.05+i*0.25, anchor="w")
 
             self.input_var = tk.StringVar() 
@@ -65,12 +65,12 @@ class LoadingUI:
 
         analysis_info = ['analysis_type','reference_spectrum','spectral_limits','threshold']
         for i in range(len(analysis_info)):
-            analysis_info_label = tk.Label(self.frame_analysis,text=analysis_info[i].replace("_", " ").capitalize() + ":")
+            analysis_info_label = tk.Label(self.frame_analysis,text=analysis_info[i].replace("_", " ").capitalize() + ":",foreground='black')
             analysis_info_label.place(relx=0.1, rely=0.05+i*0.25, anchor="w")
 
             if analysis_info[i] == 'analysis_type':
                 self.analysis_info_var = tk.StringVar()
-                self.analysis_type_cb = ttk.Combobox(self.frame_analysis,textvariable=self.analysis_info_var, values=['Pseudo2D','1D_Series'], state="readonly",foreground='black')
+                self.analysis_type_cb = ttk.Combobox(self.frame_analysis,textvariable=self.analysis_info_var, values=['Pseudo2D','1D_Series'], state="readonly",foreground='black',background='white')
                 self.analysis_type_cb.place(relx=0.1, rely=0.15+i*0.25, anchor=tkinter.W)
                 user_input[analysis_info[i]]  = self.analysis_info_var
                 self.analysis_type_cb.bind("<<ComboboxSelected>>", self.update_analysis_type)
@@ -125,25 +125,25 @@ class LoadingUI:
 
             # # Verbose Log
             self.VerboseLog = tk.BooleanVar()
-            self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog)
+            self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog,foreground='black')
             self.check_box_opt4.place(relx=0.05, rely=0.62, anchor=tkinter.W)
             user_input['option_verbose_log'] = self.VerboseLog
 
             # # Verbose Log
             self.mergepdf = tk.BooleanVar()
-            self.check_box_opt5 = tk.Checkbutton(self.frame_options,text="Merge pdf(s)",variable=self.mergepdf)
+            self.check_box_opt5 = tk.Checkbutton(self.frame_options,text="Merge pdf(s)",variable=self.mergepdf,foreground='black')
             self.check_box_opt5.place(relx=0.05, rely=0.72, anchor=tkinter.W)
             user_input['option_merge_pdf'] = self.mergepdf
 
             # optimization algorithm
-            self.optimizer_label = tk.Label(self.frame_options,text='Optimization algorithm:',justify=tk.CENTER)
+            self.optimizer_label = tk.Label(self.frame_options,text='Optimization algorithm:',justify=tk.CENTER,foreground='black')
             self.optimizer_label.place(relx=0.05, rely=0.82, anchor="w")
             vals = ['L-BFGS-B', 'DE + L-BFGS-B']
             self.optimizer = tk.StringVar()
             self.optimizer.set(vals[0])
-            self.optimizer_BFGS = tk.Radiobutton(self.frame_options, variable=self.optimizer, text=vals[0], value=vals[0])
+            self.optimizer_BFGS = tk.Radiobutton(self.frame_options, variable=self.optimizer, text=vals[0], value=vals[0],foreground='black')
             self.optimizer_BFGS.place(relx=0.05, rely=0.92, anchor=tkinter.W)
-            self.optimizer_DE_BFGS = tk.Radiobutton(self.frame_options, variable=self.optimizer, text=vals[1], value=vals[1])
+            self.optimizer_DE_BFGS = tk.Radiobutton(self.frame_options, variable=self.optimizer, text=vals[1], value=vals[1],foreground='black')
             self.optimizer_DE_BFGS.place(relx=0.5, rely=0.92, anchor=tkinter.W)
             user_input['option_optimizer'] = self.optimizer
 
@@ -254,10 +254,10 @@ class ProcessingUI:
         # self.clustering_information = self.create_table(peak_picking_data,colors) 
         self.create_table(peak_picking_data,colors)
         # print(clustering_res)
-        self.run = tk.Button(frame,text=" Run Fitting ",command=lambda:[self.save_info_clustering(clustering_results),self.prepare_data_to_fit(master, frame, self.clustering_table, user_input)])
+        self.run = tk.Button(frame,text=" Run Fitting ",command=lambda:[self.save_info_clustering(clustering_results),self.prepare_data_to_fit(master, frame, self.clustering_table, user_input)],foreground='black')
         self.run.place(relx=0.05, rely=0.95,width=100, anchor=tkinter.W)
 
-        self.run = tk.Button(frame,text=" Sum 1D ",command=lambda:[self.sum_1D(user_input)])
+        self.run = tk.Button(frame,text=" Sum 1D ",command=lambda:[self.sum_1D(user_input)],foreground='black')
         self.run.place(relx=0.3, rely=0.95,width=75, anchor=tkinter.W)
 
     def sum_1D(self,user_input):
@@ -338,7 +338,7 @@ class ProcessingUI:
 
             c = 0 
             for label in self.clustering_information.keys():
-                tk.Label(frame_buttons, text=label).grid(column=c+1, row=0,padx=2)
+                tk.Label(frame_buttons, text=label,foreground='black').grid(column=c+1, row=0,padx=2)
                 c +=1
 
             # buttons = [[tk.Button() for j in range(columns)] for i in range(rows)]
@@ -348,23 +348,23 @@ class ProcessingUI:
                         self.element = tk.Label(frame_buttons, text="Peak "+str(i+1),fg=colors[i])
 
                     elif j ==1:
-                        self.element = tk.Entry(frame_buttons,justify = "center",background='white',width=10)
+                        self.element = tk.Entry(frame_buttons,justify = "center",background='white',width=10,foreground='black')
                         self.clustering_information['Peak Position'].append(self.element)
                         data = peak_picking_data.iloc[i].loc['Peak_Position']
                         self.element.insert(0, round(data,3))
 
                     elif j ==2:
-                        self.element = tk.Entry(frame_buttons,justify = "center",background='white',width=10)
+                        self.element = tk.Entry(frame_buttons,justify = "center",background='white',width=10,foreground='black')
                         self.clustering_information['Peak Intensity'].append(self.element)
                         data = peak_picking_data.iloc[i].loc['Peak_Intensity']
                         self.element.insert(0, round(data,3))
 
                     elif j ==3:
-                        self.element = tk.Entry(frame_buttons,justify = "center",background='white',width=10)
+                        self.element = tk.Entry(frame_buttons,justify = "center",background='white',width=10,foreground='black')
                         self.clustering_information['Cluster ID'].append(self.element)
 
                     elif j == 4:
-                        self.element = ttk.Combobox(frame_buttons, values=options,width=10)
+                        self.element = ttk.Combobox(frame_buttons, values=options,width=10,foreground='black')
                         self.clustering_information['Options'].append(self.element)
 
 
@@ -495,7 +495,7 @@ class ProcessingUI:
         self.stringvar=tk.StringVar()
         self.stringvar.set('00.0 %')
 
-        self.label=tk.Label(frame,text=self.stringvar.get())
+        self.label=tk.Label(frame,text=self.stringvar.get(),foreground='black')
         self.label.place(relx=0.5, rely=0.95,anchor=tkinter.W)
 
     def full_fitting_procedure( self,  frame,
@@ -767,7 +767,7 @@ class App:
         self.loading = LoadingUI(self.loading_frame, user_input)
 
         var = tk.IntVar()
-        self.run_button = tk.Button(self.loading_frame,text="Clustering",command=lambda:[var.set(1),self.create_visu_frame(user_input)])
+        self.run_button = tk.Button(self.loading_frame,text="Clustering",command=lambda:[var.set(1),self.create_visu_frame(user_input)],foreground='black')
         self.run_button.grid(row=2, column=3, padx=3, pady=5)
         self.run_button.wait_variable(var)
 
