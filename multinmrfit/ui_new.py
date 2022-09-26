@@ -35,10 +35,10 @@ class LoadingUI:
         self.frame = frame
 
         # # ============ create subframes ============
-        self.frame_inputs = tk.LabelFrame(frame,width=250,height=250,text="Inputs")
-        self.frame_analysis = tk.LabelFrame(frame,width=250,height=250,text="Analysis")
-        self.frame_output = tk.LabelFrame(frame,width=250,height=200,text="Outputs")
-        self.frame_options = tk.LabelFrame(frame,width=250,height=300,text="Options")
+        self.frame_inputs = tk.LabelFrame(frame,width=250,height=250,text="Inputs",foreground='black')
+        self.frame_analysis = tk.LabelFrame(frame,width=250,height=250,text="Analysis",foreground='black')
+        self.frame_output = tk.LabelFrame(frame,width=250,height=200,text="Outputs",foreground='black')
+        self.frame_options = tk.LabelFrame(frame,width=250,height=300,text="Options",foreground='black')
 
         self.frame_inputs.grid(row=0,column=0, columnspan=2, padx=3, pady=3)
         self.frame_analysis.grid(row=0,column=2, columnspan=2, padx=3, pady=3)
@@ -46,10 +46,10 @@ class LoadingUI:
         self.frame_options.grid(row=1,column=2, columnspan=2, padx=3, pady=3)
 
         # # ============ create Buttons ============
-        self.load_button = tk.Button(frame,text=" Load ",command=lambda:nio.load_config_file(frame,user_input))
+        self.load_button = tk.Button(frame,text=" Load ",command=lambda:nio.load_config_file(frame,user_input),foreground='black')
         self.load_button.grid(row=2, column=0, padx=3, pady=5)
 
-        self.save_button = tk.Button(frame,text=" Save ",command=lambda:self.save_config_file({k: v.get() for k, v in user_input.items()}))
+        self.save_button = tk.Button(frame,text=" Save ",command=lambda:self.save_config_file({k: v.get() for k, v in user_input.items()}),foreground='black')
         self.save_button.grid(row=2, column=1, padx=3, pady=5)
 
         # ============ create Labels and entries ============
@@ -59,7 +59,7 @@ class LoadingUI:
             data_input_label.place(relx=0.1, rely=0.05+i*0.25, anchor="w")
 
             self.input_var = tk.StringVar() 
-            self.input_entry = tk.Entry(self.frame_inputs,textvariable=self.input_var,bg='white',borderwidth=0)
+            self.input_entry = tk.Entry(self.frame_inputs,textvariable=self.input_var,bg='white',borderwidth=0,foreground='black')
             self.input_entry.place(relx=0.1, rely=0.15+i*0.25,width=200, anchor=tkinter.W)
             user_input[data_inputs[i]]  = self.input_var
 
@@ -70,56 +70,56 @@ class LoadingUI:
 
             if analysis_info[i] == 'analysis_type':
                 self.analysis_info_var = tk.StringVar()
-                self.analysis_type_cb = ttk.Combobox(self.frame_analysis,textvariable=self.analysis_info_var, values=['Pseudo2D','1D_Series'], state="readonly")
+                self.analysis_type_cb = ttk.Combobox(self.frame_analysis,textvariable=self.analysis_info_var, values=['Pseudo2D','1D_Series'], state="readonly",foreground='black')
                 self.analysis_type_cb.place(relx=0.1, rely=0.15+i*0.25, anchor=tkinter.W)
                 user_input[analysis_info[i]]  = self.analysis_info_var
                 self.analysis_type_cb.bind("<<ComboboxSelected>>", self.update_analysis_type)
             else:
                 self.analysis_info_var = tk.StringVar()
-                analysis_info_entry = tk.Entry(self.frame_analysis,textvariable=self.analysis_info_var,bg='white',borderwidth=0)
+                analysis_info_entry = tk.Entry(self.frame_analysis,textvariable=self.analysis_info_var,bg='white',borderwidth=0,foreground='black')
                 analysis_info_entry.place(relx=0.1, rely=0.15+i*0.25,width=200, anchor=tkinter.W)
                 user_input[analysis_info[i]]  = self.analysis_info_var
 
         outputs = ['output_path','output_folder','output_name']
         for i in range(len(outputs)):
             text_opt = outputs[i].replace("_", " ").capitalize() + ":" if not 'Options' in outputs[i] else outputs[i].replace("_", " ") 
-            output_label = tk.Label(self.frame_output,text=text_opt)
+            output_label = tk.Label(self.frame_output,text=text_opt,foreground='black')
             output_label.place(relx=0.1, rely=0.08+i*0.32, anchor="w")
 
             self.outputs_var = tk.StringVar()
-            outputs_entry = tk.Entry(self.frame_output,textvariable=self.outputs_var,bg='white',borderwidth=0)
+            outputs_entry = tk.Entry(self.frame_output,textvariable=self.outputs_var,bg='white',borderwidth=0,foreground='black')
             outputs_entry.place(relx=0.1, rely=0.2+i*0.32,width=200, anchor=tkinter.W)
             user_input[outputs[i]]  = self.outputs_var
 
 
             # # ============ Options ============
 
-            self.input_raws_label = tk.Label(self.frame_options,text='Data row no (* 2D only):',justify=tk.CENTER)
+            self.input_raws_label = tk.Label(self.frame_options,text='Data row no (* 2D only):',justify=tk.CENTER,foreground='black')
             self.input_raws_label.place(relx=0.05, rely=0.08, anchor="w")
 
             self.input_raws = tk.StringVar()
-            self.input_raws_entry = tk.Entry(self.frame_options,textvariable=self.input_raws,bg='white',borderwidth=0,state='disabled' if user_input['analysis_type'] == '1D_Series' else 'normal')
+            self.input_raws_entry = tk.Entry(self.frame_options,textvariable=self.input_raws,bg='white',foreground='black',borderwidth=0,state='disabled' if user_input['analysis_type'] == '1D_Series' else 'normal')
             self.input_raws_entry.place(relx=0.1, rely=0.16, width=200, anchor=tkinter.W)
             user_input['option_data_row_no'] = self.input_raws
 
             # constraints
-            self.input_constraints_label = tk.Label(self.frame_options,text='Relative constraints:',justify=tk.CENTER)
+            self.input_constraints_label = tk.Label(self.frame_options,text='Relative constraints:',justify=tk.CENTER,foreground='black')
             self.input_constraints_label.place(relx=0.05, rely=0.24, anchor="w")
 
             self.input_constraints = tk.StringVar()
-            self.input_constraints_entry = tk.Entry(self.frame_options,textvariable=self.input_constraints,bg='white',borderwidth=0,state='normal')
+            self.input_constraints_entry = tk.Entry(self.frame_options,textvariable=self.input_constraints,bg='white',borderwidth=0,state='normal',foreground='black')
             self.input_constraints_entry.place(relx=0.1, rely=0.32, width=200, anchor=tkinter.W)
             user_input['option_constraints_window'] = self.input_constraints
 
             # Use previous fit results as starting parameters
             self.TimeSeries = tk.BooleanVar()
-            self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries)
+            self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries,foreground='black')
             self.check_box_opt2.place(relx=0.05, rely=0.42, anchor=tkinter.W)
             user_input['option_previous_fit'] = self.TimeSeries
             
             # Use Offset in Fitting
             self.Offset = tk.BooleanVar()
-            self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset)
+            self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset,foreground='black')
             self.check_box_opt3.place(relx=0.05, rely=0.52, anchor=tkinter.W)
             user_input['option_offset'] = self.Offset
 
