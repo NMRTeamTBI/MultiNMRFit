@@ -197,8 +197,8 @@ class ProcessingUI:
 
 
         # # # ============ create TkFrames ============
-        self.frame_graph = tk.LabelFrame(frame,width=600,height=500,text="Reference spectrum")
-        self.frame_peak_Table = tk.LabelFrame(frame,width=600,height=570,text="Clustering information")
+        self.frame_graph = tk.LabelFrame(frame,width=600,height=500,text="Reference spectrum",foreground='black')
+        self.frame_peak_Table = tk.LabelFrame(frame,width=600,height=570,text="Clustering information",foreground='black')
 
         self.frame_graph.grid(row=0,column=0, sticky="nesw", padx=3, pady=5)
         self.frame_peak_Table.grid(row=1, column=0, sticky="nesw", padx=3, pady=5, columnspan=3)
@@ -760,7 +760,7 @@ class App:
         menubar.add_cascade(label="Help", menu=helpmenu)
 
         # Definitions of the general frames
-        self.loading_frame = tk.LabelFrame(self.master,width=500,height=600,text="Reference spectrum",foreground='red')
+        self.loading_frame = tk.LabelFrame(self.master,width=500,height=600,text="Processing parameters",foreground='red')
         self.loading_frame.grid(row=0,column=0, sticky="nsew")
 
 
