@@ -197,10 +197,10 @@ class ProcessingUI:
 
 
         # # # ============ create TkFrames ============
-        self.frame_graph = tk.LabelFrame(frame,height=500,text="Reference spectrum",foreground='black')
+        self.frame_graph = tk.LabelFrame(frame,height=350,text="Reference spectrum",foreground='black')
         self.frame_peak_Table = tk.LabelFrame(frame,width=600,height=570,text="Clustering information",foreground='black')
 
-        self.frame_graph.grid(row=0,column=0, padx=3, pady=5)
+        self.frame_graph.grid(row=0,column=0, columnspan=2, padx=3, pady=5)
         self.frame_peak_Table.grid(row=1, column=0, sticky="nesw", padx=3, pady=5, columnspan=3)
 
                 ######################################################
@@ -409,7 +409,7 @@ class ProcessingUI:
         for i in range(n_peak):
             colors.append('#%06X' % random.randint(0, 0xFFFFFF))
 
-        fig = plt.Figure(figsize=(6,5), dpi=100)
+        fig = plt.Figure(figsize=(6,3.8), dpi=100)
         ax1 = fig.add_subplot(111)
         ax1.plot(x_spec, y_spec, '-',color='teal')
         for i in range(n_peak):
