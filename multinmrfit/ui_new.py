@@ -198,7 +198,7 @@ class ProcessingUI:
 
         # # # ============ create TkFrames ============
         self.frame_graph = tk.LabelFrame(frame,height=350,text="Reference spectrum",foreground='black')
-        self.frame_peak_Table = tk.LabelFrame(frame,width=600,height=570,text="Clustering information",foreground='black')
+        self.frame_peak_Table = tk.LabelFrame(frame,width=500,height=570,text="Clustering information",foreground='black')
 
         self.frame_graph.grid(row=0,column=0, columnspan=2, padx=3, pady=5)
         self.frame_peak_Table.grid(row=1, column=0, sticky="nesw", padx=3, pady=5, columnspan=3)
