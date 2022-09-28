@@ -381,7 +381,7 @@ class ProcessingUI:
             # Resize the canvas frame to show exactly 5-by-5 buttons and the scrollbar
             # first5columns_width = sum([buttons[0][j].winfo_width() for j in range(0, 5)])
             # first5rows_height = sum([buttons[i][0].winfo_height() for i in range(0, 5)])
-            frame_canvas.config(width=600,
+            frame_canvas.config(width=500,
                                 height=120)
 
             # Set the canvas scrolling region
@@ -409,7 +409,7 @@ class ProcessingUI:
         for i in range(n_peak):
             colors.append('#%06X' % random.randint(0, 0xFFFFFF))
 
-        fig = plt.Figure(figsize=(6,3.8), dpi=100)
+        fig = plt.Figure(figsize=(5,3.8), dpi=100)
         ax1 = fig.add_subplot(111)
         ax1.plot(x_spec, y_spec, '-',color='teal')
         for i in range(n_peak):
