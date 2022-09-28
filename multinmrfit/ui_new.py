@@ -197,10 +197,10 @@ class ProcessingUI:
 
 
         # # # ============ create TkFrames ============
-        self.frame_graph = tk.LabelFrame(frame,width=600,height=500,text="Reference spectrum",foreground='black')
+        self.frame_graph = tk.LabelFrame(frame,width=100,height=500,text="Reference spectrum",foreground='black')
         self.frame_peak_Table = tk.LabelFrame(frame,width=600,height=570,text="Clustering information",foreground='black')
 
-        self.frame_graph.grid(row=0,column=0, sticky="nesw", padx=3, pady=5)
+        self.frame_graph.grid(row=0,column=0, padx=3, pady=5)
         self.frame_peak_Table.grid(row=1, column=0, sticky="nesw", padx=3, pady=5, columnspan=3)
 
                 ######################################################
@@ -781,7 +781,7 @@ class App:
             user_input['simulated'] = True
         if isinstance(user_input,dict):
             if "simulated" in user_input or user_input.get('valid',False):
-                frame = tk.LabelFrame(self.master,width=800,height=600,text=f"Peak Picking Visualisation and Clustering",foreground='red')
+                frame = tk.LabelFrame(self.master,width=600,height=600,text=f"Peak Picking Visualisation and Clustering",foreground='red')
                 frame.grid(row=0,column=1, sticky="nsew")
                 ProcessingUI(self.master, user_input, frame)
    
