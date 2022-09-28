@@ -197,7 +197,7 @@ class ProcessingUI:
 
 
         # # # ============ create TkFrames ============
-        self.frame_graph = tk.LabelFrame(frame,width=100,height=500,text="Reference spectrum",foreground='black')
+        self.frame_graph = tk.LabelFrame(frame,height=500,text="Reference spectrum",foreground='black')
         self.frame_peak_Table = tk.LabelFrame(frame,width=600,height=570,text="Clustering information",foreground='black')
 
         self.frame_graph.grid(row=0,column=0, padx=3, pady=5)
@@ -255,7 +255,9 @@ class ProcessingUI:
         self.create_table(peak_picking_data,colors)
         # print(clustering_res)
         self.run = tk.Button(frame,text=" Run Fitting ",command=lambda:[self.save_info_clustering(clustering_results),self.prepare_data_to_fit(master, frame, self.clustering_table, user_input)],foreground='black')
-        self.run.place(relx=0.05, rely=0.95,width=100, anchor=tkinter.W)
+        #self.run.place(relx=0.05, rely=0.95,width=100, anchor=tkinter.W)
+        self.run.grid(row=3, column=0, padx=3, pady=5)
+        
 
         self.run = tk.Button(frame,text=" Sum 1D ",command=lambda:[self.sum_1D(user_input)],foreground='black')
         self.run.place(relx=0.3, rely=0.95,width=75, anchor=tkinter.W)
