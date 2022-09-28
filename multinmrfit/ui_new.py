@@ -256,12 +256,12 @@ class ProcessingUI:
         # print(clustering_res)
         self.run = tk.Button(frame,text=" Run Fitting ",command=lambda:[self.save_info_clustering(clustering_results),self.prepare_data_to_fit(master, frame, self.clustering_table, user_input)],foreground='black')
         #self.run.place(relx=0.05, rely=0.95,width=100, anchor=tkinter.W)
-        self.run.grid(row=3, column=0,  sticky="S")
+        self.run.grid(row=3, column=0)
         
 
         self.sum = tk.Button(frame,text=" Sum 1D ",command=lambda:[self.sum_1D(user_input)],foreground='black')
         #self.sum.place(relx=0.3, rely=0.95,width=75, anchor=tkinter.W)
-        self.sum.grid(row=3, column=1, padx=3, pady=5)
+        self.sum.grid(row=4, column=0, padx=3, pady=5)
         
     def sum_1D(self,user_input):
         logger.info(f'1D Sum')
