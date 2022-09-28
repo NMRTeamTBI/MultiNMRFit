@@ -197,10 +197,10 @@ class ProcessingUI:
 
 
         # # # ============ create TkFrames ============
-        self.frame_graph = tk.LabelFrame(frame,height=350,text="Reference spectrum",foreground='black')
-        self.frame_peak_Table = tk.LabelFrame(frame,width=500,height=570,text="Clustering information",foreground='black')
+        self.frame_graph = tk.LabelFrame(frame,width=500,text="Reference spectrum",foreground='black')
+        self.frame_peak_Table = tk.LabelFrame(frame,width=500,text="Clustering information",foreground='black')
 
-        self.frame_graph.grid(row=0,column=0, columnspan=2, padx=3, pady=5)
+        self.frame_graph.grid(row=0,columnspan=3,column=0, padx=3, pady=5, sticky="nsew")
         self.frame_peak_Table.grid(row=1, column=0, sticky="nesw", padx=3, pady=5, columnspan=3)
 
                 ######################################################
@@ -256,7 +256,7 @@ class ProcessingUI:
         # print(clustering_res)
         self.run = tk.Button(frame,text=" Run Fitting ",command=lambda:[self.save_info_clustering(clustering_results),self.prepare_data_to_fit(master, frame, self.clustering_table, user_input)],foreground='black')
         #self.run.place(relx=0.05, rely=0.95,width=100, anchor=tkinter.W)
-        self.run.grid(row=3, column=0, padx=3, pady=5)
+        self.run.grid(row=3, column=0,  sticky="S")
         
 
         self.sum = tk.Button(frame,text=" Sum 1D ",command=lambda:[self.sum_1D(user_input)],foreground='black')
@@ -309,7 +309,7 @@ class ProcessingUI:
         options = ['Roof'] # options
     
         frame_canvas = tk.Frame(self.frame_peak_Table)
-        frame_canvas.grid(row=2, column=0, pady=(5, 0), sticky='new')
+        frame_canvas.grid(row=2, column=0, pady=(5, 0))
         frame_canvas.grid_rowconfigure(0, weight=1)
         frame_canvas.grid_columnconfigure(0, weight=1)
         # Set grid_propagate to False to allow 5-by-5 buttons resizing later
@@ -409,7 +409,7 @@ class ProcessingUI:
         for i in range(n_peak):
             colors.append('#%06X' % random.randint(0, 0xFFFFFF))
 
-        fig = plt.Figure(figsize=(5,3.8), dpi=100)
+        fig = plt.Figure(dpi=100)#figsize=(5,3.8), dpi=100)
         ax1 = fig.add_subplot(111)
         ax1.plot(x_spec, y_spec, '-',color='teal')
         for i in range(n_peak):
