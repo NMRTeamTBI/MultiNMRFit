@@ -197,8 +197,8 @@ class ProcessingUI:
 
 
         # # # ============ create TkFrames ============
-        self.frame_graph = tk.LabelFrame(frame,width=500,text="Reference spectrum",foreground='black')
-        self.frame_peak_Table = tk.LabelFrame(frame,width=500,text="Clustering information",foreground='black')
+        self.frame_graph = tk.LabelFrame(self.frame,width=500,text="Reference spectrum",foreground='black')
+        self.frame_peak_Table = tk.LabelFrame(self.frame,width=500,text="Clustering information",foreground='black')
 
         self.frame_graph.grid(row=0,columnspan=3,column=0, padx=3, pady=5, sticky="nsew")
         self.frame_peak_Table.grid(row=1, column=0, sticky="nesw", padx=3, pady=5, columnspan=3)
@@ -254,12 +254,12 @@ class ProcessingUI:
         # self.clustering_information = self.create_table(peak_picking_data,colors) 
         self.create_table(peak_picking_data,colors)
         # print(clustering_res)
-        self.run = tk.Button(frame,text=" Run Fitting ",command=lambda:[self.save_info_clustering(clustering_results),self.prepare_data_to_fit(master, frame, self.clustering_table, user_input)],foreground='black')
+        self.run = tk.Button(self.frame,text=" Run Fitting ",command=lambda:[self.save_info_clustering(clustering_results),self.prepare_data_to_fit(master, frame, self.clustering_table, user_input)],foreground='black')
         #self.run.place(relx=0.05, rely=0.95,width=100, anchor=tkinter.W)
         self.run.grid(row=3, column=0)
         
 
-        self.sum = tk.Button(frame,text=" Sum 1D ",command=lambda:[self.sum_1D(user_input)],foreground='black')
+        self.sum = tk.Button(self.frame,text=" Sum 1D ",command=lambda:[self.sum_1D(user_input)],foreground='black')
         #self.sum.place(relx=0.3, rely=0.95,width=75, anchor=tkinter.W)
         self.sum.grid(row=4, column=0, padx=3, pady=5)
         
@@ -320,7 +320,7 @@ class ProcessingUI:
 
         # Linxk a scrollbar to the canvas
         vsb = tk.Scrollbar(frame_canvas, orient="vertical", command=canvas.yview)
-        vsb.grid(row=0, column=1, sticky='ns')
+        vsb.grid(row=0, column=2, sticky='nse')
         canvas.configure(yscrollcommand=vsb.set)
 
         # Create a frame to contain the buttons
@@ -409,7 +409,7 @@ class ProcessingUI:
         for i in range(n_peak):
             colors.append('#%06X' % random.randint(0, 0xFFFFFF))
 
-        fig = plt.Figure(dpi=100)#figsize=(5,3.8), dpi=100)
+        fig = plt.Figure(dpi=75)#figsize=(5,3.8), dpi=100)
         ax1 = fig.add_subplot(111)
         ax1.plot(x_spec, y_spec, '-',color='teal')
         for i in range(n_peak):
@@ -784,9 +784,9 @@ class App:
             user_input['simulated'] = True
         if isinstance(user_input,dict):
             if "simulated" in user_input or user_input.get('valid',False):
-                frame = tk.LabelFrame(self.master,width=600,height=600,text=f"Peak Picking Visualisation and Clustering",foreground='red')
-                frame.grid(row=0,column=1, sticky="nsew")
-                ProcessingUI(self.master, user_input, frame)
+                frame_visu = tk.LabelFrame(self.master,width=500,height=500,text=f"Peak Picking Visualisation and Clustering",foreground='red')
+                frame_visu.grid(row=0, column=1, sticky="nsew")
+                ProcessingUI(self.master, user_input, frame_visu)
    
     def start(self):
         self.master.mainloop()
