@@ -36,13 +36,13 @@ def DoubletofDoubletAsymetric( x, x0, a, h_s, lw, J1, J2, dH):
 
 def Triplet( x, x0, a, h_s, lw, J1):
     #Lorentzian + Gaussian
-    S1 = a * h_s  / ( 1 + (( x - x0 - J1/2)/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 - J1/2)**2/(2*lw**2))
+    S1 = a * h_s  / ( 1 + (( x - x0 - J1)/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 - J1)**2/(2*lw**2))
     S2 = a * 2* h_s  / ( 1 + (( x - x0 )/lw)**2) + (1-a)*2*h_s*np.exp(-(x - x0 )**2/(2*lw**2))
-    S3 = a * h_s  / ( 1 + (( x - x0 + J1/2)/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 + J1/2)**2/(2*lw**2))
+    S3 = a * h_s  / ( 1 + (( x - x0 + J1)/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 + J1)**2/(2*lw**2))
     Signal = S1+S2+S3
     return Signal
 
-def mapping_multiplets(lw_constraints = (1e-3,1e-2), x0_constraints = (1e-6,12), a_constraints = (0.9,1), Amp_constraints = (1e-6,np.inf), dH_constraints= (0, np.inf), J_constraints = (2.5e-3,0.25)):
+def mapping_multiplets(lw_constraints = (1e-3,1e-2), x0_constraints = (1e-6,12), a_constraints = (0.,1.), Amp_constraints = (1e-6,np.inf), dH_constraints= (0, np.inf), J_constraints = (2.5e-3,0.03)):
     d_mapping = {
         "Singlet":{"f_function":Singlet,"n_peaks" : "1", "option":"", "params":['x0','a','Amp','lw'],"n_params" : 4, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints]},
         "Doublet":{"f_function":Doublet,"n_peaks" : "2", "option":"","params":['x0','a','Amp','lw','J1'],"n_params" : 5, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints,J_constraints]},
