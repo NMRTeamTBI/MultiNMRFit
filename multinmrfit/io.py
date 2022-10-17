@@ -51,9 +51,10 @@ def load_config_file(gui=None, user_input=None, config_file_path=None):
             return None
 
         try:
+            print(f)
             config = json.loads(f.read())
         except json.decoder.JSONDecodeError as e:
-            error_handling(gui,'Json config file must be reformated')
+            error_handling(gui,'Wrong config file format, please check and correct the file (see example)')
             return None
         except UnicodeDecodeError as e:
             error_handling('Wrong config file type (not a json file, see example)')

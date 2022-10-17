@@ -230,16 +230,19 @@ class ProcessingUI:
         ######################################################
         ###########Extract the reference spectrum#############
         ######################################################
-        if user_input['analysis_type'] == 'Pseudo2D':
-            self.intensities_reference_spectrum = self.intensities[self.idx_ref,:]
-            if "simulated" in user_input:
-                self.x_ppm_reference_spectrum = x_ppm[self.idx_ref,:]
-            else:
-                self.x_ppm_reference_spectrum = x_ppm
+        try:
+            if user_input['analysis_type'] == 'Pseudo2D':
+                self.intensities_reference_spectrum = self.intensities[self.idx_ref,:]
+                if "simulated" in user_input:
+                    self.x_ppm_reference_spectrum = x_ppm[self.idx_ref,:]
+                else:
+                    self.x_ppm_reference_spectrum = x_ppm
 
-        elif user_input['analysis_type'] == '1D_Series':
-            self.intensities_reference_spectrum = self.intensities[self.idx_ref,:]
-            self.x_ppm_reference_spectrum = x_ppm[self.idx_ref,:]
+            elif user_input['analysis_type'] == '1D_Series':
+                self.intensities_reference_spectrum = self.intensities[self.idx_ref,:]
+                self.x_ppm_reference_spectrum = x_ppm[self.idx_ref,:]
+        except:
+            nio.error_handling(master, "Argument : 'Analysis type' is not correct, Pseudo2D expected")
         #-----------------------------------------------------#   
         ######################################################
         ##############Peak Picking/ Clustering################
@@ -409,7 +412,7 @@ class ProcessingUI:
         for i in range(n_peak):
             colors.append('#%06X' % random.randint(0, 0xFFFFFF))
 
-        fig = plt.Figure(figsize=(7,5), dpi=75)#figsize=(5,3.8), dpi=100)
+        fig = plt.Figure(dpi=90)#figsize=(5,3.8), dpi=100)
         ax1 = fig.add_subplot(111)
         ax1.plot(x_spec, y_spec, '-',color='teal')
         for i in range(n_peak):

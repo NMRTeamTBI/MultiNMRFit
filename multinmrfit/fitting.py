@@ -86,7 +86,13 @@ def refine_constraints(initial_fit_values, bounds_fit, name_parameters, relative
         idx = [i for i,j in enumerate(name_parameters) if k in j]
         for i in idx:
             ini_val = initial_fit_values[i]
-            bounds_fit[i] = (ini_val*(1-v), ini_val*(1+v))
+            upd_lb = ini_val*(1-v)
+            upd_up =  ini_val*(1+v)
+            if k == 'a' and upd_lb < 0.:
+                upd_lb = 0.
+            if k == 'a' and upd_up > 1.:
+                upd_up = 1.
+            bounds_fit[i] = (upd_lb, upd_up)
     logger.debug(f"new bounds: {bounds_fit}")
     return bounds_fit
 
