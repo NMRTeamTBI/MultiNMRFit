@@ -189,7 +189,7 @@ class LoadingUI:
 
 class ProcessingUI:
 
-    def __init__(self, master, user_input, frame, *args, **kwargs):
+    def __init__(self, master, user_input, frame):
 
         self.frame = frame
         # # self.peak_picking_threshold = peak_picking_threshold
@@ -197,8 +197,8 @@ class ProcessingUI:
 
 
         # # # ============ create TkFrames ============
-        self.frame_graph = tk.LabelFrame(self.frame,width=500,text="Reference spectrum",foreground='black')
-        self.frame_peak_Table = tk.LabelFrame(self.frame,width=500,text="Clustering information",foreground='black')
+        self.frame_graph = tk.LabelFrame(self.frame, width=500,text="Reference spectrum",foreground='black')
+        self.frame_peak_Table = tk.LabelFrame(self.frame, width=500,text="Clustering information",foreground='black')
 
         self.frame_graph.grid(row=0,columnspan=3,column=0, padx=3, pady=5, sticky="nsew")
         self.frame_peak_Table.grid(row=1, column=0, sticky="nesw", padx=3, pady=5, columnspan=3)
@@ -409,7 +409,7 @@ class ProcessingUI:
         for i in range(n_peak):
             colors.append('#%06X' % random.randint(0, 0xFFFFFF))
 
-        fig = plt.Figure(dpi=75)#figsize=(5,3.8), dpi=100)
+        fig = plt.Figure(figsize=(7,5), dpi=75)#figsize=(5,3.8), dpi=100)
         ax1 = fig.add_subplot(111)
         ax1.plot(x_spec, y_spec, '-',color='teal')
         for i in range(n_peak):
