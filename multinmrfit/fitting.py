@@ -95,7 +95,7 @@ def refine_constraints(initial_fit_values, bounds_fit, name_parameters, relative
             if k == 'a' and upd_up > 1.:
                 upd_up = 1.
             bounds_fit[i] = (upd_lb, upd_up)
-    logger.debug(f"new bounds: {bounds_fit}")
+    # logger.debug(f"new bounds: {bounds_fit}")
     print(f"new bounds: {bounds_fit}")
 
     return bounds_fit

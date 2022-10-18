@@ -22,6 +22,7 @@ import multinmrfit.io as nio
 import multinmrfit.run as nrun
 import multinmrfit.utils_nmrdata as nfu
 import multinmrfit.fitting as nff
+import multinmrfit.multiplets as nmul
 
 from tkinter import *
 #from tkdocviewer import *
@@ -29,6 +30,49 @@ from PIL import ImageTk, Image
 
 logger = logging.getLogger(__name__)
 
+
+class Parameters(tk.Tk):
+    def __init__(self):
+        super().__init__()
+
+        self.geometry("450x200")
+        self.title('set bounds parameters')
+
+        self.lower_bound = tk.Label(self, text="lower \n bound",foreground='black')
+        self.higher_bound = tk.Label(self, text="higher \n bound",foreground='black')
+        self.relative_window = tk.Label(self, text="relative \n window",foreground='black')
+
+        self.lower_bound.grid(column=1,row=0)
+        self.higher_bound.grid(column=2,row=0)
+        self.relative_window.grid(column=3,row=0)
+
+        for i in range(len(list(nmul.default_constraints.keys()))):
+            self.param_label = tk.Label(self, text=str(list(nmul.default_constraints.keys())[i]),foreground='black')
+            self.param_label.grid(column=0, row=i+1)
+
+            self.param_info = tk.Label(self, text=str(nmul.default_constraints[list(nmul.default_constraints.keys())[i]]['info']),foreground='black')
+            self.param_info.grid(column=4, row=i+1,sticky='w')
+
+            self.low_b_value = tk.StringVar()
+            self.user_entry_low_b = tk.Entry(self, textvariable = self.low_b_value, justify = "center", background='white',width=7, foreground='black',borderwidth=1)
+            self.user_entry_low_b.grid(column=1, row=1+i)
+            self.default_low_b = nmul.default_constraints[list(nmul.default_constraints.keys())[i]]['low_bounds']
+            self.user_entry_low_b.insert(0,self.default_low_b )
+
+            self.high_b_value = tk.StringVar()
+            self.user_entry_high_b = tk.Entry(self, textvariable = self.high_b_value, justify = "center", background='white',width=7, foreground='black',borderwidth=1)
+            self.user_entry_high_b.grid(column=2, row=1+i)
+            self.default_high_b = nmul.default_constraints[list(nmul.default_constraints.keys())[i]]['high_bounds']
+            self.user_entry_high_b.insert(0,self.default_high_b )
+
+            self.rel_wdw_value = tk.StringVar()
+            self.user_entry_rel_wdw = tk.Entry(self, textvariable = self.rel_wdw_value, justify = "center", background='white',width=7, foreground='black',borderwidth=1)
+            self.user_entry_rel_wdw.grid(column=3, row=1+i)
+            self.default_rel_wdw = nmul.default_constraints[list(nmul.default_constraints.keys())[i]]['relative_window']
+            self.user_entry_rel_wdw.insert(0,self.default_rel_wdw )
+    
+    def start(self):
+        self.mainloop()
 
 class LoadingUI:
     def __init__(self, frame, user_input, *args, **kwargs):
@@ -102,9 +146,12 @@ class LoadingUI:
             self.input_raws_entry.place(relx=0.1, rely=0.16, width=200, anchor=tkinter.W)
             user_input['option_data_row_no'] = self.input_raws
 
-            # constraints
+            # # constraints
             self.input_constraints_label = tk.Label(self.frame_options,text='Relative constraints:',justify=tk.CENTER,foreground='black')
             self.input_constraints_label.place(relx=0.05, rely=0.24, anchor="w")
+
+            self.set_parameters = tk.Button(self.frame_options, text = 'Update \n parameters',justify=tk.CENTER,foreground='blue',background='blue',command=lambda:[Parameters().mainloop()])
+            self.set_parameters.place(relx=0.6, rely=0.52, width=90, anchor=tkinter.W)
 
             self.input_constraints = tk.StringVar()
             self.input_constraints_entry = tk.Entry(self.frame_options,textvariable=self.input_constraints,bg='white',borderwidth=0,state='normal',foreground='black')

@@ -130,3 +130,10 @@ def Peak_Initialisation(
 
     return Init_Val
 
+default_constraints = {
+    'lw':{'low_bounds':1e-3, 'high_bounds':1e-2, 'relative_window':1e-3, 'info': 'line width (ppm)'},
+    'a':{'low_bounds':0, 'high_bounds':1, 'relative_window':1e-3, 'info': 'ratio L/G'},
+    'x0':{'low_bounds':1e-6, 'high_bounds':12, 'relative_window':1e-3, 'info': 'peak position (ppm)'},
+    'Amp':{'low_bounds':1e-6, 'high_bounds':np.inf, 'relative_window':1e-3, 'info': 'peak amplitude'},
+    'J':{'low_bounds':2.5e-3, 'high_bounds':0.03, 'relative_window':1e-3, 'info': 'coupling constant (ppm)'}
+    }  
