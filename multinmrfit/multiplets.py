@@ -5,7 +5,7 @@ import pandas as pd
 
 def Singlet( x, x0, a, h_s, lw ):
     #Lorentzian + Gaussian    
-    S1 = a * h_s  / ( 1 + (( x - x0 )/lw)**2) 
+    S1 = a * h_s  / ( 1 + (( x - x0 )/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 )**2/(2*lw**2))
     Signal = S1
     return Signal
 
