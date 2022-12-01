@@ -88,13 +88,15 @@ def refine_constraints(initial_fit_values, bounds_fit, name_parameters, relative
         idx = [i for i,j in enumerate(name_parameters) if k in j]
         for i in idx:
             ini_val = initial_fit_values[i]
-            upd_lb = ini_val*(1-np.abs(v))
-            upd_up =  ini_val*(1+np.abs(v))
-            if k == 'a' and upd_lb < 0.:
-                upd_lb = 0.
-            if k == 'a' and upd_up > 1.:
-                upd_up = 1.
-            bounds_fit[i] = (upd_lb, upd_up)
+            upd_lb = ini_val*(1-v)
+            upd_ub =  ini_val*(1+v)
+            nupd_lb = np.min([upd_lb, upd_ub])
+            nupd_ub = np.max([upd_lb, upd_ub])
+            if k == 'a' and nupd_lb < 0.:
+                nupd_lb = 0.
+            if k == 'a' and nupd_ub > 1.:
+                nupd_ub = 1.
+            bounds_fit[i] = (nupd_lb, nupd_ub)
     # logger.debug(f"new bounds: {bounds_fit}")
     print(f"new bounds: {bounds_fit}")
 
@@ -133,25 +135,25 @@ def run_single_fit_function(up,
     if use_previous_fit :
         initial_fit_values = list(fit_results.iloc[fit[1]-1 if up else fit[1]+1].values)
         bounds_fit = refine_constraints(initial_fit_values, bounds_fit, name_parameters, relative_window=relative_window)
-    try:
-        intensities = intensities[fit[0],:]
-        if option_optimizer=='L-BFGS-B':
-            res_fit = minimize(
-                fit_objective,
-                x0=initial_fit_values,                
-                bounds=bounds_fit,
-                method='L-BFGS-B',
-                options={'maxcor': 30},
-                args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
-                )            
-        elif option_optimizer=='DE + L-BFGS-B':
-            res_fit_de = differential_evolution(
+    #try:
+    intensities = intensities[fit[0],:]
+    if option_optimizer=='L-BFGS-B':
+        res_fit = minimize(
+            fit_objective,
+            x0=initial_fit_values,                
+            bounds=bounds_fit,
+            method='L-BFGS-B',
+            options={'maxcor': 30},
+            args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
+            )            
+    elif option_optimizer=='DE + L-BFGS-B':
+        res_fit_de = differential_evolution(
                 fit_objective,
                 x0=initial_fit_values,                
                 bounds=bounds_fit,
                 args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
                 )
-            res_fit = minimize(
+        res_fit = minimize(
                 fit_objective,
                 x0=res_fit_de.x,                
                 bounds=bounds_fit,
@@ -159,19 +161,19 @@ def run_single_fit_function(up,
                 options={'maxcor': 30},
                 args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
                 )
-        else:
-            logger.error('Wrong optimizer selected: '+option_optimizer)
-        logger.debug(res_fit)
-        res_stats = compute_statistics(res_fit)
-        logger.debug(res_stats)
-        res_fit.res_stats = res_stats.tolist()
+    else:
+        logger.error('Wrong optimizer selected: '+option_optimizer)
+    logger.debug(res_fit)
+    res_stats = compute_statistics(res_fit)
+    logger.debug(res_stats)
+    res_fit.res_stats = res_stats.tolist()
         
-        if not writing_to_file:
-            return res_fit
-        else:
-            fit_results.loc[fit[1],:] = res_fit.x.tolist()
-            stat_results.loc[fit[1],:] = res_stats.tolist()
+    if not writing_to_file:
+        return res_fit
+    else:
+        fit_results.loc[fit[1],:] = res_fit.x.tolist()
+        stat_results.loc[fit[1],:] = res_stats.tolist()
 
-    except:
-        logger.error('An unknown error has occured when fitting spectra: '+str(fit[1]))
+    #except:
+    #    logger.error('An unknown error has occured when fitting spectra: '+str(fit[1]))
 
