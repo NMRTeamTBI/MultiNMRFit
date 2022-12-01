@@ -150,7 +150,7 @@ class LoadingUI:
             self.input_constraints_label = tk.Label(self.frame_options,text='Relative constraints:',justify=tk.CENTER,foreground='black')
             self.input_constraints_label.place(relx=0.05, rely=0.24, anchor="w")
 
-            self.set_parameters = tk.Button(self.frame_options, text = 'Update \n parameters',justify=tk.CENTER,foreground='blue',background='blue',command=lambda:[Parameters().mainloop()])
+            self.set_parameters = tk.Button(self.frame_options, text = 'Update \n parameters',justify=tk.CENTER,command=lambda:[Parameters().mainloop()])
             self.set_parameters.place(relx=0.6, rely=0.52, width=90, anchor=tkinter.W)
 
             self.input_constraints = tk.StringVar()
