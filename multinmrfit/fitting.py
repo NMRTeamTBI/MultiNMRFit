@@ -83,13 +83,13 @@ def refine_constraints(initial_fit_values, bounds_fit, name_parameters, relative
 
     # update parameters based on dict(k, v) where k is a string used to identify the parameter, and v is the allowed (relative) parameter window
     if relative_window is None:
-        relative_window = {"x0":0.001, "J":0.05, "lw":0.3}
+        relative_window = {"x0":0.01, "J":0.05, "lw":0.3}
     for k, v in relative_window.items():
         idx = [i for i,j in enumerate(name_parameters) if k in j]
         for i in idx:
             ini_val = initial_fit_values[i]
-            upd_lb = ini_val*(1-v)
-            upd_up =  ini_val*(1+v)
+            upd_lb = ini_val*(1-np.abs(v))
+            upd_up =  ini_val*(1+np.abs(v))
             if k == 'a' and upd_lb < 0.:
                 upd_lb = 0.
             if k == 'a' and upd_up > 1.:
