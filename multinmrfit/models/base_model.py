@@ -17,7 +17,7 @@ from __future__ import annotations
 # les paramètres optimisables optimisables et non optimisables
 
 
-class Model(object):
+class Model:
 
     def __init__(self):
 
@@ -25,9 +25,9 @@ class Model(object):
         self._params = None
 
 
-    def __repr__(self):
-        return f"Selected model: {self.model_name}\n" \
-               f"Parameters to estimate: {self._params}\n"
+    #def __repr__(self):
+    #    return f"Selected model: {self.model_name}\n" \
+    #           f"Parameters to estimate: {self._params}\n"
 
     #@ abstractmethod
     #def get_params(self):

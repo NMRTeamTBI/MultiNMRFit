@@ -90,10 +90,14 @@ class Spectrum:
         for id, peak in self.cluster.items():
             self.models[id] = {}
             self.models[id]["model"] = all_models[peak['model']]
+            print(self.models[id]["model"])
+
             _params = self.models[id]["model"].get_params()
+            
             self.models[id]["par_idx"] = [i for i in range(len(self.params), len(_params)+len(self.params))]
             _params.insert(0, 'signal_id', [id]*len(_params))
-            self.params = pd.concat(self.params, _params)
+            print(_params)
+            self.params = pd.concat([self.params, _params])
 
 
     def simulate(params, ppm, models):
