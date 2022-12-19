@@ -5,7 +5,7 @@ import pandas as pd
 
 def Singlet( x, x0, a, h_s, lw ):
     #Lorentzian + Gaussian    
-    S1 = a * h_s  / ( 1 + (( x - x0 )/lw)**2) + (1-a)*h_s*np.exp(-(x-x0)**2/(2*lw**2))    
+    S1 = a * h_s  / ( 1 + (( x - x0 )/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 )**2/(2*lw**2))
     Signal = S1
     return Signal
 
@@ -36,13 +36,15 @@ def DoubletofDoubletAsymetric( x, x0, a, h_s, lw, J1, J2, dH):
 
 def Triplet( x, x0, a, h_s, lw, J1):
     #Lorentzian + Gaussian
-    S1 = a * h_s  / ( 1 + (( x - x0 - J1/2)/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 - J1/2)**2/(2*lw**2))
+    S1 = a * h_s  / ( 1 + (( x - x0 - J1)/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 - J1)**2/(2*lw**2))
     S2 = a * 2* h_s  / ( 1 + (( x - x0 )/lw)**2) + (1-a)*2*h_s*np.exp(-(x - x0 )**2/(2*lw**2))
-    S3 = a * h_s  / ( 1 + (( x - x0 + J1/2)/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 + J1/2)**2/(2*lw**2))
+    S3 = a * h_s  / ( 1 + (( x - x0 + J1)/lw)**2) + (1-a)*h_s*np.exp(-(x - x0 + J1)**2/(2*lw**2))
     Signal = S1+S2+S3
     return Signal
 
-def mapping_multiplets(lw_constraints = (1e-3,1e-2), x0_constraints = (1e-6,12), a_constraints = (1e-3,1), Amp_constraints = (1e-6,1e30), dH_constraints= (0, 1e30), J_constraints = (2.5e-3,0.25)):
+
+def mapping_multiplets(lw_constraints = (1e-3,1e-2), x0_constraints = (1e-6,12), a_constraints = (0.,1.), Amp_constraints = (1e-6,np.inf), dH_constraints= (0, np.inf), J_constraints = (2.5e-3,0.03)):
+
     d_mapping = {
         "Singlet":{"f_function":Singlet,"n_peaks" : "1", "option":"", "params":['x0','a','Amp','lw'],"n_params" : 4, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints]},
         "Doublet":{"f_function":Doublet,"n_peaks" : "2", "option":"","params":['x0','a','Amp','lw','J1'],"n_params" : 5, "constraints":[x0_constraints,a_constraints,Amp_constraints,lw_constraints,J_constraints]},
@@ -130,3 +132,10 @@ def Peak_Initialisation(
 
     return Init_Val
 
+default_constraints = {
+    'lw':{'low_bounds':1e-3, 'high_bounds':1e-2, 'relative_window':1e-3, 'info': 'line width (ppm)'},
+    'a':{'low_bounds':0, 'high_bounds':1, 'relative_window':1e-3, 'info': 'ratio L/G'},
+    'x0':{'low_bounds':1e-6, 'high_bounds':12, 'relative_window':1e-3, 'info': 'peak position (ppm)'},
+    'Amp':{'low_bounds':1e-6, 'high_bounds':np.inf, 'relative_window':1e-3, 'info': 'peak amplitude'},
+    'J':{'low_bounds':2.5e-3, 'high_bounds':0.03, 'relative_window':1e-3, 'info': 'coupling constant (ppm)'}
+    }  

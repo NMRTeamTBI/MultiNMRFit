@@ -2,6 +2,7 @@
 from pathlib import Path 
 import logging
 from tkinter import filedialog, messagebox
+import ast
 # Import math libraries
 import pandas as pd
 import numpy as np
@@ -34,6 +35,7 @@ def create_user_input():
     'output_path':          None,
     'output_folder':        None,    
     'output_name':          None,
+    'option_constraints_window':   None
     }
     return user_input  
 
@@ -49,16 +51,19 @@ def load_config_file(gui=None, user_input=None, config_file_path=None):
             return None
 
         try:
+            print(f)
             config = json.loads(f.read())
         except json.decoder.JSONDecodeError as e:
-            error_handling(gui,'Json config file must be reformated')
+            error_handling(gui,'Wrong config file format, please check and correct the file (see example)')
             return None
         except UnicodeDecodeError as e:
             error_handling('Wrong config file type (not a json file, see example)')
             return None
 
         if gui and gui.winfo_exists():
-            options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf','option_optimizer']
+
+            options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf', 'option_constraints_window']
+
             for label in user_input.keys():                
                 if label in options_list:
                     if label not in config.keys():
@@ -158,42 +163,54 @@ def check_input_file(user_input,gui=None):
         ########################################################################
 
         ######### Check Data Path #########
+
         if not user_input.get('data_path'):
             return error_handling(gui,"Argument : 'data_path' is missing")
         else:
-            if not Path(user_input.get('data_path')).exists():
+            if user_input['data_path'].endswith('.csv'):
+                pass
+            elif not Path(user_input.get('data_path')).exists():
                 return error_handling(gui,"Argument : 'data_path' does not exist")
         ########################################################################
 
         ######### Check Data Folder #########
-        if not user_input.get('data_folder'):
-            return error_handling(gui,"Argument : 'data_folder' is missing")
+        if user_input['data_path'].endswith('.csv'):
+            pass
         else:
-            if not Path(user_input.get('data_path'),user_input.get('data_folder')).exists():
-                return error_handling(gui,"The path to the data is incorrect please check \n Argument : 'data_folder' or 'data_path' ")
+            if not user_input.get('data_folder'):
+                return error_handling(gui,"Argument : 'data_folder' is missing")
+            else:
+                if not Path(user_input.get('data_path'),user_input.get('data_folder')).exists():
+                    return error_handling(gui,"The path to the data is incorrect please check \n Argument : 'data_folder' or 'data_path' ")
         ########################################################################
 
         ######### Check ProcNo #########
-        if not user_input.get('data_proc_no'):
-            return error_handling(gui,"Argument : 'data_proc_no' is missing")                      
+        if user_input['data_path'].endswith('.csv'):
+            pass
         else:
-            data_proc_no_check = check_float(user_input.get('data_proc_no'))
-            if not data_proc_no_check:
-                return error_handling(gui,"Argument : 'data_proc_no' has a wrong type")
+            if not user_input.get('data_proc_no'):
+                return error_handling(gui,"Argument : 'data_proc_no' is missing")                      
+            else:
+                data_proc_no_check = check_float(user_input.get('data_proc_no'))
+                if not data_proc_no_check:
+                    return error_handling(gui,"Argument : 'data_proc_no' has a wrong type")
         ########################################################################
 
         ######### Check Exp List #########
-        if not user_input.get('data_exp_no'):
-            return error_handling(gui,"Argument : 'data_exp_no' is missing")
-        else:
-            # The function create_spectra_list needs to be updated for error handling
+        if user_input['data_path'].endswith('.csv'):
             exp_list = create_spectra_list(user_input.get('data_exp_no'),gui)
-        for exp in exp_list:
-            if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp)).exists():
-                return error_handling(gui,f"Argument : experiment <{exp}> does not exist")
+        else:
+            if not user_input.get('data_exp_no'):
+                return error_handling(gui,"Argument : 'data_exp_no' is missing")
             else:
-                if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp),'pdata',user_input.get('data_proc_no')).exists():
-                    return error_handling(gui,f"Argument : experiment/procno <{exp}/{user_input.get('data_proc_no')}> does not exist")
+                # The function create_spectra_list needs to be updated for error handling
+                exp_list = create_spectra_list(user_input.get('data_exp_no'),gui)
+            for exp in exp_list:
+                if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp)).exists():
+                    return error_handling(gui,f"Argument : experiment <{exp}> does not exist")
+                else:
+                    if not Path(user_input.get('data_path'),user_input.get('data_folder'),str(exp),'pdata',user_input.get('data_proc_no')).exists():
+                        return error_handling(gui,f"Argument : experiment/procno <{exp}/{user_input.get('data_proc_no')}> does not exist")
 
         ########################################################################
 
@@ -223,7 +240,8 @@ def check_input_file(user_input,gui=None):
                 if not limit_check:
                     return error_handling(gui,"At lest one of the 'spectral_limits' has a wrong type")
             spec_lim = [float(i) for i in spec_lim]
-            spec_lim.sort(reverse=True)
+            if not user_input['data_path'].endswith('.csv'):
+                spec_lim.sort(reverse=True)
         ########################################################################
 
         ######### Check analysis type ######### 
@@ -262,6 +280,11 @@ def check_input_file(user_input,gui=None):
                 return error_handling(gui,f"Argument : option_optimizer <{user_input.get('option_optimizer')}> should be 'L-BFGS-B' or 'DE + L-BFGS-B'")
         ########################################################################
 
+        if user_input.get('option_constraints_window'):
+            user_input['option_constraints_window'] = ast.literal_eval(user_input.get('option_constraints_window'))
+        else:
+            user_input['option_constraints_window'] = {"x0":0.001, "J":0.05, "lw":0.3}
+
         config = {
             'data_path'             :   user_input.get('data_path'),
             'data_folder'           :   user_input.get('data_folder'),
@@ -279,18 +302,22 @@ def check_input_file(user_input,gui=None):
             'option_offset'         :   user_input.get('option_offset', False),
             'option_verbose_log'    :   user_input.get('option_verbose_log', False),
             'option_merge_pdf'      :   user_input.get('option_merge_pdf', False),
-            'option_optimizer'      :   user_input.get('option_optimizer', 'L-BFGS-B')
-        }
+            'option_constraints_window'    :   user_input['option_constraints_window'],
+            'valid'                 :   True
 
+        }
+    
     except Exception as e:
         return error_handling(gui,e)
 
     # Options
-    options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf', 'option_optimizer']
+
+    options_list = ['option_data_row_no','option_previous_fit','option_offset','option_verbose_log','option_merge_pdf', 'option_constraints_window']
+
 
     if config['analysis_type'] != 'Pseudo2D': 
         config.pop("option_data_row_no")
-    if config['analysis_type'] == 'Pseudo2D': 
+    else: 
         config["option_previous_fit"] = True
         if config['option_data_row_no'] == []:
            config.pop("option_data_row_no") 
@@ -298,8 +325,8 @@ def check_input_file(user_input,gui=None):
     for key, conf in config.items():        
         if key not in options_list and conf is None:
             return error_handling(gui,f"Argument : '{key}' is missing")
-    if gui:
-        gui.destroy()
+    # if gui:
+    #     gui.destroy()
         
     logger.info(json.dumps(config,indent=4))
 
@@ -315,18 +342,18 @@ def getIntegral(x_fit, _multiplet_type_, fit_par):
     y = _multiplet_type_function(x_fit, *fit_par)
     integral = np.sum(y)*(x_fit[1]-x_fit[0])
     return integral
-    
+
 def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scaling_factor, output_path, output_folder, output_name, offset=False):    
-    fig, ax = plt.subplots(1, 1)
+    fig, [ax_rmsd,ax] = plt.subplots(2, 1, gridspec_kw={'height_ratios': [1, 4]})
     fig.set_size_inches([11.7,8.3])
 
     ax.plot(
         x_scale,
         intensities[r[0],:],
-        color='b',
+        color='r',
         ls='None',
         marker='o',
-        markersize=7
+        markersize=2
         )    
     ax.invert_xaxis()
     res = fit_results.iloc[r[1],:].values.tolist()
@@ -338,18 +365,42 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
         scaling_factor,
         offset=offset
         )
+    sim_rmsd = nff.simulate_data(
+        x_scale,
+        res,
+        d_id,
+        scaling_factor,
+        offset=offset
+    )
 
+    rmsd = sim_rmsd-intensities[r[0],:]
     ax.plot(
         x_fit, 
         sim, 
         'r-', 
         lw=1,
         label='fit')
+    ax.grid(axis='y')
+
+    ax_rmsd.axhline(y=0,color='black',lw=1)
+    ax_rmsd.grid(axis='y')
+    ax_rmsd.plot(
+        x_scale, 
+        rmsd, 
+        'r-', 
+        ls='none',
+        marker='o'
+        )
+    ax_rmsd.invert_xaxis()
+    rmsd_max = max (max(rmsd), abs(min(rmsd)))
+
+    ax_rmsd.set_ylim(-rmsd_max*1.3,rmsd_max*1.3)
+    ax_rmsd.set_ylabel('Residuals')
 
     res_num = r[5]
-    ax.text(0.05,0.9,"Spectra : " +str(res_num),transform=ax.transAxes,fontsize=20)  
+    ax_rmsd.set_title("Spectra : " +str(res_num),fontsize=20)  
     ax.set_ylabel('Intensity')
-    ax.set_xlabel(r'$chemical shift$ $(ppm)$')
+    ax.set_xlabel('chemical shift (ppm)')
 
     plt.subplots_adjust(
         left = 0.1,
@@ -363,6 +414,8 @@ def single_plot_function(r, x_scale, intensities, fit_results, x_fit, d_id, scal
     path_2_save.mkdir(parents=True,exist_ok=True)
 
     plt.savefig(str(Path(path_2_save,output_name+'_'+str(res_num)+'.pdf')))
+    #fig.set_size_inches([3,2])
+    #plt.savefig(str(Path(path_2_save,output_name+'_'+str(res_num)+'.png')), format="png")
     plt.close(fig)
 
 def build_output(d_id_i, x_fit, fit_results, stat_results, scaling_factor, spectra_to_fit, offset):
@@ -434,7 +487,9 @@ def output_txt_file(x_fit,fit_results, stat_results, d_id, scaling_factor,spectr
         mutliplet_stats = mutliplet_stats.sort_values(['exp_no', 'proc_no', 'row_id'], ascending=(True, True, True))
 
         # plot integrals 
-        if 1 in mutliplet_results.row_id.unique():
+
+        if mutliplet_results.row_id.is_unique is False:
+
             x_plot = mutliplet_results.exp_no.tolist()
             plt.xlabel('exp no')
         else:
@@ -513,3 +568,4 @@ def save_output_data(user_input, fit_results, stat_results, intensities, x_scale
     if merged_pdf:
         merge_pdf(output_path,output_folder,output_name)
     logger.info('Save plot to pdf -- Complete')
+

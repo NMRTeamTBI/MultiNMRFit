@@ -39,12 +39,12 @@ def read_nmr_data_bruker(
 
 def Extract_Data(data, x_ppm, x_lim):
     n_dim = len(data.shape)
-    if n_dim == 1:     
+    if n_dim == 1:
         idx_x0_F1, x0_F1 = find_nearest(x_ppm,x_lim[0])
         idx_x1_F1, x1_F1 = find_nearest(x_ppm,x_lim[1])
         data_ext = np.vstack([data[idx_x0_F1:idx_x1_F1],])
         x_ppm_ext = np.vstack([x_ppm[idx_x0_F1:idx_x1_F1],])
-        
+
     if n_dim == 2:
         if x_ppm.ndim == 1:
             idx_x0_F2, x0_F2 = find_nearest(x_ppm,x_lim[0])
@@ -53,6 +53,7 @@ def Extract_Data(data, x_ppm, x_lim):
             x_ppm_ext = x_ppm[idx_x0_F2:idx_x1_F2]
         if x_ppm.ndim != 1:
             n_s = x_ppm.shape[0]
+
             for k in range(n_s):
                 idx_x0_F2, x0_F2 = find_nearest(x_ppm[k],x_lim[0])
                 idx_x1_F2, x1_F2 = find_nearest(x_ppm[k],x_lim[1])
@@ -133,36 +134,57 @@ def filter_multiple_clusters(Res):
     return Res_upd
 
 def retrieve_nmr_data(user_input):
-    if user_input['analysis_type'] == 'Pseudo2D':
-        [y_intensities_all, x_ppm_all] = read_nmr_data_bruker(
-                path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
-                expno_data      =   user_input['data_exp_no'][0],
-                procno_data     =   user_input['data_proc_no']
-        )
+    if "simulated" in user_input:
+        df = pd.read_csv(str(user_input['data_path']),sep='\t')
+        df = df.apply(pd.to_numeric)
 
-    elif user_input['analysis_type'] == '1D_Series':
-        if len(user_input['data_exp_no']) == 1:
-            [y_intensities_all, x_ppm_all] = read_nmr_data_bruker(
-                    path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
-                    expno_data      =   user_input['data_exp_no'][0],
-                    procno_data     =   user_input['data_proc_no']
-            )
-        else:
+        if df.shape[1] == 2:
+            x_ppm_all = np.array(df.iloc[:,0].values.tolist())
+            y_intensities_all = np.array(df.iloc[:,1].values.tolist())
+
+        if df.shape[1] > 2:
             raw_y_data = []
             raw_x_data = []
-            for n in  user_input['data_exp_no']:
-                [y_intensity, x_ppm] = read_nmr_data_bruker(
-                        path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
-                        expno_data      =   n,
-                        procno_data     =   user_input['data_proc_no']
-                )       
+            for n in range(df.shape[1]-1):
+                x_ppm = df.iloc[:,0].values.tolist()
+                y_intensity = df.iloc[:,n+1].values.tolist()
                 raw_x_data.append(x_ppm)  
                 raw_y_data.append(y_intensity)  
 
             x_ppm_all = np.array(raw_x_data)
             y_intensities_all = np.array(raw_y_data)
-    else:
-        raise ValueError("Wrong type of experiment in 'Analysis Type' (expected 'Pseudo2D' or '1D_Series', got '{}').".format(user_input['analysis_type']))
-    print(y_intensities_all.shape)
 
+    else:
+        if user_input['analysis_type'] == 'Pseudo2D':
+            [y_intensities_all, x_ppm_all] = read_nmr_data_bruker(
+                    path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
+                    expno_data      =   user_input['data_exp_no'][0],
+                    procno_data     =   user_input['data_proc_no']
+            )
+            
+        elif user_input['analysis_type'] == '1D_Series':
+            if len(user_input['data_exp_no']) == 1:
+                [y_intensities_all, x_ppm_all] = read_nmr_data_bruker(
+                        path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
+                        expno_data      =   user_input['data_exp_no'][0],
+                        procno_data     =   user_input['data_proc_no']
+                )
+            else:
+                raw_y_data = []
+                raw_x_data = []
+                for n in  user_input['data_exp_no']:
+                    [y_intensity, x_ppm] = read_nmr_data_bruker(
+                            path_nmr_data   =   str(Path(user_input['data_path'],user_input['data_folder'])),
+                            expno_data      =   n,
+                            procno_data     =   user_input['data_proc_no']
+                    )  
+     
+                    raw_x_data.append(x_ppm)  
+                    raw_y_data.append(y_intensity)  
+
+                x_ppm_all = np.array(raw_x_data)
+                y_intensities_all = np.array(raw_y_data)
+        else:
+            raise ValueError("Wrong type of experiment in 'Analysis Type' (expected 'Pseudo2D' or '1D_Series', got '{}').".format(user_input['analysis_type']))
     return y_intensities_all, x_ppm_all
+

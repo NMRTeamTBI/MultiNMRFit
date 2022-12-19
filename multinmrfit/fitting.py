@@ -8,7 +8,7 @@ import pandas as pd
 from scipy.optimize import minimize, differential_evolution
 
 import multinmrfit.multiplets as nfm
-import multinmrfit.ui as nfui
+import multinmrfit.ui_new as nfui
 
 logger = logging.getLogger(__name__)
 
@@ -77,16 +77,29 @@ def fit_objective(
     rmsd = np.sqrt(np.mean((sim_intensity - y_fit_)**2))
     return rmsd
 
-def refine_constraints(initial_fit_values, bounds_fit, name_parameters):
+def refine_constraints(initial_fit_values, bounds_fit, name_parameters, relative_window=None):
     logger.debug(f"old bounds: {bounds_fit}")
+    print(f"old bounds: {bounds_fit}")
+
     # update parameters based on dict(k, v) where k is a string used to identify the parameter, and v is the allowed (relative) parameter window
-    relative_window = {"x0":0.01, "J":0.05, "lw":0.3}
+    if relative_window is None:
+        relative_window = {"x0":0.01, "J":0.05, "lw":0.3}
     for k, v in relative_window.items():
         idx = [i for i,j in enumerate(name_parameters) if k in j]
         for i in idx:
             ini_val = initial_fit_values[i]
-            bounds_fit[i] = (ini_val*(1-v), ini_val*(1+v))
-    logger.debug(f"new bounds: {bounds_fit}")
+            upd_lb = ini_val*(1-v)
+            upd_ub =  ini_val*(1+v)
+            nupd_lb = np.min([upd_lb, upd_ub])
+            nupd_ub = np.max([upd_lb, upd_ub])
+            if k == 'a' and nupd_lb < 0.:
+                nupd_lb = 0.
+            if k == 'a' and nupd_ub > 1.:
+                nupd_ub = 1.
+            bounds_fit[i] = (nupd_lb, nupd_ub)
+    # logger.debug(f"new bounds: {bounds_fit}")
+    print(f"new bounds: {bounds_fit}")
+
     return bounds_fit
 
 def compute_statistics(res, ftol=2.220446049250313e-09):
@@ -115,33 +128,39 @@ def run_single_fit_function(up,
                             use_previous_fit,
                             writing_to_file=True,
                             offset=False,
-                            option_optimizer='L-BFGS-B'
+
+                            option_optimizer='L-BFGS-B',
+                            relative_window=None
+
                             ):
 
     d_id, initial_fit_values, bounds_fit, name_parameters = get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor, offset=offset)
     if use_previous_fit :
         initial_fit_values = list(fit_results.iloc[fit[1]-1 if up else fit[1]+1].values)
-        bounds_fit = refine_constraints(initial_fit_values, bounds_fit, name_parameters)
-    
-    try:
-        intensities = intensities[fit[0],:]
-        if option_optimizer=='L-BFGS-B':
-            res_fit = minimize(
-                fit_objective,
-                x0=initial_fit_values,                
-                bounds=bounds_fit,
-                method='L-BFGS-B',
-                options={'maxcor': 30},
-                args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
-                )            
-        elif option_optimizer=='DE + L-BFGS-B':
-            res_fit_de = differential_evolution(
+
+        bounds_fit = refine_constraints(initial_fit_values, bounds_fit, name_parameters, relative_window=relative_window)
+    #try:
+    intensities = intensities[fit[0],:]
+    if option_optimizer=='L-BFGS-B':
+        res_fit = minimize(
+            fit_objective,
+            x0=initial_fit_values,                
+            bounds=bounds_fit,
+            method='L-BFGS-B',
+            options={'maxcor': 30},
+            args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
+            )            
+    elif option_optimizer=='DE + L-BFGS-B':
+        res_fit_de = differential_evolution(
+
                 fit_objective,
                 x0=initial_fit_values,                
                 bounds=bounds_fit,
                 args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
                 )
-            res_fit = minimize(
+
+        res_fit = minimize(
+
                 fit_objective,
                 x0=res_fit_de.x,                
                 bounds=bounds_fit,
@@ -149,152 +168,21 @@ def run_single_fit_function(up,
                 options={'maxcor': 30},
                 args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
                 )
-        else:
-            logger.error('Wrong optimizer selected: '+option_optimizer)
-        logger.debug(res_fit)
-        res_stats = compute_statistics(res_fit)
-        logger.debug(res_stats)
-        res_fit.res_stats = res_stats.tolist()
-        
-        if not writing_to_file:
-            return res_fit
-        else:
-            fit_results.loc[fit[1],:] = res_fit.x.tolist()
-            stat_results.loc[fit[1],:] = res_stats.tolist()
 
-    except:
-        logger.error('An unknown error has occured when fitting spectra: '+str(fit[1]))
-
-def full_fitting_procedure(   
-    intensities         =   'intensities',
-    x_spec              =   'x_Spec',
-    ref_spec            =   'ref_spec',
-    peak_picking_data   =   'peak_picking_data',
-    scaling_factor      =    None,
-    spectra_to_fit      =   'spectra_to_fit',
-    use_previous_fit    =   'use_previous_fit',
-    offset=False,
-    option_optimizer='L-BFGS-B'
-    ): 
-    
-    # Handling spectra list for multi-threading
-    id_spec_part2 = [i for i in spectra_to_fit if i[0] < ref_spec]
-    id_spec_part1 = [i for i in spectra_to_fit if i[0] > ref_spec]
-    id_ref_spec = [i for i in spectra_to_fit if i[0] == ref_spec ]
-
-    # Fitting the reference 1D spectrum -- This function can be used for 1D spectrum alone
-    logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]})')
-    res_fit_reference_spectrum = run_single_fit_function(
-        None, # No need of up or down here
-        id_ref_spec[0],
-        intensities,
-        None,  
-        None,  
-        x_spec, 
-        peak_picking_data,  
-        scaling_factor,
-        False,
-        writing_to_file=False,
-        offset=offset,
-        option_optimizer=option_optimizer
-        ) 
-    logger.info(f'Fitting Reference Spectrum (ExpNo {id_ref_spec[0][5]}) -- Complete')
-
-    # Creation of the data frame containing fitting results
-    fit_results_table = pd.DataFrame(
-        index=[i[1] for i in spectra_to_fit],
-        columns=np.arange(0,len(res_fit_reference_spectrum.x.tolist()),1)
-            )
-    stat_results_table = pd.DataFrame(
-        index=[i[1] for i in spectra_to_fit],
-        columns=np.arange(0,len(res_fit_reference_spectrum.res_stats),1)
-            )
-    # Filling the dataframe for the reference spectrum 
-    fit_results_table.loc[id_ref_spec[0][1],:] = res_fit_reference_spectrum.x.tolist()
-    stat_results_table.loc[id_ref_spec[0][1],:] = res_fit_reference_spectrum.res_stats
-
-    root, close_button, progress_bars = nfui.init_progress_bar_windows(
-        len_progresses = [len(id_spec_part1), len(id_spec_part2)],
-        title='Fitting in progress...',
-        progress_bar_label=['Spectra part 1','Spectra part 2']
-        ) 
-    n_spec = intensities.shape[0]
-
-    if n_spec == 1:
-        pass
     else:
-        threads = []
+        logger.error('Wrong optimizer selected: '+option_optimizer)
+    logger.debug(res_fit)
+    res_stats = compute_statistics(res_fit)
+    logger.debug(res_stats)
+    res_fit.res_stats = res_stats.tolist()
+        
+    if not writing_to_file:
+        return res_fit
+    else:
+        fit_results.loc[fit[1],:] = res_fit.x.tolist()
+        stat_results.loc[fit[1],:] = res_stats.tolist()
 
-        if len(id_spec_part1):
-            logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {np.max(id_spec_part1[-1][5])}')
-            threads.append(MyApp_Fitting(data={
-                "up"                  : True,
-                "spec_list"           : id_spec_part1,
-                "intensities"         : intensities,
-                "fit_results"         : fit_results_table,
-                "stat_results"         : stat_results_table,
-                "x_spectrum_fit"      : x_spec,
-                "peak_picking_data"   : peak_picking_data,
-                "scaling_factor"      : scaling_factor,
-                "use_previous_fit"    : use_previous_fit,
-                "offset"              : offset,
-                "option_optimizer"    : option_optimizer
-            },
-            threads=threads,
-            close_button=close_button,
-            progressbar=progress_bars[0]
-            ))
-            logger.info(f'Fitting from ExpNo {id_spec_part1[0][5]} to {id_spec_part1[-1][5]} -- Complete')
-        else:
-            logger.info(f'No spectra to fit above the reference spectrum') 
 
-        if len(id_spec_part2):
-            logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]}')
-            threads.append(MyApp_Fitting(data={
-                "up"                  : False,
-                "spec_list"           : id_spec_part2[::-1],
-                "intensities"         : intensities,
-                "fit_results"         : fit_results_table,
-                "stat_results"         : stat_results_table,
-                "x_spectrum_fit"      : x_spec,
-                "peak_picking_data"   : peak_picking_data,
-                "scaling_factor"      : scaling_factor,
-                "use_previous_fit"    : use_previous_fit,
-                "offset"              : offset,
-                "option_optimizer"    : option_optimizer
-            },
-            threads=threads,
-            close_button=close_button,
-            progressbar=progress_bars[1]
-            ))
-            logger.info(f'Fitting from ExpNo {id_spec_part2[-1][5]} to {id_spec_part2[0][5]} -- Complete')
-        else:
-            logger.info(f'No spectra to fit below the reference spectrum') 
+    #except:
+    #    logger.error('An unknown error has occured when fitting spectra: '+str(fit[1]))
 
-        root.mainloop()
-    
-    return fit_results_table, stat_results_table
-
-class MyApp_Fitting(threading.Thread):
-
-    def __init__(self, data, threads, close_button, progressbar):
-        self.finished = False
-        self.threads = threads
-        self.data = data
-        self.close_button = close_button
-        # self.progress_label = progress_label
-        self.progressbar = progressbar
-        threading.Thread.__init__(self)
-        self.start()
-
-    def run(self):
-        spec_list = self.data.pop("spec_list")
-        for fit in spec_list:
-            self.progressbar["value"] += 1
-            run_single_fit_function(fit=fit, **self.data)
-        self.finished = True
-        finished = True
-        for thread in self.threads:
-            finished = thread.finished if thread.finished == False else finished
-        if finished:
-            self.close_button.invoke()
