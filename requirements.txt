@@ -1,9 +1,6 @@
 sphinx>=1.4
-matplotlib>=3.3.4
 nmrglue>=0.6
 numpy>=1.14.0
-PyPDF2>=1.26.0
-natsort>=8.1.0
 pandas>=0.17.1
 scipy>=0.12.1
 jupyter_client
