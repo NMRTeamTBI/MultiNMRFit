@@ -10,6 +10,9 @@ import tkinter as tk
 from tkinter import simpledialog, ttk, messagebox
 import logging
 import webbrowser
+import urllib.request as urlrequest
+import re
+import threading
 
 # Import plot libraries
 import matplotlib.pyplot as plt
@@ -29,6 +32,19 @@ def openDoc():
 def openGit():
     webbrowser.open_new(r"https://github.com/NMRTeamTBI/MultiNMRFit/")
 
+def check_up_to_date():
+    """Compare local and distant MultiNMRFit versions."""
+    try:
+        # Get the distant __init__.py and read its version as it done in setup.py
+        response = urlrequest.urlopen("https://github.com/NMRTeamTBI/MultiNMRFit/raw/master/multinmrfit/__init__.py")
+        data = response.read()
+        txt = data.decode('utf-8').rstrip()
+        lastversion = re.findall(r"^__version__ = ['\"]([^'\"]*)['\"]", txt, re.M)[0]
+        if lastversion != multinmrfit.__version__:
+            messagebox.showwarning('Version {} available'.format(lastversion), f'A new version ({lastversion}) is available!\n\nYou can update MultiNMRFit with:\n\n   python -m pip install --upgrade git+https://github.com/NMRTeamTBI/MultiNMRFit\n\nCheck the documentation for more information.')
+    except :
+        pass  # silently ignore everything that just happened
+
 class App:
 
     def __init__(self, user_input, *args, **kwargs):
@@ -39,6 +55,9 @@ class App:
         self.master.title(APP_NAME)
         self.master.resizable(False, False)
         self.master.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        threadUpd = threading.Thread(target=check_up_to_date)
+        threadUpd.start()
 
         self.toplevel = None
         if sys.platform == "darwin":
@@ -132,13 +151,13 @@ class App:
 
         self.input_raws = tk.StringVar()
         self.input_raws_entry = tk.Entry(self.frame_options,textvariable=self.input_raws,bg='white',fg='black',borderwidth=0,state='disabled' if user_input['analysis_type'] == '1D_Series' else 'normal')
-        self.input_raws_entry.place(relx=0.1, rely=0.2, width=200, anchor=tkinter.W)
+        self.input_raws_entry.place(relx=0.1, rely=0.18, width=200, anchor=tkinter.W)
         user_input['option_data_row_no'] = self.input_raws
 
         # Use previous fit results as starting parameters
         self.TimeSeries = tk.BooleanVar()
         self.check_box_opt2 = tk.Checkbutton(self.frame_options,text="Use previous fit",variable=self.TimeSeries,foreground='black')
-        self.check_box_opt2.place(relx=0.05, rely=0.37, anchor=tkinter.W)
+        self.check_box_opt2.place(relx=0.05, rely=0.33, anchor=tkinter.W)
         user_input['option_previous_fit'] = self.TimeSeries
 
         # if (user_input['analysis_type'] == 'Pseudo2D' or user_input.get('option_previous_fit', False)):
@@ -150,21 +169,33 @@ class App:
         # Use Offset in Fitting
         self.Offset = tk.BooleanVar()
         self.check_box_opt3 = tk.Checkbutton(self.frame_options,text="Offset",variable=self.Offset,foreground='black')
-        self.check_box_opt3.place(relx=0.05, rely=0.52, anchor=tkinter.W)
+        self.check_box_opt3.place(relx=0.05, rely=0.43, anchor=tkinter.W)
         user_input['option_offset'] = self.Offset
 
         # # Verbose Log
         self.VerboseLog = tk.BooleanVar()
         self.check_box_opt4 = tk.Checkbutton(self.frame_options,text="Verbose log",variable=self.VerboseLog,foreground='black')
-        self.check_box_opt4.place(relx=0.05, rely=0.67, anchor=tkinter.W)
+        self.check_box_opt4.place(relx=0.05, rely=0.53, anchor=tkinter.W)
         user_input['option_verbose_log'] = self.VerboseLog
 
         # # Verbose Log
         self.mergepdf = tk.BooleanVar()
         self.check_box_opt5 = tk.Checkbutton(self.frame_options,text="Merge pdf(s)",variable=self.mergepdf,foreground='black')
-        self.check_box_opt5.place(relx=0.05, rely=0.82, anchor=tkinter.W)
+        self.check_box_opt5.place(relx=0.05, rely=0.63, anchor=tkinter.W)
         user_input['option_merge_pdf'] = self.mergepdf
 
+        # optimization algorithm
+        self.optimizer_label = tk.Label(self.frame_options,text='Optimization algorithm:',justify=tk.CENTER,foreground='black')
+        self.optimizer_label.place(relx=0.05, rely=0.78, anchor="w")
+        vals = ['L-BFGS-B', 'DE + L-BFGS-B']
+        self.optimizer = tk.StringVar()
+        self.optimizer.set(vals[0])
+        self.optimizer_BFGS = tk.Radiobutton(self.frame_options, variable=self.optimizer, text=vals[0], value=vals[0])
+        self.optimizer_BFGS.place(relx=0.05, rely=0.90, anchor=tkinter.W)
+        self.optimizer_DE_BFGS = tk.Radiobutton(self.frame_options, variable=self.optimizer, text=vals[1], value=vals[1])
+        self.optimizer_DE_BFGS.place(relx=0.55, rely=0.90, anchor=tkinter.W)
+        user_input['option_optimizer'] = self.optimizer
+        
     def update_analysis_type(self, event):
         if self.analysis_type_cb.get() == "Pseudo2D":
             self.check_box_opt2.select()
@@ -195,6 +226,12 @@ class App:
 
     def save_config_file(self,user_input): 
         config_path = Path(user_input['output_path'], user_input['output_folder'])
+
+        try:
+            config_path.mkdir(parents=True,exist_ok=True)
+        except:
+            print("Cannot create output folder.")
+
         file_name = self.ask_filename(config_path)
 
         if not 'option_data_row_no' in user_input:

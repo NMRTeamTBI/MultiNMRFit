@@ -48,6 +48,7 @@ def main():
     # logger.info('Extraction -- Complete')
     # #-----------------------------------------------------#
     
+
     # if user_input['analysis_type'] == 'Pseudo2D':
     #     idx_ref = int(user_input['reference_spectrum' ]) - 1  
     # else:            
@@ -142,5 +143,6 @@ def main():
 #     )
 #     logger.info('Full Analysis is complete')
 #     exit()
+
 
      

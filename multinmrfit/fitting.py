@@ -116,6 +116,7 @@ def compute_statistics(res, ftol=2.220446049250313e-09):
         standard_deviations[i] = sd_i
     return standard_deviations
 
+
 def run_single_fit_function(up, 
                             fit, 
                             intensities, 
@@ -127,13 +128,16 @@ def run_single_fit_function(up,
                             use_previous_fit,
                             writing_to_file=True,
                             offset=False,
+
                             option_optimizer='L-BFGS-B',
                             relative_window=None
+
                             ):
 
     d_id, initial_fit_values, bounds_fit, name_parameters = get_fitting_parameters(peak_picking_data, x_spectrum_fit, scaling_factor, offset=offset)
     if use_previous_fit :
         initial_fit_values = list(fit_results.iloc[fit[1]-1 if up else fit[1]+1].values)
+
         bounds_fit = refine_constraints(initial_fit_values, bounds_fit, name_parameters, relative_window=relative_window)
     #try:
     intensities = intensities[fit[0],:]
@@ -148,12 +152,15 @@ def run_single_fit_function(up,
             )            
     elif option_optimizer=='DE + L-BFGS-B':
         res_fit_de = differential_evolution(
+
                 fit_objective,
                 x0=initial_fit_values,                
                 bounds=bounds_fit,
                 args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
                 )
+
         res_fit = minimize(
+
                 fit_objective,
                 x0=res_fit_de.x,                
                 bounds=bounds_fit,
@@ -161,6 +168,7 @@ def run_single_fit_function(up,
                 options={'maxcor': 30},
                 args=(x_spectrum_fit, intensities, d_id, scaling_factor, offset)
                 )
+
     else:
         logger.error('Wrong optimizer selected: '+option_optimizer)
     logger.debug(res_fit)
@@ -173,6 +181,7 @@ def run_single_fit_function(up,
     else:
         fit_results.loc[fit[1],:] = res_fit.x.tolist()
         stat_results.loc[fit[1],:] = res_stats.tolist()
+
 
     #except:
     #    logger.error('An unknown error has occured when fitting spectra: '+str(fit[1]))
