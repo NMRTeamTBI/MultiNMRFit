@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import numpy as np
+
 
 class Model(object):
 
@@ -20,5 +22,10 @@ class Model(object):
                 raise ValueError("parameter '{}' not found".format(name))
             if val[0] not in self._params.columns:
                 raise ValueError("key '{}' not found".format(val[0]))
+
+    def integrate(self, params: list, ppm: list):
+        sim_spectra = self.simulate(params, ppm)
+        integral = np.sum(sim_spectra) * np.abs(ppm[0] - ppm[1])
+        return integral
 
 

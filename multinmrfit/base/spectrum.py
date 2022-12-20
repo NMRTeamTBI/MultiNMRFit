@@ -33,21 +33,26 @@ class Spectrum(object):
     :type iterations: int
     """
 
-    def __init__(self, data, signals={}, models={}, offset=False):
+    def __init__(self, data, signals={}, models={}, offset={}):
 
-        logger.debug("create spectrum")
+        logger.debug("create Spectrum object")
 
+        # initialize data
         self.ppm = data.ppm
         self.intensity = data.intensity
-        self.offset = offset
-        self.intensity_fit = None
+        self.offset = True if len(offset) else False
+        self.sim_intensity = None
+        self.fit_intensity = None
         self.fit_results = None
 
         # initialize models
-        self._initialize_models(signals, models)
+        self._initialize_models(signals, models, offset)
+
+        # simulate from initial values
+        self.sim_intensity = self.simulate(self.params['ini'].values.tolist())
 
 
-    def _initialize_models(self, signals, available_models):
+    def _initialize_models(self, signals, available_models, offset):
 
         self.models = {}
         self.params = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'ini', 'lb', 'ub'])
@@ -55,15 +60,15 @@ class Spectrum(object):
         # for each signal
         for id, signal in signals.items():
 
-            logger.debug("build model for signal '{}'".format(id))
+            logger.debug("build Model for signal '{}'".format(id))
 
-            # add the corresponding model
+            # create a corresponding Model object
             self.models[id] = available_models[signal['model']]()
 
             # update parameters values & bounds
             for par, val in signal.get("par", {}).items():
                 for k, v in val.items():
-                    #logger.debug("update parameter {}.{} to {}".format(par, k, v))
+                    #logger.debug("update parameter {} - {} to {}".format(par, k, v))
                     self.models[id].set_params(par, (k, v))
             _params = self.models[id].get_params()
 
@@ -76,7 +81,7 @@ class Spectrum(object):
         
         # add offset
         if self.offset:
-            self.params.loc[len(self.params.index)] = ['full_spectra', None, 'offset', 0, -1e6, 1e6]
+            self.params.loc[len(self.params.index)] = ['full_spectrum', None, 'offset', offset.get('ini', 0), offset.get('lb', -1e6), offset.get('ub', 1e6)]
 
         # reset index
         self.params.reset_index(inplace=True, drop=True)
@@ -84,35 +89,61 @@ class Spectrum(object):
         logger.debug("parameters\n{}".format(self.params))
 
 
-    @staticmethod
-    def _simulate(params, ppm, models, scaling_factor=1, offset=False):
+    # def update_parameters(self, signals, offset={}):
 
-        # initialize spectrum at 0
-        simulated_spectra = np.zeros(len(ppm))
+    #     # for each signal
+    #     for id, signal in signals.items():
+
+    #         # update parameters values & bounds
+    #         for par, val in signal.get("par", {}).items():
+    #             for k, v in val.items():
+    #                 #logger.debug("update parameter {} - {} to {}".format(par, k, v))
+    #                 self.models[id].set_params(par, (k, v))
+
+    #                 # update global parameters
+    #                 self.params.loc[(self.params['signal_id'] == id) & (self.params['par'] == par), 'k'] = v
+        
+    #     # update offset
+    #     if len(offset):
+    #         if self.offset:
+    #             for k, v in offset.items():
+    #                 self.params.loc[(self.params['par'] == par), k] = v
+    #         else:
+    #             self.offset = True
+    #             self.params.loc[len(self.params.index)] = ['full_spectrum', None, 'offset', offset.get('ini', 0), offset.get('lb', -1e6), offset.get('ub', 1e6)]
+
+    #     # reset index
+    #     self.params.reset_index(inplace=True, drop=True)
+
+    #     logger.debug("parameters\n{}".format(self.params))
+
+
+    @staticmethod
+    def _simulate(params, ppm, models, offset=False):
+
+        # initialize spectrum
+        if offset:
+            simulated_spectrum = np.empty(len(ppm))
+            simulated_spectrum.fill(params[-1])
+        else:
+            simulated_spectrum = np.zeros(len(ppm))
 
         # add subspectrum of each signal
         for model in models.values():
-            simulated_spectra += model.simulate([params[i] for i in model._par_idx], ppm)
+            simulated_spectrum += model.simulate([params[i] for i in model._par_idx], ppm)
 
-        # add offset
-        if offset:
-            simulated_spectra += params[-1]
-        
-        # apply scaling factor
-        simulated_spectra *= scaling_factor
-        
-        return simulated_spectra
+        return simulated_spectrum
 
 
     @staticmethod
-    def _calculate_cost(params, func, models, ppm, intensity, scaling_factor, offset=False):
+    def _calculate_cost(params, func, models, ppm, intensity, offset=False):
         """
         Calculate the cost (residuum) as the sum of squared differences
         between experimental and simulated data
         """
 
         # simulate spectrum
-        simulated_spectrum = func(params, ppm, models, scaling_factor=scaling_factor, offset=offset)
+        simulated_spectrum = func(params, ppm, models, offset=offset)
 
         # calculate sum of squared residuals
         residuum = np.sum(np.square(simulated_spectrum - intensity))
@@ -126,6 +157,17 @@ class Spectrum(object):
         simulated_spectra = self._simulate(params, self.ppm, self.models, offset=self.offset)
 
         return simulated_spectra
+
+
+    def integrate(self, params, bounds=[-100.0, 300.0]):
+
+        # simulate spectrum
+        from_to = np.arange(bounds[0], bounds[1], (bounds[1] - bounds[0])/4000000.0)
+        area = {}
+        for name, model in self.models.items():
+            area[name] = model.integrate([params[i] for i in model._par_idx], from_to)
+
+        return area
 
 
     def fit(self, method="L-BFGS-B"):
@@ -150,18 +192,21 @@ class Spectrum(object):
         # set bounds
         bounds = list(zip(params_scaled['lb'], params_scaled['ub']))
 
+        # scale data
+        data_scaled = self.intensity / scaling_factor
+
         # fit spectrum
         if method == "differential_evolution":
             self.fit_results = differential_evolution(
                 Spectrum._calculate_cost, bounds=bounds,
-                args=(self._simulate, self.models, self.ppm, self.intensity, scaling_factor, self.offset),
+                args=(self._simulate, self.models, self.ppm, data_scaled, self.offset),
                 polish=True,
                 x0=x0
             )
         elif method == "L-BFGS-B":
             self.fit_results = minimize(
                 Spectrum._calculate_cost, x0=x0,
-                args=(self._simulate, self.models, self.ppm, self.intensity, scaling_factor, self.offset),
+                args=(self._simulate, self.models, self.ppm, data_scaled, self.offset),
                 method="L-BFGS-B",
                 bounds=bounds,
                 options={'maxcor': 30}
@@ -169,19 +214,36 @@ class Spectrum(object):
         else:
             raise ValueError("optimization method '{}' not implemented".format(method))
         
-        # scale back intensities
+        # scale back intensities and save best parameters
         self.params['opt'] = self.fit_results.x
         self.params.loc[self.params['par'].isin(["intensity", "offset"]), ["opt"]] *= scaling_factor
-        logger.debug("parameters\n{}".format(self.params))
 
         # simulate spectrum from estimated parameters
-        self.intensity_fit = self.simulate(self.params['opt'].values.tolist())
+        self.fit_intensity = self.simulate(self.params['opt'].values.tolist())
+
+        # integrate spectrum
+        integrals = self.integrate(self.params['opt'].values.tolist())
+        self.params['integral'] = [integrals[i] if i != 'full_spectrum' else np.nan for i in self.params['signal_id'].values]
+
+        logger.debug("parameters\n{}".format(self.params))
 
 
-    def plot(self):
+    def plot(self, exp=True, sim=True):
         logger.debug("create plot")
-        fig_sim = px.line(x=self.ppm, y=self.intensity_fit)
-        fig_sim.update_traces(line_color='red')
-        fig_meas = px.scatter(x=self.ppm, y=self.intensity)
-        fig = go.Figure(data=fig_meas.data + fig_sim.data)
-        fig.show()
+        
+        # generate individual plots
+        if sim:
+            fig_sim = px.line(x=self.ppm, y=self.fit_intensity)
+            fig_sim.update_traces(line_color='red')
+        if exp:
+            fig_meas = px.scatter(x=self.ppm, y=self.intensity)
+
+        # combine plots
+        if sim and exp:
+            fig = go.Figure(data=fig_meas.data + fig_sim.data)
+        elif exp:
+            fig = go.Figure(data=fig_meas.data)
+        elif sim:
+            fig = go.Figure(data=fig_sim.data)
+        
+        return fig
