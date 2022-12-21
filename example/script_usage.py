@@ -1,7 +1,7 @@
 import logging
 import multinmrfit.base.spectrum as spectrum
 import pandas as pd
-import multinmrfit.base.load_models as lm
+import multinmrfit.base.io as io
 
 
 # create logger
@@ -13,7 +13,7 @@ strm_hdlr.setFormatter(formatter)
 logger.addHandler(strm_hdlr)
 
 # get available models
-models = lm.get_models()
+models = io.IoHandler.get_models()
 
 # load spectrum
 #df_data = pd.read_table("C:/Users/millard/Documents/GIT/multinmrfit/code/multinmrfit/example/data/data_sim_nmrfit.csv", sep="\t")
