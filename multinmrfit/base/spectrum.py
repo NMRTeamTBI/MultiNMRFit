@@ -158,7 +158,7 @@ class Spectrum(object):
         # set scaling factor to stabilize convergence
         scaling_factor = np.mean(self.intensity)
 
-        # apply scaling factor on intensities
+        # apply scaling factor on parameters (intensity & offset)
         params_scaled = self.params.copy(deep=True)
         params_scaled.loc[params_scaled['par'].isin(["intensity", "offset"]), ["ini", "lb", "ub"]] /= scaling_factor
         
@@ -175,7 +175,10 @@ class Spectrum(object):
         if method == "differential_evolution":
 
             self.fit_results = differential_evolution(
-                Spectrum._calculate_cost, bounds=bounds,
+                Spectrum._calculate_cost,
+                maxiter=700,
+                popsize=10,
+                bounds=bounds,
                 args=(self._simulate, self.models, self.ppm, data_scaled, self.offset),
                 polish=True,
                 x0=x0
@@ -184,7 +187,8 @@ class Spectrum(object):
         elif method == "L-BFGS-B":
 
             self.fit_results = minimize(
-                Spectrum._calculate_cost, x0=x0,
+                Spectrum._calculate_cost,
+                x0=x0,
                 args=(self._simulate, self.models, self.ppm, data_scaled, self.offset),
                 method="L-BFGS-B",
                 bounds=bounds,
@@ -226,5 +230,8 @@ class Spectrum(object):
             fig = go.Figure(data=fig_meas.data)
         elif sim:
             fig = go.Figure(data=fig_sim.data)
+        fig.update_yaxes(exponentformat = 'power', showexponent="last")
+        fig.update_xaxes(autorange="reversed")
+        fig.update_layout(xaxis_title="chemical shift (ppm)",yaxis_title="intensity")
         
         return fig
