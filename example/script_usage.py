@@ -100,9 +100,6 @@ df_data_cut = df_data.loc[(df_data['ppm'] < ppm_max) & (df_data['ppm'] > ppm_min
 # create spectrum object
 sp = spectrum.Spectrum(df_data_cut, signals=signals, models=models, offset={'ini':1.0})
 
-# simulate from initial parameters
-res_sim = sp.simulate(sp.params['ini'].values.tolist())
-
 # fit spectrum
 #sp.fit(method="differential_evolution")
 sp.fit()

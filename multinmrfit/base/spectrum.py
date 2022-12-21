@@ -66,14 +66,18 @@ class Spectrum(object):
             self.models[id] = available_models[signal['model']]()
 
             # update parameters values & bounds
-            for par, val in signal.get("par", {}).items():
-                for k, v in val.items():
-                    #logger.debug("update parameter {} - {} to {}".format(par, k, v))
-                    self.models[id].set_params(par, (k, v))
+            try:
+                for par, val in signal.get("par", {}).items():
+                    for k, v in val.items():
+                        #logger.debug("update parameter {} - {} to {}".format(par, k, v))
+                        self.models[id].set_params(par, (k, v))
+            except:
+                raise ValueError("error when initializing parameter '{} - {}' at value '{}'".format(par, k, v))
+            
             _params = self.models[id].get_params()
 
             # add id
-            _params.insert(0, 'signal_id', [id]*len(_params))
+            _params.insert(0, 'signal_id', [id]*len(_params.index))
 
             # add global parameters indices to model
             self.models[id]._par_idx = [i for i in range(len(self.params), len(_params)+len(self.params))]
@@ -87,35 +91,6 @@ class Spectrum(object):
         self.params.reset_index(inplace=True, drop=True)
 
         logger.debug("parameters\n{}".format(self.params))
-
-
-    # def update_parameters(self, signals, offset={}):
-
-    #     # for each signal
-    #     for id, signal in signals.items():
-
-    #         # update parameters values & bounds
-    #         for par, val in signal.get("par", {}).items():
-    #             for k, v in val.items():
-    #                 #logger.debug("update parameter {} - {} to {}".format(par, k, v))
-    #                 self.models[id].set_params(par, (k, v))
-
-    #                 # update global parameters
-    #                 self.params.loc[(self.params['signal_id'] == id) & (self.params['par'] == par), 'k'] = v
-        
-    #     # update offset
-    #     if len(offset):
-    #         if self.offset:
-    #             for k, v in offset.items():
-    #                 self.params.loc[(self.params['par'] == par), k] = v
-    #         else:
-    #             self.offset = True
-    #             self.params.loc[len(self.params.index)] = ['full_spectrum', None, 'offset', offset.get('ini', 0), offset.get('lb', -1e6), offset.get('ub', 1e6)]
-
-    #     # reset index
-    #     self.params.reset_index(inplace=True, drop=True)
-
-    #     logger.debug("parameters\n{}".format(self.params))
 
 
     @staticmethod
