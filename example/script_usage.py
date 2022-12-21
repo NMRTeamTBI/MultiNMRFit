@@ -16,8 +16,8 @@ logger.addHandler(strm_hdlr)
 models = lm.get_models()
 
 # load spectrum
-df_data = pd.read_table("C:/Users/millard/Documents/GIT/multinmrfit/code/multinmrfit/example/data/data_sim_nmrfit.csv", sep="\t")
-#df_data = pd.read_table("./data/data_sim_nmrfit.csv", sep="\t")
+#df_data = pd.read_table("C:/Users/millard/Documents/GIT/multinmrfit/code/multinmrfit/example/data/data_sim_nmrfit.csv", sep="\t")
+df_data = pd.read_table("./data/data_sim_nmrfit.csv", sep="\t")
 
 
 # ############
