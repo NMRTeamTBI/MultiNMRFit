@@ -1,5 +1,5 @@
 """
-multinmrfit main module
+multinmrfit spectrum module
 """
 
 import logging
@@ -20,17 +20,18 @@ class Spectrum(object):
 
         * **models initialization**
         * **spectrum simulation**
-        * **spectrum fitting** using `scipy.optimize.minimize ('Differential evolution', with polish with 'L-BFGS-B' method) <https://docs.scipy.org/doc/scipy/reference/optimize.minimize-lbfgsb.html#optimize-minimize-lbfgsb>`_
-        * **sensitivity analysis, khi2 tests and plotting**
+        * **spectrum fitting** using `scipy.optimize.minimize ('Differential evolution',with polish with 'L-BFGS-B' method)
+          <https://docs.scipy.org/doc/scipy/reference/optimize.minimize-lbfgsb.html#optimize-minimize-lbfgsb>`_
+        * **plotting**
 
-    :param data: DataFrame containing data and passed by IOstream object
+    :param data: DataFrame containing data (columns 'ppm' and 'intensity')
     :type data: class: pandas.DataFrame
-    :param model: Model to initialize parameters and optimize
-    :type model: physiofit.models.base_model.Model
-    :param mc: Should Monte-Carlo sensitivity analysis be performed (default=True)
-    :type mc: Boolean
-    :param iterations: number of iterations for Monte-Carlo simulation (default=100)
-    :type iterations: int
+    :param signals: signals to fit
+    :type signals: dict
+    :param models: available models
+    :type models: dict
+    :param offset: offset
+    :type offset: dict
     """
 
     def __init__(self, data, signals={}, models={}, offset={}):
@@ -172,13 +173,16 @@ class Spectrum(object):
 
         # fit spectrum
         if method == "differential_evolution":
+
             self.fit_results = differential_evolution(
                 Spectrum._calculate_cost, bounds=bounds,
                 args=(self._simulate, self.models, self.ppm, data_scaled, self.offset),
                 polish=True,
                 x0=x0
             )
+
         elif method == "L-BFGS-B":
+
             self.fit_results = minimize(
                 Spectrum._calculate_cost, x0=x0,
                 args=(self._simulate, self.models, self.ppm, data_scaled, self.offset),
@@ -186,10 +190,12 @@ class Spectrum(object):
                 bounds=bounds,
                 options={'maxcor': 30}
             )
+
         else:
+
             raise ValueError("optimization method '{}' not implemented".format(method))
         
-        # scale back intensities and save best parameters
+        # scale back estimated parameters
         self.params['opt'] = self.fit_results.x
         self.params.loc[self.params['par'].isin(["intensity", "offset"]), ["opt"]] *= scaling_factor
 

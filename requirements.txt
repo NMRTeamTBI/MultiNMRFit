@@ -3,6 +3,7 @@ nmrglue>=0.6
 numpy>=1.14.0
 pandas>=0.17.1
 scipy>=0.12.1
+plotly
 jupyter_client
 ipykernel
 nbsphinx
