@@ -10,6 +10,7 @@ class Model(object):
         self.name = None
         self._params = None
         self._par_idx = None
+        self.peak_number = None
     
     def get_params(self):
         return self._params

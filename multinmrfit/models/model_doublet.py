@@ -13,6 +13,7 @@ class SignalModel(Model):
     def __init__(self):
 
         self.name = "doublet"
+        self.peak_number = 2
         default_params = {'model' : [self.name]*5,
                           'par' : ['x0', 'J1', 'intensity', 'lw', 'gl'],
                           'ini' : [1.0, 0.05, 1e6, 0.01, 0.5],
