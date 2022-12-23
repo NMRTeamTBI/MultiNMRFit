@@ -34,29 +34,28 @@ class Spectrum(object):
     :type offset: dict
     """
 
-    def __init__(self, data, signals={}, models={}, offset={}):
+    def __init__(self, data, signals, models, offset=None):
 
         logger.debug("create Spectrum object")
 
         # initialize data
         self.ppm = data.ppm
         self.intensity = data.intensity
-        self.offset = True if len(offset) else False
-        self.sim_intensity = None
-        self.fit_intensity = None
-        self.fit_results = None
-
-        # initialize models
-        self._initialize_models(signals, models, offset)
-
-        # simulate from initial values
-        self.sim_intensity = self.simulate(self.params['ini'].values.tolist())
-
-
-    def _initialize_models(self, signals, available_models, offset):
-
+        self.offset = False
         self.models = {}
         self.params = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'ini', 'lb', 'ub'])
+
+        # initialize models
+        self._initialize_models(signals, models)
+
+        # update parameters
+        self.set_params(signals)
+
+        # set offset
+        self.set_offset(offset=offset)
+
+
+    def _initialize_models(self, signals, available_models):
 
         # for each signal
         for id, signal in signals.items():
@@ -66,15 +65,7 @@ class Spectrum(object):
             # create a corresponding Model object
             self.models[id] = available_models[signal['model']]()
 
-            # update parameters values & bounds
-            try:
-                for par, val in signal.get("par", {}).items():
-                    for k, v in val.items():
-                        #logger.debug("update parameter {} - {} to {}".format(par, k, v))
-                        self.models[id].set_params(par, (k, v))
-            except:
-                raise ValueError("error when initializing parameter '{} - {}' at value '{}'".format(par, k, v))
-            
+            # get default parameters & bounds
             _params = self.models[id].get_params()
 
             # add id
@@ -83,15 +74,44 @@ class Spectrum(object):
             # add global parameters indices to model
             self.models[id]._par_idx = [i for i in range(len(self.params), len(_params)+len(self.params))]
             self.params = pd.concat([self.params, _params])
-        
-        # add offset
-        if self.offset:
-            self.params.loc[len(self.params.index)] = ['full_spectrum', None, 'offset', offset.get('ini', 0), offset.get('lb', -1e6), offset.get('ub', 1e6)]
 
         # reset index
         self.params.reset_index(inplace=True, drop=True)
 
         logger.debug("parameters\n{}".format(self.params))
+
+
+    def set_params(self, signals):
+
+        # update parameters values & bounds
+        for id, signal in signals.items():
+            for par, val in signal.get("par", {}).items():
+                for k, v in val.items():
+                    #logger.debug("update parameter {} - {} to {}".format(par, k, v))
+                    self.models[id].set_params(par, (k, v))
+                    # update self.params
+                    self.params.at[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v                      
+
+        
+    def set_offset(self, offset=None):
+
+        # update offset
+        if offset is None:
+            if self.offset:
+                # remove line in self.params
+                self.params.drop(self.params[(self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset')].index, inplace=True)
+                self.offset = False
+        else:
+            if isinstance(offset, dict):
+                if self.offset:
+                    for k, v in offset.items():
+                        self.params.at[(self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset'), k] = v
+                else:
+                    self.offset = True
+                    default_offset = 0.2*np.max(self.intensity)
+                    self.params.loc[len(self.params.index)] = ['full_spectrum', None, 'offset', offset.get('ini', 0), offset.get('lb', -default_offset), offset.get('ub', default_offset)]
+            else:
+                raise ValueError("offset must be a dict")
 
 
     @staticmethod
@@ -127,7 +147,10 @@ class Spectrum(object):
         return residuum
 
 
-    def simulate(self, params):
+    def simulate(self, params=None):
+
+        if params is None:
+            params = self.params['ini'].values.tolist()
 
         # simulate spectrum
         simulated_spectra = self._simulate(params, self.ppm, self.models, offset=self.offset)
@@ -135,7 +158,10 @@ class Spectrum(object):
         return simulated_spectra
 
 
-    def integrate(self, params, bounds=[-100.0, 300.0]):
+    def integrate(self, params=None, bounds=[-100.0, 300.0]):
+
+        if params is None:
+            params = self.params['ini'].values.tolist()
 
         # simulate spectrum
         from_to = np.arange(bounds[0], bounds[1], (bounds[1] - bounds[0])/4000000.0)
