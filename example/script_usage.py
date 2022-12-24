@@ -66,6 +66,9 @@ df_data_cut = df_data.loc[(df_data['ppm'] < ppm_max) & (df_data['ppm'] > ppm_min
 # create spectrum object
 sp = spectrum.Spectrum(df_data_cut, signals=signals, models=models)
 
+#sp.set_params({"singlet_1":{"model":"singlet", "par":{"x0":{"ini":1e20}}}})
+#print(sp.params)
+
 # plot spectra simulated from initial parameters
 fig = sp.plot(sim=False)
 fig.show()

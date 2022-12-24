@@ -172,6 +172,14 @@ class Spectrum(object):
         return area
 
 
+    def check_parameters(self):
+
+        test_bounds = (self.params['ini'] < self.params['lb']) | (self.params['ini'] > self.params['ub'])
+        if any(test_bounds):
+            par_error = self.params.loc[test_bounds, 'par'].values.tolist()
+            raise ValueError("initial values of parameters '{}' must be within bounds.".format(par_error))
+
+
     def fit(self, method="L-BFGS-B"):
         """
         Run the optimization on input parameters using the cost function and
@@ -180,6 +188,9 @@ class Spectrum(object):
         """
 
         logger.debug("fit spectrum")
+
+        # check parameters
+        self.check_parameters()
         
         # set scaling factor to stabilize convergence
         scaling_factor = np.mean(self.intensity)
