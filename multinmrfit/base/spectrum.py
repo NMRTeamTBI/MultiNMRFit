@@ -93,7 +93,7 @@ class Spectrum(object):
                     self.params.at[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v                      
 
         
-    def set_offset(self, offset=None):
+    def set_offset(self, offset):
 
         # update offset
         if offset is None:
@@ -250,23 +250,28 @@ class Spectrum(object):
         logger.debug("parameters\n{}".format(self.params))
 
 
-    def plot(self, exp=True, sim=True):
+    def plot(self, exp=True, ini=True, fit=True):
         logger.debug("create plot")
         
         # generate individual plots
-        if sim:
-            fig_sim = px.line(x=self.ppm, y=self.fit_intensity)
-            fig_sim.update_traces(line_color='red')
+        data = []
+        if ini:
+            ini_intensity = self.simulate(params = self.params['ini'].values.tolist())
+            fig_ini = px.line(x=self.ppm, y=ini_intensity)
+            fig_ini.update_traces(line_color='red')
+            data += fig_ini.data
         if exp:
-            fig_meas = px.scatter(x=self.ppm, y=self.intensity)
+            fig_exp = px.scatter(x=self.ppm, y=self.intensity)
+            data += fig_exp.data
+        if fit:
+            if 'opt' in self.params.columns:
+                fit_intensity = self.simulate(params = self.params['opt'].values.tolist())
+                fig_fit = px.line(x=self.ppm, y=fit_intensity)
+                fig_fit.update_traces(line_color='green')
+                data += fig_fit.data
 
         # combine plots
-        if sim and exp:
-            fig = go.Figure(data=fig_meas.data + fig_sim.data)
-        elif exp:
-            fig = go.Figure(data=fig_meas.data)
-        elif sim:
-            fig = go.Figure(data=fig_sim.data)
+        fig = go.Figure(data=data)
         fig.update_yaxes(exponentformat = 'power', showexponent="last")
         fig.update_xaxes(autorange="reversed")
         fig.update_layout(xaxis_title="chemical shift (ppm)",yaxis_title="intensity")
