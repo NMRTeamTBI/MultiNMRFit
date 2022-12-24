@@ -254,26 +254,37 @@ class Spectrum(object):
         logger.debug("create plot")
         
         # generate individual plots
-        data = []
+        data, series_names = [], []
+        if exp:
+            fig_exp = px.scatter(x=self.ppm, y=self.intensity)
+            fig_exp.update_traces(showlegend=True)
+            data += fig_exp.data
+            series_names.append("measured")
         if ini:
             ini_intensity = self.simulate(params = self.params['ini'].values.tolist())
             fig_ini = px.line(x=self.ppm, y=ini_intensity)
             fig_ini.update_traces(line_color='red')
+            fig_ini.update_traces(showlegend=True)
             data += fig_ini.data
-        if exp:
-            fig_exp = px.scatter(x=self.ppm, y=self.intensity)
-            data += fig_exp.data
+            series_names.append("initial values")
         if fit:
             if 'opt' in self.params.columns:
                 fit_intensity = self.simulate(params = self.params['opt'].values.tolist())
                 fig_fit = px.line(x=self.ppm, y=fit_intensity)
                 fig_fit.update_traces(line_color='green')
+                fig_fit.update_traces(showlegend=True)
                 data += fig_fit.data
+                series_names.append("best fit")
 
         # combine plots
         fig = go.Figure(data=data)
         fig.update_yaxes(exponentformat = 'power', showexponent="last")
         fig.update_xaxes(autorange="reversed")
-        fig.update_layout(xaxis_title="chemical shift (ppm)",yaxis_title="intensity")
+        fig.update_layout(xaxis_title="chemical shift (ppm)", yaxis_title="intensity")
+
+        for idx, name in enumerate(series_names):
+            fig.data[idx].name = name
+            fig.data[idx].hovertemplate = name
+        fig.update_layout(legend_title_text='Legend')
         
         return fig
