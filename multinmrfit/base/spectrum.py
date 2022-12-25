@@ -6,7 +6,6 @@ import logging
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize, differential_evolution
-import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 

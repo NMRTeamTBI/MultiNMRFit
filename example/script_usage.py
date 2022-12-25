@@ -70,18 +70,18 @@ sp = spectrum.Spectrum(df_data_cut, signals=signals, models=models)
 #print(sp.params)
 
 # plot spectra simulated from initial parameters
-fig = sp.plot(ini=False)
+#fig = sp.plot(ini=False)
 #fig.show()
 
 # fit spectrum
-#sp.fit()
+sp.fit()
 
 # display parameters
 sp.params
 
 # plot sim vs meas
-fig = sp.plot()
-#fig.show()
+fig = sp.plot(ini=False)
+fig.show()
 
 # simulate (here again from initial parameters as an example)
 res_sim = sp.simulate(sp.params['ini'].values.tolist())
