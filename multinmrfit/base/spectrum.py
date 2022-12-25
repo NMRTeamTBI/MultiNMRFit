@@ -8,6 +8,7 @@ import pandas as pd
 from scipy.optimize import minimize, differential_evolution
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 
 # create logger
@@ -253,38 +254,38 @@ class Spectrum(object):
     def plot(self, exp=True, ini=True, fit=True):
         logger.debug("create plot")
         
+        if fit:
+            fig_full = make_subplots(rows=2, cols=1, row_heights=[0.7, 0.3])
+        else:
+            fig_full = make_subplots(rows=1, cols=1)
+        
         # generate individual plots
-        data, series_names = [], []
+
         if exp:
-            fig_exp = px.scatter(x=self.ppm, y=self.intensity)
-            fig_exp.update_traces(showlegend=True)
-            data += fig_exp.data
-            series_names.append("measured")
+            fig_exp = go.Scatter(x=self.ppm, y=self.intensity, mode='markers', name='exp. spectrum')
+            fig_full.add_trace(fig_exp, row=1, col=1)
+
         if ini:
             ini_intensity = self.simulate(params = self.params['ini'].values.tolist())
-            fig_ini = px.line(x=self.ppm, y=ini_intensity)
-            fig_ini.update_traces(line_color='red')
-            fig_ini.update_traces(showlegend=True)
-            data += fig_ini.data
-            series_names.append("initial values")
+            fig_ini = go.Scatter(x=self.ppm, y=ini_intensity, mode='lines', name='initial values')
+            fig_full.add_trace(fig_ini, row=1, col=1)
+
         if fit:
             if 'opt' in self.params.columns:
                 fit_intensity = self.simulate(params = self.params['opt'].values.tolist())
-                fig_fit = px.line(x=self.ppm, y=fit_intensity)
-                fig_fit.update_traces(line_color='green')
-                fig_fit.update_traces(showlegend=True)
-                data += fig_fit.data
-                series_names.append("best fit")
+                fig_fit = go.Scatter(x=self.ppm, y=fit_intensity, mode='lines', name='best fit')
+                fig_full.add_trace(fig_fit, row=1, col=1)
 
-        # combine plots
-        fig = go.Figure(data=data)
-        fig.update_yaxes(exponentformat = 'power', showexponent="last")
-        fig.update_xaxes(autorange="reversed")
-        fig.update_layout(xaxis_title="chemical shift (ppm)", yaxis_title="intensity")
+                residuum = fit_intensity - self.intensity
+                fig_resid = go.Scatter(x=self.ppm, y=residuum, mode='lines', name='residuum')
+                fig_full.add_trace(fig_resid, row=2, col=1)
 
-        for idx, name in enumerate(series_names):
-            fig.data[idx].name = name
-            fig.data[idx].hovertemplate = name
-        fig.update_layout(legend_title_text='Legend')
-        
-        return fig
+        fig_full['layout']['xaxis']['title']='chemical shift (ppm)'
+        fig_full['layout']['yaxis']['title']='intensity'
+        if fit:
+            fig_full['layout']['xaxis2']['title']='chemical shift (ppm)'
+            fig_full['layout']['yaxis2']['title']='intensity'
+        fig_full.update_yaxes(exponentformat="power", showexponent="last")
+        fig_full.update_xaxes(autorange="reversed")
+
+        return fig_full
