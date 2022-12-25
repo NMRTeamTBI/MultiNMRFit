@@ -252,7 +252,7 @@ class Spectrum(object):
 
     def plot(self, exp=True, ini=True, fit=True):
         logger.debug("create plot")
-        fit = False
+        
         display_fit = fit and ('opt' in self.params.columns)
         
         if display_fit:
