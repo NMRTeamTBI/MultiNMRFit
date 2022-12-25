@@ -252,8 +252,10 @@ class Spectrum(object):
 
     def plot(self, exp=True, ini=True, fit=True):
         logger.debug("create plot")
+        fit = False
+        display_fit = fit and ('opt' in self.params.columns)
         
-        if fit:
+        if display_fit:
             fig_full = make_subplots(rows=2, cols=1, row_heights=[0.7, 0.3])
         else:
             fig_full = make_subplots(rows=1, cols=1)
@@ -269,19 +271,18 @@ class Spectrum(object):
             fig_ini = go.Scatter(x=self.ppm, y=ini_intensity, mode='lines', name='initial values')
             fig_full.add_trace(fig_ini, row=1, col=1)
 
-        if fit:
-            if 'opt' in self.params.columns:
-                fit_intensity = self.simulate(params = self.params['opt'].values.tolist())
-                fig_fit = go.Scatter(x=self.ppm, y=fit_intensity, mode='lines', name='best fit')
-                fig_full.add_trace(fig_fit, row=1, col=1)
+        if display_fit:
+            fit_intensity = self.simulate(params = self.params['opt'].values.tolist())
+            fig_fit = go.Scatter(x=self.ppm, y=fit_intensity, mode='lines', name='best fit')
+            fig_full.add_trace(fig_fit, row=1, col=1)
 
-                residuum = fit_intensity - self.intensity
-                fig_resid = go.Scatter(x=self.ppm, y=residuum, mode='lines', name='residuum')
-                fig_full.add_trace(fig_resid, row=2, col=1)
+            residuum = fit_intensity - self.intensity
+            fig_resid = go.Scatter(x=self.ppm, y=residuum, mode='lines', name='residuum')
+            fig_full.add_trace(fig_resid, row=2, col=1)
 
         fig_full['layout']['xaxis']['title']='chemical shift (ppm)'
         fig_full['layout']['yaxis']['title']='intensity'
-        if fit:
+        if display_fit:
             fig_full['layout']['xaxis2']['title']='chemical shift (ppm)'
             fig_full['layout']['yaxis2']['title']='intensity'
         fig_full.update_yaxes(exponentformat="power", showexponent="last")
