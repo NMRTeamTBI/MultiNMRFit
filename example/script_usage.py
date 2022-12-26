@@ -81,7 +81,7 @@ sp.params
 
 # plot sim vs meas
 fig = sp.plot(ini=False)
-fig.show()
+#fig.show()
 
 # simulate (here again from initial parameters as an example)
 res_sim = sp.simulate(sp.params['ini'].values.tolist())

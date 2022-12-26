@@ -83,6 +83,8 @@ class Spectrum(object):
 
     def set_params(self, signals):
 
+        self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore") 
+
         # update parameters values & bounds
         for id, signal in signals.items():
             for par, val in signal.get("par", {}).items():
@@ -90,10 +92,12 @@ class Spectrum(object):
                     #logger.debug("update parameter {} - {} to {}".format(par, k, v))
                     self.models[id].set_params(par, (k, v))
                     # update self.params
-                    self.params.at[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v                      
+                    self.params.at[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v  
 
         
     def set_offset(self, offset):
+
+        self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore") 
 
         # update offset
         if offset is None:
@@ -112,7 +116,7 @@ class Spectrum(object):
                     self.params.loc[len(self.params.index)] = ['full_spectrum', None, 'offset', offset.get('ini', 0), offset.get('lb', -default_offset), offset.get('ub', default_offset)]
             else:
                 raise ValueError("offset must be a dict")
-
+        
 
     @staticmethod
     def _simulate(params, ppm, models, offset=False):
@@ -180,6 +184,25 @@ class Spectrum(object):
             raise ValueError("initial values of parameters '{}' must be within bounds.".format(par_error))
 
 
+    @staticmethod
+    def linear_stats(res, ftol=2.220446049250313e-09):
+
+        npar = len(res.x)
+        tmp_i = np.zeros(npar)
+        standard_deviations = np.array([np.inf]*npar)
+        
+        for i in range(npar):
+            tmp_i[i] = 1.0
+            hess_inv_i = res.hess_inv(tmp_i)[i]
+            sd_i = np.sqrt(max(1.0, res.fun) * ftol * hess_inv_i)
+            tmp_i[i] = 0.0
+            #logger.debug('sd p{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
+            #logger.debug(f"   (rsd = {sd_i/res.x[i]}")
+            standard_deviations[i] = sd_i
+
+        return standard_deviations
+
+
     def fit(self, method="L-BFGS-B"):
         """
         Run the optimization on input parameters using the cost function and
@@ -236,9 +259,15 @@ class Spectrum(object):
 
             raise ValueError("optimization method '{}' not implemented".format(method))
         
-        # scale back estimated parameters
+        # get linear statistics
+        standard_deviations = self.linear_stats(self.fit_results)
+
+        # add estimated parameters
         self.params['opt'] = self.fit_results.x
-        self.params.loc[self.params['par'].isin(["intensity", "offset"]), ["opt"]] *= scaling_factor
+        self.params['opt_sd'] = standard_deviations
+
+        # scale back estimated parameters
+        self.params.loc[self.params['par'].isin(["intensity", "offset"]), ["opt", "opt_sd"]] *= scaling_factor
 
         # simulate spectrum from estimated parameters
         self.fit_intensity = self.simulate(self.params['opt'].values.tolist())
