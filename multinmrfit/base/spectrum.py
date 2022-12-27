@@ -16,12 +16,13 @@ logger = logging.getLogger(__name__)
 
 class Spectrum(object):
     """
-    This class is responsible for most of multinmrfit heavy work. Features included are:
+    This class is responsible for most of multinmrfit heavy work:
 
-        * **models initialization**
+        * iniitialization of **models** that represent each signal of the spectrum
         * **spectrum simulation**
         * **spectrum fitting** using `scipy.optimize.minimize ('Differential evolution',with polish with 'L-BFGS-B' method)
           <https://docs.scipy.org/doc/scipy/reference/optimize.minimize-lbfgsb.html#optimize-minimize-lbfgsb>`_
+        * **sensitivity analysis** on estimated parameters
         * **plotting**
 
     :param data: DataFrame containing data (columns 'ppm' and 'intensity')
@@ -42,6 +43,7 @@ class Spectrum(object):
         self.ppm = data.ppm
         self.intensity = data.intensity
         self.offset = False
+        self.fit_results = None
         self.models = {}
         self.params = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'ini', 'lb', 'ub'])
 
@@ -52,7 +54,7 @@ class Spectrum(object):
         self.set_params(signals)
 
         # set offset
-        self.set_offset(offset=offset)
+        self.set_offset(offset)
 
 
     def _initialize_models(self, signals, available_models):
@@ -68,10 +70,10 @@ class Spectrum(object):
             # get default parameters & bounds
             _params = self.models[id].get_params()
 
-            # add id
+            # add signal id
             _params.insert(0, 'signal_id', [id]*len(_params.index))
 
-            # add global parameters indices to model
+            # add global parameters indices to model object
             self.models[id]._par_idx = [i for i in range(len(self.params), len(_params)+len(self.params))]
             self.params = pd.concat([self.params, _params])
 
@@ -83,7 +85,8 @@ class Spectrum(object):
 
     def set_params(self, signals):
 
-        self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore") 
+        self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore")
+        self.fit_results = None
 
         # update parameters values & bounds
         for id, signal in signals.items():
@@ -97,7 +100,8 @@ class Spectrum(object):
         
     def set_offset(self, offset):
 
-        self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore") 
+        self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore")
+        self.fit_results = None
 
         # update offset
         if offset is None:
@@ -139,7 +143,8 @@ class Spectrum(object):
     def _calculate_cost(params, func, models, ppm, intensity, offset=False):
         """
         Calculate the cost (residuum) as the sum of squared differences
-        between experimental and simulated data
+        between experimental and simulated data.
+        :return: residuum (float)
         """
 
         # simulate spectrum
@@ -163,6 +168,10 @@ class Spectrum(object):
 
 
     def integrate(self, params=None, bounds=[-100.0, 300.0]):
+        """
+        Integrate all signals of spectrum.
+        :return: area (float)
+        """
 
         if params is None:
             params = self.params['ini'].values.tolist()
@@ -177,6 +186,10 @@ class Spectrum(object):
 
 
     def check_parameters(self):
+        """
+        Check initial parameters values are valid (i.e. floats between lower and upper bounds).
+        :return: None
+        """
 
         test_bounds = (self.params['ini'] < self.params['lb']) | (self.params['ini'] > self.params['ub'])
         if any(test_bounds):
@@ -190,7 +203,7 @@ class Spectrum(object):
         npar = len(res.x)
         tmp_i = np.zeros(npar)
         standard_deviations = np.array([np.inf]*npar)
-        
+
         for i in range(npar):
             tmp_i[i] = 1.0
             hess_inv_i = res.hess_inv(tmp_i)[i]
@@ -270,7 +283,7 @@ class Spectrum(object):
         self.params.loc[self.params['par'].isin(["intensity", "offset"]), ["opt", "opt_sd"]] *= scaling_factor
 
         # simulate spectrum from estimated parameters
-        self.fit_intensity = self.simulate(self.params['opt'].values.tolist())
+        self.fit_results.best_fit = self.simulate(self.params['opt'].values.tolist())
 
         # integrate spectrum
         integrals = self.integrate(self.params['opt'].values.tolist())
@@ -280,6 +293,8 @@ class Spectrum(object):
 
 
     def plot(self, exp=True, ini=True, fit=True):
+        """Plot experimental and simulated (from initial values and best fit) spectra."""
+        
         logger.debug("create plot")
         
         display_fit = fit and ('opt' in self.params.columns)
@@ -301,11 +316,10 @@ class Spectrum(object):
             fig_full.add_trace(fig_ini, row=1, col=1)
 
         if display_fit:
-            fit_intensity = self.simulate(params = self.params['opt'].values.tolist())
-            fig_fit = go.Scatter(x=self.ppm, y=fit_intensity, mode='lines', name='best fit')
+            fig_fit = go.Scatter(x=self.ppm, y=self.fit_results.best_fit, mode='lines', name='best fit')
             fig_full.add_trace(fig_fit, row=1, col=1)
 
-            residuum = fit_intensity - self.intensity
+            residuum = self.fit_results.best_fit - self.intensity
             fig_resid = go.Scatter(x=self.ppm, y=residuum, mode='lines', name='residuum')
             fig_full.add_trace(fig_resid, row=2, col=1)
 

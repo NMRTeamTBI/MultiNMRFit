@@ -13,6 +13,7 @@ class SignalModel(Model):
     def __init__(self):
 
         self.name = "singlet"
+        self.description = "mixed gaussian-lorentzian singlet"
         self.peak_number = 1
         default_params = {'model' : [self.name]*4,
                           'par' : ['x0', 'intensity', 'lw', 'gl'],
