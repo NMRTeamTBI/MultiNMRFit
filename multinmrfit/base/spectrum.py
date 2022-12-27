@@ -18,12 +18,11 @@ class Spectrum(object):
     """
     This class is responsible for most of multinmrfit heavy work:
 
-        * iniitialization of **models** that represent each signal of the spectrum
-        * **spectrum simulation**
-        * **spectrum fitting** using `scipy.optimize.minimize ('Differential evolution',with polish with 'L-BFGS-B' method)
-          <https://docs.scipy.org/doc/scipy/reference/optimize.minimize-lbfgsb.html#optimize-minimize-lbfgsb>`_
-        * **sensitivity analysis** on estimated parameters
-        * **plotting**
+        * models initialization
+        * spectrum simulation
+        * spectrum fitting
+        * sensitivity analysis
+        * plotting
 
     :param data: DataFrame containing data (columns 'ppm' and 'intensity')
     :type data: class: pandas.DataFrame
@@ -170,7 +169,7 @@ class Spectrum(object):
     def integrate(self, params=None, bounds=[-100.0, 300.0]):
         """
         Integrate all signals of spectrum.
-        :return: area (float)
+        :return: area (dict)
         """
 
         if params is None:
@@ -218,9 +217,7 @@ class Spectrum(object):
 
     def fit(self, method="L-BFGS-B"):
         """
-        Run the optimization on input parameters using the cost function and
-        Scipy minimize (L-BFGS-B method that is deterministic and uses the
-        gradient method for optimizing)
+        Fit spectrum.
         """
 
         logger.debug("fit spectrum")
