@@ -53,34 +53,3 @@ sp.params
 fig = sp.plot()
 fig.show()
 
-
-exit()
-
-############
-## PARTIAL SPECTRUM 2
-############
-
-# define signals
-signals = {"singlet_TSP":{"model":"singlet", "par":{"x0":{"ini":0.03, "lb":-0.05, "ub":0.05}}}}
-
-# limit spectrum
-ppm_max = 0.5
-ppm_min = -0.5
-df_data_cut = df_data.loc[(df_data['ppm'] < ppm_max) & (df_data['ppm'] > ppm_min)]
-
-# create spectrum object
-sp = spectrum.Spectrum(df_data_cut, signals=signals, available_models=available_models, offset={'ini':1.0})
-
-# fit spectrum
-#sp.fit(method="differential_evolution")
-sp.fit()
-
-# display parameters
-sp.params
-
-# plot sim vs meas
-fig = sp.plot()
-fig.show()
-
-
-
