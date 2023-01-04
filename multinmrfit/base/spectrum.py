@@ -5,9 +5,12 @@ multinmrfit spectrum module
 import logging
 import numpy as np
 import pandas as pd
+import nmrglue as ng
 from scipy.optimize import minimize, differential_evolution
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+
+import multinmrfit.base.io as io
 
 
 # create logger
@@ -34,29 +37,33 @@ class Spectrum(object):
     :type offset: dict
     """
 
-    def __init__(self, data, signals, models, offset=None):
+    def __init__(self, data_path, dataset, expno, procno, rowno=None, window=None):
 
         logger.debug("create Spectrum object")
 
         # initialize data
-        self.ppm = data.ppm
-        self.intensity = data.intensity
+        self.data_path = data_path
+        self.dataset = dataset
+        self.expno = expno
+        self.procno = procno
+        self.rowno = rowno
+        self.window = window
+
+        self.ppm, self.intensity = io.IoHandler.read_data(data_path, dataset, expno, procno, rowno=rowno, window=window)
+
+    
+    def _initialize_attributes(self):
+        
         self.offset = False
         self.fit_results = None
         self.models = {}
         self.params = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'ini', 'lb', 'ub'])
 
-        # initialize models
-        self._initialize_models(signals, models)
-
-        # update parameters
-        self.set_params(signals)
-
-        # set offset
-        self.set_offset(offset)
-
 
     def _initialize_models(self, signals, available_models):
+
+        # set (or reset if previously set) model-related attributes (parameters, models, etc)
+        self._initialize_attributes()
 
         # for each signal
         for id, signal in signals.items():
@@ -82,10 +89,43 @@ class Spectrum(object):
         logger.debug("parameters\n{}".format(self.params))
 
 
+    def peak_picking(self, threshold):
+
+        # perform peak picking
+        peak_table = ng.peakpick.pick(self.intensity, pthres=threshold, algorithm='downward')
+        peak_table = pd.DataFrame(peak_table)
+
+        # add chemical shifts in ppm
+        peak_table.insert(0, 'ppm', [self.ppm[int(i)] for i in peak_table['X_AXIS'].values])
+    
+        return peak_table        
+
+
+    def build_model(self, signals, available_models, offset=None):
+
+        # initialize models
+        self._initialize_models(signals, available_models)
+
+        # update parameters
+        self.set_params(signals)
+
+        # set offset
+        self.set_offset(offset)
+
+
+    def reset_fit_results(self):
+
+        # silently remove estimated parameters & integrals from params
+        self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore")
+
+        # reset fit_results
+        self.fit_results = None
+
+
     def set_params(self, signals):
 
-        self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore")
-        self.fit_results = None
+        # reset results of previous fit
+        self.reset_fit_results()
 
         # update parameters values & bounds
         for id, signal in signals.items():
@@ -99,13 +139,12 @@ class Spectrum(object):
         
     def set_offset(self, offset):
 
-        self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore")
-        self.fit_results = None
+        # reset results of previous fit
+        self.reset_fit_results()
 
-        # update offset
+        # update offset to its new value
         if offset is None:
             if self.offset:
-                # remove line in self.params
                 self.params.drop(self.params[(self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset')].index, inplace=True)
                 self.offset = False
         else:
@@ -115,10 +154,10 @@ class Spectrum(object):
                         self.params.loc[(self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset'), k] = v
                 else:
                     self.offset = True
-                    default_offset = 0.2*np.max(self.intensity)
-                    self.params.loc[len(self.params.index)] = ['full_spectrum', None, 'offset', offset.get('ini', 0), offset.get('lb', -default_offset), offset.get('ub', default_offset)]
+                    default_offset_bound = 0.2 * np.max(self.intensity)
+                    self.params.loc[len(self.params.index)] = ['full_spectrum', None, 'offset', offset.get('ini', 0), offset.get('lb', -default_offset_bound), offset.get('ub', default_offset_bound)]
             else:
-                raise ValueError("offset must be a dict")
+                raise ValueError("offset must be a dict or None")
         
 
     @staticmethod

@@ -1,4 +1,6 @@
 from pathlib import Path
+import pandas as pd
+import nmrglue as ng
 import importlib
 import os
 import multinmrfit
@@ -12,6 +14,7 @@ class IoHandler:
     def __init__():
         pass
 
+    @staticmethod
     def get_models():
         """
         Load signal models.
@@ -30,3 +33,35 @@ class IoHandler:
                 models[model_class().name] = model_class
 
         return models
+
+
+    @staticmethod
+    def read_data(data_path, dataset, expno, procno, rowno=None, window=None):
+
+        # get complete data path
+        full_path = Path(data_path, dataset, expno, 'pdata', procno)
+
+        # get dimension
+        ndim = 1 if rowno is None else 2
+
+        # read processed data
+        dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
+
+        # extract ppm and intensities
+        udic = ng.bruker.guess_udic(dic, data)
+        uc_F = ng.fileiobase.uc_from_udic(udic, ndim-1)
+        ppm = pd.Series(uc_F.ppm_scale())
+        if ndim == 2:
+            data = data[rowno]
+        intensity = pd.Series(data)
+
+        # filter selected window
+        if window is not None:
+            mask = (ppm >= window[0]) & (ppm <= window[1])
+            ppm = ppm[mask]
+            intensity = intensity[mask]
+
+        ppm.reset_index(inplace=True, drop=True)
+        intensity.reset_index(inplace=True, drop=True)
+
+        return ppm, intensity

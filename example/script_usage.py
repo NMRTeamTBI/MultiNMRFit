@@ -13,7 +13,7 @@ strm_hdlr.setFormatter(formatter)
 logger.addHandler(strm_hdlr)
 
 # get available models
-models = io.IoHandler.get_models()
+available_models = io.IoHandler.get_models()
 
 # load spectrum
 #df_data = pd.read_table("C:/Users/millard/Documents/GIT/multinmrfit/code/multinmrfit/example/data/data_sim_nmrfit.csv", sep="\t")
@@ -58,20 +58,31 @@ signals = {"singlet_1":{"model":"singlet", "par":{"x0":{"ini":7.8, "lb":7.5, "ub
            "triplet_T":{"model":"triplet", "par":{"x0":{"ini":8.95, "lb":8.7, "ub":9.0}, "J1":{"ini":0.09}}}}
 
 
-# limit spectrum
-ppm_max = 9.5
-ppm_min = 7.4
-df_data_cut = df_data.loc[(df_data['ppm'] < ppm_max) & (df_data['ppm'] > ppm_min)]
-
 # create spectrum object
-sp = spectrum.Spectrum(df_data_cut, signals=signals, models=models)
 
-#sp.set_params({"singlet_1":{"model":"singlet", "par":{"x0":{"ini":1e20}}}})
-#print(sp.params)
 
-# plot spectra simulated from initial parameters
-#fig = sp.plot(ini=False)
-#fig.show()
+data_path="C:/Bruker/TopSpin4.0.7/data"
+experiment="CFE_test"
+expno="991"
+procno="1"
+rowno=3
+window=(-0.2, 0.2)
+
+
+sp = spectrum.Spectrum(data_path, experiment, expno, procno, rowno=rowno, window=window)
+
+peak_table = sp.peak_picking(float(1e9))
+
+print(peak_table)
+
+# USER DEFINE SIGNALS WITH HELP OF PEAK TABLE
+
+signals = {"singlet_TSP":{"model":"singlet", "par":{"x0":{"ini":0.0, "lb":-0.05, "ub":0.05}}}}
+
+sp.build_model(signals=signals, available_models=available_models)
+
+sp.set_params({"singlet_TSP":{"par":{"x0":{"ini":0.001, "ub":0.06}}}})
+print(sp.params)
 
 # fit spectrum
 sp.fit()
@@ -80,13 +91,11 @@ sp.fit()
 sp.params
 
 # plot sim vs meas
-fig = sp.plot(ini=False)
-#fig.show()
-
-# simulate (here again from initial parameters as an example)
-res_sim = sp.simulate(sp.params['ini'].values.tolist())
+fig = sp.plot()
+fig.show()
 
 
+exit()
 
 ############
 ## PARTIAL SPECTRUM 2
@@ -101,7 +110,7 @@ ppm_min = -0.5
 df_data_cut = df_data.loc[(df_data['ppm'] < ppm_max) & (df_data['ppm'] > ppm_min)]
 
 # create spectrum object
-sp = spectrum.Spectrum(df_data_cut, signals=signals, models=models, offset={'ini':1.0})
+sp = spectrum.Spectrum(df_data_cut, signals=signals, available_models=available_models, offset={'ini':1.0})
 
 # fit spectrum
 #sp.fit(method="differential_evolution")
