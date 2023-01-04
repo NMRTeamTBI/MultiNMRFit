@@ -112,7 +112,7 @@ class Spectrum(object):
             if isinstance(offset, dict):
                 if self.offset:
                     for k, v in offset.items():
-                        self.params.at[(self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset'), k] = v
+                        self.params.loc[(self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset'), k] = v
                 else:
                     self.offset = True
                     default_offset = 0.2*np.max(self.intensity)
