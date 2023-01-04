@@ -35,6 +35,7 @@ class Spectrum(object):
     :type models: dict
     :param offset: offset
     :type offset: dict
+    
     """
 
     def __init__(self, data_path, dataset, expno, procno, rowno=None, window=None):
@@ -49,6 +50,10 @@ class Spectrum(object):
         self.rowno = rowno
         self.window = window
 
+        # set offset, fit_results, models and params attributes to default values
+        self._initialize_attributes()
+
+        # load NMR data
         self.ppm, self.intensity = io.IoHandler.read_data(data_path, dataset, expno, procno, rowno=rowno, window=window)
 
     
@@ -91,14 +96,21 @@ class Spectrum(object):
 
     def peak_picking(self, threshold):
 
+        logger.debug("peak peaking")
+
         # perform peak picking
         peak_table = ng.peakpick.pick(self.intensity, pthres=threshold, algorithm='downward')
         peak_table = pd.DataFrame(peak_table)
 
         # add chemical shifts in ppm
         peak_table.insert(0, 'ppm', [self.ppm[int(i)] for i in peak_table['X_AXIS'].values])
-    
-        return peak_table        
+
+        # add intensities
+        peak_table.insert(0, 'intensity', [self.intensity[int(i)] for i in peak_table['X_AXIS'].values])
+
+        logger.debug("peak table\n{}".format(peak_table))
+
+        return peak_table
 
 
     def build_model(self, signals, available_models, offset=None):
@@ -113,7 +125,7 @@ class Spectrum(object):
         self.set_offset(offset)
 
 
-    def reset_fit_results(self):
+    def _reset_fit_results(self):
 
         # silently remove estimated parameters & integrals from params
         self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore")
@@ -121,26 +133,42 @@ class Spectrum(object):
         # reset fit_results
         self.fit_results = None
 
+    def _set_param(self, id, par, k, v):
+        """
+        Update parameter both in spectrum object and in the corresponding model objects.
+        Ensure internal consistency when setting a parameter.
+        """
+
+        # update parameter in model
+        self.models[id].set_params(par, (k, v))
+        # update self.params
+        self.params.loc[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v  
+
 
     def set_params(self, signals):
 
+        # raise an error if params not initialized (i.e. model has not been built)
+        if not len(self.models):
+            raise ValueError("Model of the spectrum has not been built, must call build_model() first.")
+
         # reset results of previous fit
-        self.reset_fit_results()
+        self._reset_fit_results()
 
         # update parameters values & bounds
         for id, signal in signals.items():
             for par, val in signal.get("par", {}).items():
                 for k, v in val.items():
-                    #logger.debug("update parameter {} - {} to {}".format(par, k, v))
-                    self.models[id].set_params(par, (k, v))
-                    # update self.params
-                    self.params.loc[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v  
+                    self._set_param(id, par, k, v)
 
-        
+
     def set_offset(self, offset):
 
+        # raise an error if params not initialized (i.e. model has not been built)
+        if not len(self.models):
+            raise ValueError("Model of the spectrum has not been built, must call build_model() first.")
+
         # reset results of previous fit
-        self.reset_fit_results()
+        self._reset_fit_results()
 
         # update offset to its new value
         if offset is None:
@@ -157,7 +185,7 @@ class Spectrum(object):
                     default_offset_bound = 0.2 * np.max(self.intensity)
                     self.params.loc[len(self.params.index)] = ['full_spectrum', None, 'offset', offset.get('ini', 0), offset.get('lb', -default_offset_bound), offset.get('ub', default_offset_bound)]
             else:
-                raise ValueError("offset must be a dict or None")
+                raise TypeError("offset must be a dict or None")
         
 
     @staticmethod
@@ -223,7 +251,7 @@ class Spectrum(object):
         return area
 
 
-    def check_parameters(self):
+    def _check_parameters(self):
         """
         Check initial parameters values are valid (i.e. floats between lower and upper bounds).
         :return: None
@@ -262,7 +290,7 @@ class Spectrum(object):
         logger.debug("fit spectrum")
 
         # check parameters
-        self.check_parameters()
+        self._check_parameters()
         
         # set scaling factor to stabilize convergence
         scaling_factor = np.mean(self.intensity)
@@ -308,10 +336,10 @@ class Spectrum(object):
 
             raise ValueError("optimization method '{}' not implemented".format(method))
         
-        # get linear statistics
+        # calculate standard deviation on estimated parameters (linear statistics)
         standard_deviations = self.linear_stats(self.fit_results)
 
-        # add estimated parameters
+        # add estimated parameters & sds
         self.params['opt'] = self.fit_results.x
         self.params['opt_sd'] = standard_deviations
 
@@ -328,7 +356,7 @@ class Spectrum(object):
         logger.debug("parameters\n{}".format(self.params))
 
 
-    def plot(self, exp=True, ini=True, fit=True):
+    def plot(self, exp=True, ini=False, fit=False, pp=None):
         """Plot experimental and simulated (from initial values and best fit) spectra."""
         
         logger.debug("create plot")
@@ -347,17 +375,31 @@ class Spectrum(object):
             fig_full.add_trace(fig_exp, row=1, col=1)
 
         if ini:
-            ini_intensity = self.simulate(params = self.params['ini'].values.tolist())
-            fig_ini = go.Scatter(x=self.ppm, y=ini_intensity, mode='lines', name='initial values')
-            fig_full.add_trace(fig_ini, row=1, col=1)
+            if len(self.params.index):
+                ini_intensity = self.simulate(params = self.params['ini'].values.tolist())
+                fig_ini = go.Scatter(x=self.ppm, y=ini_intensity, mode='lines', name='initial values')
+                fig_full.add_trace(fig_ini, row=1, col=1)
+            else:
+                raise ValueError("Model of the spectrum has not been built, must call build_model() first.")
 
         if display_fit:
-            fig_fit = go.Scatter(x=self.ppm, y=self.fit_results.best_fit, mode='lines', name='best fit')
-            fig_full.add_trace(fig_fit, row=1, col=1)
+            if self.fit_results is None:
+                raise ValueError("Spectrum has not been fitted, must call fit() first.")
+            else:
+                fig_fit = go.Scatter(x=self.ppm, y=self.fit_results.best_fit, mode='lines', name='best fit')
+                fig_full.add_trace(fig_fit, row=1, col=1)
 
-            residuum = self.fit_results.best_fit - self.intensity
-            fig_resid = go.Scatter(x=self.ppm, y=residuum, mode='lines', name='residuum')
-            fig_full.add_trace(fig_resid, row=2, col=1)
+                residuum = self.fit_results.best_fit - self.intensity
+                fig_resid = go.Scatter(x=self.ppm, y=residuum, mode='lines', name='residuum')
+                fig_full.add_trace(fig_resid, row=2, col=1)
+
+        if isinstance(pp, pd.DataFrame):
+            x = pp['ppm'].values.tolist()
+            offset_plot = 0.05 * np.max(self.intensity)
+            y = [i + offset_plot for i in pp['intensity'].values]
+            fig_pp = go.Scatter(x=x, y=y, mode='markers', name='peaks', marker_symbol="arrow-down", marker_line_width=1.2, marker_size=9)
+            fig_full.add_trace(fig_pp, row=1, col=1)
+
 
         fig_full['layout']['xaxis']['title']='chemical shift (ppm)'
         fig_full['layout']['yaxis']['title']='intensity'
