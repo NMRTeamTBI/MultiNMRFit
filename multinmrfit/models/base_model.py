@@ -18,7 +18,7 @@ class Model(object):
 
     def set_params(self, name: str, val: tuple):
         try:
-            self._params.at[self._params["par"] == name, val[0]] = val[1]
+            self._params.loc[self._params["par"] == name, val[0]] = val[1]
         except:
             if name not in self._params["par"].values:
                 raise ValueError("parameter '{}' not found".format(name))

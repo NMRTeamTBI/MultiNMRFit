@@ -94,7 +94,7 @@ class Spectrum(object):
                     #logger.debug("update parameter {} - {} to {}".format(par, k, v))
                     self.models[id].set_params(par, (k, v))
                     # update self.params
-                    self.params.at[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v  
+                    self.params.loc[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v  
 
         
     def set_offset(self, offset):
