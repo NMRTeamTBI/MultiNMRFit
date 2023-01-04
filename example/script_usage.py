@@ -26,6 +26,8 @@ window=(-0.2, 0.2)
 # create Spectrum object
 sp = spectrum.Spectrum(data_path, experiment, expno, procno, rowno=rowno, window=window)
 
+# Documentation of Spectrum object
+#
 #         """
 #         Arguments
 #         ---------
