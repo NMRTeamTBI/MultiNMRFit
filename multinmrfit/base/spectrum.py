@@ -21,6 +21,8 @@ class Spectrum(object):
     """
     This class is responsible for most of multinmrfit heavy work:
 
+        * data initialization
+        * peak picking
         * models initialization
         * spectrum simulation
         * spectrum fitting
