@@ -110,11 +110,10 @@ sp = spectrum.Spectrum(data_path, experiment, expno, procno, rowno=rowno, window
 #             (default: [-100.0, 300.0]).
 #             If params is None, initial values (in 'params' attribute) are used for simulation.
 #             Returns integrals as a dict.
-#         plot(exp=True, ini=False, fit=False, pp=None)
-#             Plot the following data: experimental spectrum (exp, boolean), spectrum simulated from 
-#             initial parameters values (see 'params' attribute) (ini, boolean), spectrum simulated 
-#             for the best fit (fit, boolean), and peak picking results (pp, pandas.DataFrame 
-#             returned by peak_picking()).
+#         plot(exp: bool, ini: bool, fit: bool, pp: pd.DataFrame | None)
+#             Plot the following data: experimental spectrum (exp, default: True), spectrum simulated from 
+#             initial parameters values (see 'params' attribute) (ini, default: False), spectrum simulated 
+#             for the best fit (fit, default: False), and peak picking results (pp, default: None).
 #             Returns the figure as a pyplot.subplots.make_subplots object.
 #         """
 
