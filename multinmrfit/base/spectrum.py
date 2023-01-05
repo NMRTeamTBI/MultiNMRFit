@@ -376,7 +376,7 @@ class Spectrum(object):
         display_fit = fit and ('opt' in self.params.columns)
         
         if display_fit:
-            fig_full = make_subplots(rows=2, cols=1, row_heights=[0.7, 0.3])
+            fig_full = make_subplots(rows=2, cols=1, row_heights=[0.7, 0.3], shared_xaxes=True)
         else:
             fig_full = make_subplots(rows=1, cols=1)
         
@@ -413,13 +413,17 @@ class Spectrum(object):
             fig_pp = go.Scatter(x=x, y=y, mode='markers', name='peaks', marker_symbol="arrow-down", marker_line_width=1.2, marker_size=9, marker_color="#FDC086")
             fig_full.add_trace(fig_pp, row=1, col=1)
 
-
-        fig_full['layout']['xaxis']['title']='chemical shift (ppm)'
-        fig_full['layout']['yaxis']['title']='intensity'
+        fig_full.update_layout(plot_bgcolor="white", xaxis=dict(linecolor="black", mirror=True, showline=True), yaxis=dict(linecolor="black", mirror=True, showline=True, title='intensity'))
         if display_fit:
-            fig_full['layout']['xaxis2']['title']='chemical shift (ppm)'
-            fig_full['layout']['yaxis2']['title']='intensity'
+            fig_full.update_layout(plot_bgcolor="white", xaxis2=dict(linecolor="black", mirror=True, showline=True, title='chemical shift (ppm)'), yaxis2=dict(linecolor="black", mirror=True, showline=True, title='residuum'))
+            # add horizontal line at y=0 on residuum
+            fig_full.update_layout(shapes=[{'type': 'line','y0':0,'y1': 0,'x0':np.min(self.ppm), 'x1':np.max(self.ppm),'xref':'x2','yref':'y2', 'line': {'color': 'black','width': 1.0, 'dash': 'dash'}}])
+        else:
+            fig_full.update_layout(xaxis=dict(title='chemical shift (ppm)'))
+
         fig_full.update_yaxes(exponentformat="power", showexponent="last")
-        fig_full.update_xaxes(autorange="reversed")
+        fig_full.update_xaxes(autorange="reversed", ticks="outside")
+        fig_full.update_layout(plot_bgcolor="white", xaxis=dict(linecolor="black"), yaxis=dict(linecolor="black"))
+        fig_full.update_xaxes(autorange=False, range=[np.max(self.ppm), np.min(self.ppm)])
 
         return fig_full
