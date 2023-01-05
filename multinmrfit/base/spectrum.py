@@ -374,13 +374,13 @@ class Spectrum(object):
         # generate individual plots
 
         if exp:
-            fig_exp = go.Scatter(x=self.ppm, y=self.intensity, mode='markers', name='exp. spectrum')
+            fig_exp = go.Scatter(x=self.ppm, y=self.intensity, mode='markers', name='exp. spectrum', marker_color="#386CB0")
             fig_full.add_trace(fig_exp, row=1, col=1)
 
         if ini:
             if len(self.params.index):
                 ini_intensity = self.simulate(params = self.params['ini'].values.tolist())
-                fig_ini = go.Scatter(x=self.ppm, y=ini_intensity, mode='lines', name='initial values')
+                fig_ini = go.Scatter(x=self.ppm, y=ini_intensity, mode='lines', name='initial values', marker_color="#7FC97F")
                 fig_full.add_trace(fig_ini, row=1, col=1)
             else:
                 raise ValueError("Model of the spectrum has not been built, must call build_model() first.")
@@ -389,18 +389,18 @@ class Spectrum(object):
             if self.fit_results is None:
                 raise ValueError("Spectrum has not been fitted, must call fit() first.")
             else:
-                fig_fit = go.Scatter(x=self.ppm, y=self.fit_results.best_fit, mode='lines', name='best fit')
+                fig_fit = go.Scatter(x=self.ppm, y=self.fit_results.best_fit, mode='lines', name='best fit', marker_color="#EF553B")
                 fig_full.add_trace(fig_fit, row=1, col=1)
 
                 residuum = self.fit_results.best_fit - self.intensity
-                fig_resid = go.Scatter(x=self.ppm, y=residuum, mode='lines', name='residuum')
+                fig_resid = go.Scatter(x=self.ppm, y=residuum, mode='lines', name='residuum', marker_color="#AB63FA")
                 fig_full.add_trace(fig_resid, row=2, col=1)
 
         if isinstance(pp, pd.DataFrame):
             x = pp['ppm'].values.tolist()
             offset_plot = 0.05 * np.max(self.intensity)
             y = [i + offset_plot for i in pp['intensity'].values]
-            fig_pp = go.Scatter(x=x, y=y, mode='markers', name='peaks', marker_symbol="arrow-down", marker_line_width=1.2, marker_size=9)
+            fig_pp = go.Scatter(x=x, y=y, mode='markers', name='peaks', marker_symbol="arrow-down", marker_line_width=1.2, marker_size=9, marker_color="#FDC086")
             fig_full.add_trace(fig_pp, row=1, col=1)
 
 
