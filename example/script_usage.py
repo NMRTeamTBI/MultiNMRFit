@@ -128,7 +128,6 @@ print(peak_table)
 fig = sp.plot(pp=peak_table)
 fig.show()
 
-
 # USER DEFINE SIGNALS WITH HELP OF PEAK TABLE
 
 signals = {"singlet_TSP": {"model":"singlet", "par": {"x0": {"ini":0.0, "lb":-0.05, "ub":0.05}}}}

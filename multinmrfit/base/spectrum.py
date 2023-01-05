@@ -99,7 +99,7 @@ class Spectrum(object):
         logger.debug("parameters\n{}".format(self.params))
 
 
-    def _reset_fit_results(self):
+    def _reset_fit_results(self) -> None:
 
         # silently remove estimated parameters & integrals from params
         self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore")
@@ -108,10 +108,15 @@ class Spectrum(object):
         self.fit_results = None
 
 
-    def _set_param(self, id, par, k, v):
-        """
-        Update parameter both in spectrum object and in the corresponding model objects.
+    def _set_param(self, id: str, par: str, k: str, v: float) -> None:
+        """Update parameter both in spectrum object and in the corresponding model objects.
         Ensure internal consistency when setting a parameter.
+
+        Args:
+            id (str): signal id
+            par (str): parameter name
+            k (str): key (e.g. 'ini', 'lb', 'ub')
+            v (float): value
         """
 
         # update parameter in model
@@ -121,7 +126,18 @@ class Spectrum(object):
 
 
     @staticmethod
-    def _simulate(params, ppm, models, offset=False):
+    def _simulate(params: list, ppm: list, models: dict, offset: bool = False) -> list:
+        """Simulate spectrum
+
+        Args:
+            params (list): parameters values
+            ppm (list): chemical shifts
+            models (dict): models of all signals
+            offset (bool, optional): offset (provided as last element of params) added to spectrum if True. Defaults to False.
+
+        Returns:
+            list: simulated intensities
+        """
 
         # initialize spectrum
         if offset:
@@ -138,11 +154,19 @@ class Spectrum(object):
 
 
     @staticmethod
-    def _calculate_cost(params, func, models, ppm, intensity, offset=False):
-        """
-        Calculate the cost (residuum) as the sum of squared differences
-        between experimental and simulated data.
-        :return: residuum (float)
+    def _calculate_cost(params: list, func: callable, models: dict, ppm: list, intensity: list, offset: bool = False) -> float:
+        """Calculate residuum as sum of squared differences between experimental and simulated data.
+
+        Args:
+            params (list): parameters values
+            func (function): simulation function
+            models (dict): models of all signals
+            ppm (list): chemical shifts
+            intensity (list): measured intensities
+            offset (bool, optional): offset (provided as last element of params) added to spectrum if True. Defaults to False.
+
+        Returns:
+            float: residuum
         """
 
         # simulate spectrum
@@ -427,3 +451,4 @@ class Spectrum(object):
         fig_full.update_xaxes(autorange=False, range=[np.max(self.ppm), np.min(self.ppm)])
 
         return fig_full
+
