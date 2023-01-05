@@ -90,10 +90,10 @@ sp = spectrum.Spectrum(data_path, experiment, expno, procno, rowno=rowno, window
 #             Build the complete model of the spectrum by initializing a model for each 
 #             signal (in 'model' attribute), parameters (initial value and lower & upper 
 #             bounds, in 'params' attribute) and offset (in 'offset' and 'params' attributes).
-#         set_params(signals: dict)
+#         update_params(signals: dict)
 #             Update the value (initial, lower and/or upper bound) of one or several parameters 
 #             of one or several signals in 'params' attribute.
-#         set_offset(offset: dict | None)
+#         update_offset(offset: dict | None)
 #             Update the value of the offset (in 'offset' and 'params' attributes). Offset is
 #             removed is set to None.
 #         simulate(params: dict | None)
@@ -131,13 +131,16 @@ fig.show()
 
 # USER DEFINE SIGNALS WITH HELP OF PEAK TABLE
 
-signals = {"singlet_TSP": {"model":"singlet", "par": {"x0": {"ini":0.0, "lb":-0.05, "ub":0.05}}}}
+signals = {"singlet_TSP": {"model":"singlet", "par": {"x0": {"ini":0.0, "lb":-0.05, "ub":0.05}}},
+           "doublet_TSP": {"model":"doublet", "par": {"x0": {"ini":-0.01, "lb":-0.01, "ub":0.01}, "J1": {"ini":0.147, "lb":0.14, "ub":0.15}, "lw": {"ini":0.001}}}}
 
 # build model containing all signals
 sp.build_model(signals=signals, available_models=available_models)
 
 # params can be updated at any time
-sp.set_params({"singlet_TSP": {"par": {"intensity": {"ini":1e9, "ub":1e12}}}})
+sp.update_params({"singlet_TSP": {"par": {"intensity": {"ini":1e9, "ub":1e12}}}})
+sp.update_params({"doublet_TSP": {"par": {"intensity": {"ini":1e8, "lb":5e7, "ub":1e9}}}})
+sp.update_offset(offset={})
 print(sp.params)
 
 # fit spectrum

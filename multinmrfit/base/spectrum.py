@@ -122,10 +122,10 @@ class Spectrum(object):
         self._initialize_models(signals, available_models)
 
         # update parameters
-        self.set_params(signals)
+        self.update_params(signals)
 
         # set offset
-        self.set_offset(offset)
+        self.update_offset(offset)
 
 
     def _reset_fit_results(self):
@@ -148,7 +148,7 @@ class Spectrum(object):
         self.params.loc[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v  
 
 
-    def set_params(self, signals):
+    def update_params(self, signals):
 
         # raise an error if params not initialized (i.e. model has not been built)
         if not len(self.models):
@@ -164,7 +164,7 @@ class Spectrum(object):
                     self._set_param(id, par, k, v)
 
 
-    def set_offset(self, offset):
+    def update_offset(self, offset):
 
         # raise an error if params not initialized (i.e. model has not been built)
         if not len(self.models):
