@@ -399,7 +399,7 @@ class Spectrum(object):
                 fig_full.add_trace(fig_resid, row=2, col=1)
 
         if isinstance(pp, pd.DataFrame):
-            x = pp['ppm'].values.tolist()
+            x = pp['ppm'].values
             offset_plot = 0.05 * np.max(self.intensity)
             y = [i + offset_plot for i in pp['intensity'].values]
             fig_pp = go.Scatter(x=x, y=y, mode='markers', name='peaks', marker_symbol="arrow-down", marker_line_width=1.2, marker_size=9, marker_color="#FDC086")

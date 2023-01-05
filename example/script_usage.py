@@ -131,15 +131,17 @@ fig.show()
 
 # USER DEFINE SIGNALS WITH HELP OF PEAK TABLE
 
-signals = {"singlet_TSP": {"model":"singlet", "par": {"x0": {"ini":0.0, "lb":-0.05, "ub":0.05}}},
-           "doublet_TSP": {"model":"doublet", "par": {"x0": {"ini":-0.01, "lb":-0.01, "ub":0.01}, "J1": {"ini":0.147, "lb":0.14, "ub":0.15}, "lw": {"ini":0.001}}}}
+signals = {"singlet_TSP": {"model":"singlet", "par": {"x0": {"ini":0.0, "lb":-0.05, "ub":0.05}}}}
+
+#signals = {"singlet_TSP": {"model":"singlet", "par": {"x0": {"ini":0.0, "lb":-0.05, "ub":0.05}}},
+#           "doublet_TSP": {"model":"doublet", "par": {"x0": {"ini":-0.01, "lb":-0.01, "ub":0.01}, "J1": {"ini":0.147, "lb":0.14, "ub":0.15}, "lw": {"ini":0.001}}}}
 
 # build model containing all signals
 sp.build_model(signals=signals, available_models=available_models)
 
 # params can be updated at any time
 sp.update_params({"singlet_TSP": {"par": {"intensity": {"ini":1e9, "ub":1e12}}}})
-sp.update_params({"doublet_TSP": {"par": {"intensity": {"ini":1e8, "lb":5e7, "ub":1e9}}}})
+#sp.update_params({"doublet_TSP": {"par": {"intensity": {"ini":1e8, "lb":5e7, "ub":1e9}}}})
 sp.update_offset(offset={})
 print(sp.params)
 
