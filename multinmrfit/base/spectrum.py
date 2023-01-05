@@ -43,11 +43,11 @@ class Spectrum(object):
         logger.debug("create Spectrum object")
 
         # initialize data
-        self.data_path = data_path
-        self.dataset = dataset
-        self.expno = expno
-        self.procno = procno
-        self.rowno = rowno
+        self.data_path = str(data_path)
+        self.dataset = str(dataset)
+        self.expno = str(expno)
+        self.procno = str(procno)
+        self.rowno = int(rowno)
         self.window = window
 
         # set offset, fit_results, models and params attributes to default values
@@ -55,7 +55,7 @@ class Spectrum(object):
 
         # load NMR data
         if data is None:
-            self.ppm, self.intensity = io.IoHandler.read_data(data_path, dataset, expno, procno, rowno=rowno, window=window)
+            self.ppm, self.intensity = io.IoHandler.read_data(self.data_path, self.dataset, self.expno, self.procno, rowno=self.rowno, window=self.window)
         else:
             self.ppm, self.intensity = data.ppm.values.tolist(), data.intensity.values.tolist()
 
