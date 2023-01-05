@@ -38,7 +38,7 @@ class Spectrum(object):
     
     """
 
-    def __init__(self, data_path, dataset, expno, procno, rowno=None, window=None):
+    def __init__(self, data_path, dataset, expno, procno, rowno=None, window=None, data=None):
 
         logger.debug("create Spectrum object")
 
@@ -54,7 +54,10 @@ class Spectrum(object):
         self._initialize_attributes()
 
         # load NMR data
-        self.ppm, self.intensity = io.IoHandler.read_data(data_path, dataset, expno, procno, rowno=rowno, window=window)
+        if data is None:
+            self.ppm, self.intensity = io.IoHandler.read_data(data_path, dataset, expno, procno, rowno=rowno, window=window)
+        else:
+            self.ppm, self.intensity = data.ppm.values.tolist(), data.intensity.values.tolist()
 
     
     def _initialize_attributes(self):
