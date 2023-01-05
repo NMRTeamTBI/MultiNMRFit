@@ -107,6 +107,7 @@ class Spectrum(object):
         # reset fit_results
         self.fit_results = None
 
+
     def _set_param(self, id, par, k, v):
         """
         Update parameter both in spectrum object and in the corresponding model objects.
