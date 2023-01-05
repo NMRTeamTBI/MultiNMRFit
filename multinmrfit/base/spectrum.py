@@ -18,8 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Spectrum(object):
-    """
-    This class is responsible for most of multinmrfit heavy work:
+    """This class is responsible for most of multinmrfit heavy work:
 
         * data initialization
         * peak picking
@@ -28,19 +27,22 @@ class Spectrum(object):
         * spectrum fitting
         * sensitivity analysis
         * plotting
-
-    :param data: DataFrame containing data (columns 'ppm' and 'intensity')
-    :type data: class: pandas.DataFrame
-    :param signals: signals to fit
-    :type signals: dict
-    :param models: available models
-    :type models: dict
-    :param offset: offset
-    :type offset: dict
-    
     """
 
-    def __init__(self, data_path, dataset, expno, procno, rowno=None, window=None, data=None):
+    def __init__(self, data_path: str, dataset: str, expno: str, procno: str, rowno: str = None, window: tuple = None, data: pd.DataFrame = None) -> None:
+        """Construct the Spectrum object.
+
+        Args:
+            data_path (str): path to TopSpin data folder
+            dataset (str): name of the dataset
+            expno (str): experiment number
+            procno (str): processing number
+            rowno (str, optional): row number of the 2D pseudo spectrum, expect a 1D spectrum if None. Defaults to None.
+            window (tuple, optional): range of the window of interest (in ppm) or full spectrum if None. Defaults to None.
+            data (pd.DataFrame, optional): dataframe containing the chemical shifts (column 'ppm') and intensities 
+                                           (column 'intensity'), or None if the data must be loaded directly from Topspin. Defaults to None.
+        """
+
 
         logger.debug("create Spectrum object")
 
@@ -70,7 +72,7 @@ class Spectrum(object):
         self.params = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'ini', 'lb', 'ub'])
 
 
-    def _initialize_models(self, signals, available_models):
+    def _initialize_models(self, signals: dict, available_models: dict) -> None:
 
         # set (or reset if previously set) model-related attributes (parameters, models, etc)
         self._initialize_attributes()
@@ -178,10 +180,9 @@ class Spectrum(object):
         return residuum
 
 
-    def _check_parameters(self):
+    def _check_parameters(self) -> None:
         """
         Check initial parameters values are valid (i.e. floats between lower and upper bounds).
-        :return: None
         """
 
         # check initial values & bounds are numeric
@@ -197,7 +198,7 @@ class Spectrum(object):
 
 
     @staticmethod
-    def _linear_stats(res, ftol=2.220446049250313e-09):
+    def _linear_stats(res, ftol=2.220446049250313e-09) -> list:
 
         npar = len(res.x)
         tmp_i = np.zeros(npar)
