@@ -99,6 +99,97 @@ class Spectrum(object):
         logger.debug("parameters\n{}".format(self.params))
 
 
+    def _reset_fit_results(self):
+
+        # silently remove estimated parameters & integrals from params
+        self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore")
+
+        # reset fit_results
+        self.fit_results = None
+
+    def _set_param(self, id, par, k, v):
+        """
+        Update parameter both in spectrum object and in the corresponding model objects.
+        Ensure internal consistency when setting a parameter.
+        """
+
+        # update parameter in model
+        self.models[id].set_params(par, (k, v))
+        # update self.params
+        self.params.loc[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v  
+
+
+    @staticmethod
+    def _simulate(params, ppm, models, offset=False):
+
+        # initialize spectrum
+        if offset:
+            simulated_spectrum = np.empty(len(ppm))
+            simulated_spectrum.fill(params[-1])
+        else:
+            simulated_spectrum = np.zeros(len(ppm))
+
+        # add subspectrum of each signal
+        for model in models.values():
+            simulated_spectrum += model.simulate([params[i] for i in model._par_idx], ppm)
+
+        return simulated_spectrum
+
+
+    @staticmethod
+    def _calculate_cost(params, func, models, ppm, intensity, offset=False):
+        """
+        Calculate the cost (residuum) as the sum of squared differences
+        between experimental and simulated data.
+        :return: residuum (float)
+        """
+
+        # simulate spectrum
+        simulated_spectrum = func(params, ppm, models, offset=offset)
+
+        # calculate sum of squared residuals
+        residuum = np.sum(np.square(simulated_spectrum - intensity))
+
+        return residuum
+
+
+    def _check_parameters(self):
+        """
+        Check initial parameters values are valid (i.e. floats between lower and upper bounds).
+        :return: None
+        """
+
+        # check initial values & bounds are numeric
+        for i in ['ini', 'lb', 'ub']:
+            if not np.issubdtype(self.params[i].dtype, np.number):
+                raise ValueError("Values '{}' must be numeric for all parameters.".format(i))
+
+        # check initial values are within bounds
+        test_bounds = (self.params['ini'] < self.params['lb']) | (self.params['ini'] > self.params['ub'])
+        if any(test_bounds):
+            par_error = self.params.loc[test_bounds, 'par'].values.tolist()
+            raise ValueError("initial values of parameters '{}' must be within bounds.".format(par_error))
+
+
+    @staticmethod
+    def _linear_stats(res, ftol=2.220446049250313e-09):
+
+        npar = len(res.x)
+        tmp_i = np.zeros(npar)
+        standard_deviations = np.array([np.inf]*npar)
+
+        for i in range(npar):
+            tmp_i[i] = 1.0
+            hess_inv_i = res.hess_inv(tmp_i)[i]
+            sd_i = np.sqrt(max(1.0, res.fun) * ftol * hess_inv_i)
+            tmp_i[i] = 0.0
+            #logger.debug('sd p{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
+            #logger.debug(f"   (rsd = {sd_i/res.x[i]}")
+            standard_deviations[i] = sd_i
+
+        return standard_deviations
+
+
     def peak_picking(self, threshold):
 
         logger.debug("peak peaking")
@@ -128,26 +219,6 @@ class Spectrum(object):
 
         # set offset
         self.update_offset(offset)
-
-
-    def _reset_fit_results(self):
-
-        # silently remove estimated parameters & integrals from params
-        self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore")
-
-        # reset fit_results
-        self.fit_results = None
-
-    def _set_param(self, id, par, k, v):
-        """
-        Update parameter both in spectrum object and in the corresponding model objects.
-        Ensure internal consistency when setting a parameter.
-        """
-
-        # update parameter in model
-        self.models[id].set_params(par, (k, v))
-        # update self.params
-        self.params.loc[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v  
 
 
     def update_params(self, signals):
@@ -193,40 +264,6 @@ class Spectrum(object):
                 raise TypeError("offset must be a dict or None")
         
 
-    @staticmethod
-    def _simulate(params, ppm, models, offset=False):
-
-        # initialize spectrum
-        if offset:
-            simulated_spectrum = np.empty(len(ppm))
-            simulated_spectrum.fill(params[-1])
-        else:
-            simulated_spectrum = np.zeros(len(ppm))
-
-        # add subspectrum of each signal
-        for model in models.values():
-            simulated_spectrum += model.simulate([params[i] for i in model._par_idx], ppm)
-
-        return simulated_spectrum
-
-
-    @staticmethod
-    def _calculate_cost(params, func, models, ppm, intensity, offset=False):
-        """
-        Calculate the cost (residuum) as the sum of squared differences
-        between experimental and simulated data.
-        :return: residuum (float)
-        """
-
-        # simulate spectrum
-        simulated_spectrum = func(params, ppm, models, offset=offset)
-
-        # calculate sum of squared residuals
-        residuum = np.sum(np.square(simulated_spectrum - intensity))
-
-        return residuum
-
-
     def simulate(self, params=None):
 
         if params is None:
@@ -254,37 +291,6 @@ class Spectrum(object):
             area[name] = model.integrate([params[i] for i in model._par_idx], from_to)
 
         return area
-
-
-    def _check_parameters(self):
-        """
-        Check initial parameters values are valid (i.e. floats between lower and upper bounds).
-        :return: None
-        """
-
-        test_bounds = (self.params['ini'] < self.params['lb']) | (self.params['ini'] > self.params['ub'])
-        if any(test_bounds):
-            par_error = self.params.loc[test_bounds, 'par'].values.tolist()
-            raise ValueError("initial values of parameters '{}' must be within bounds.".format(par_error))
-
-
-    @staticmethod
-    def linear_stats(res, ftol=2.220446049250313e-09):
-
-        npar = len(res.x)
-        tmp_i = np.zeros(npar)
-        standard_deviations = np.array([np.inf]*npar)
-
-        for i in range(npar):
-            tmp_i[i] = 1.0
-            hess_inv_i = res.hess_inv(tmp_i)[i]
-            sd_i = np.sqrt(max(1.0, res.fun) * ftol * hess_inv_i)
-            tmp_i[i] = 0.0
-            #logger.debug('sd p{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
-            #logger.debug(f"   (rsd = {sd_i/res.x[i]}")
-            standard_deviations[i] = sd_i
-
-        return standard_deviations
 
 
     def fit(self, method="L-BFGS-B"):
@@ -342,7 +348,7 @@ class Spectrum(object):
             raise ValueError("optimization method '{}' not implemented".format(method))
         
         # calculate standard deviation on estimated parameters (linear statistics)
-        standard_deviations = self.linear_stats(self.fit_results)
+        standard_deviations = self._linear_stats(self.fit_results)
 
         # add estimated parameters & sds
         self.params['opt'] = self.fit_results.x
@@ -376,7 +382,8 @@ class Spectrum(object):
         # generate individual plots
 
         if exp:
-            fig_exp = go.Scatter(x=self.ppm, y=self.intensity, mode='markers', name='exp. spectrum', marker_color="#386CB0")
+            mode = 'markers' if display_fit else 'lines'
+            fig_exp = go.Scatter(x=self.ppm, y=self.intensity, mode=mode, name='exp. spectrum', marker_color="#386CB0")
             fig_full.add_trace(fig_exp, row=1, col=1)
 
         if ini:
