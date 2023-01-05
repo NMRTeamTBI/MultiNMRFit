@@ -1,6 +1,5 @@
 import logging
 import multinmrfit.base.spectrum as spectrum
-import pandas as pd
 import multinmrfit.base.io as io
 
 
@@ -137,7 +136,7 @@ signals = {"singlet_TSP":{"model":"singlet", "par":{"x0":{"ini":0.0, "lb":-0.05,
 # build model containing all signals
 sp.build_model(signals=signals, available_models=available_models)
 
-# params may be adjusted at any time
+# params may be updated at any time
 sp.set_params({"singlet_TSP":{"par":{"intensity":{"ini":1e9, "ub":1e12}}}})
 print(sp.params)
 
