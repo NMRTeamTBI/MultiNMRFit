@@ -81,8 +81,9 @@ sp = spectrum.Spectrum(data_path, experiment, expno, procno, rowno=rowno, window
 #        
 #         Methods
 #         -------
-#         __init__(data_path, dataset, expno, procno, rowno=None, window=None)
-#             Initialize attributes and load NMR data.
+#         __init__(data_path, dataset, expno, procno, rowno=None, window=None, data=None)
+#             Initialize attributes and load NMR data (from data if not None, otherwise reads 
+#             TopSpin files given in data_path, dataset, expno, procno, rowno).
 #         peak_picking(threshold: numeric)
 #             Performs peak picking using the threshold provided.
 #             Returns the peak table as a pandas.DataFrame.
