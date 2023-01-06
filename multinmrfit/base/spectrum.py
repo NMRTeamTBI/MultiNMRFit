@@ -43,7 +43,6 @@ class Spectrum(object):
                                         (column 'intensity'), or None if the data must be loaded directly from Topspin. Defaults to None.
         """
 
-
         logger.debug("create Spectrum object")
 
         # initialize data
@@ -66,7 +65,8 @@ class Spectrum(object):
     
     def _initialize_attributes(self):
         """Initialize attributes at default values.
-        """        
+        """   
+
         self.offset = False
         self.fit_results = None
         self.models = {}
@@ -80,6 +80,7 @@ class Spectrum(object):
             signals (dict): signals
             available_models (dict): models
         """
+
         # set (or reset if previously set) model-related attributes (parameters, models, etc)
         self._initialize_attributes()
 
@@ -110,6 +111,7 @@ class Spectrum(object):
     def _reset_fit_results(self) -> None:
         """Remove results of the last fit.
         """
+
         # silently remove estimated parameters & integrals from params
         self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore")
 
@@ -215,6 +217,7 @@ class Spectrum(object):
         Returns:
             list: standard deviations
         """
+
         npar = len(res.x)
         tmp_i = np.zeros(npar)
         standard_deviations = np.array([np.inf]*npar)
@@ -231,6 +234,13 @@ class Spectrum(object):
         return standard_deviations
 
 
+    def _check_model(self) -> None:
+
+        # raise an error if params not initialized (i.e. model has not been built)
+        if not len(self.models):
+            raise ValueError("Model of the spectrum has not been built, must call build_model() first.")
+
+
     def peak_picking(self, threshold: int) -> pd.DataFrame:
         """Peak picking.
 
@@ -240,6 +250,7 @@ class Spectrum(object):
         Returns:
             pd.DataFrame: peak table
         """
+
         logger.debug("peak peaking")
 
         # perform peak picking
@@ -265,6 +276,7 @@ class Spectrum(object):
             available_models (dict): models
             offset (dict, optional): offset. Defaults to None.
         """
+
         # initialize models
         self._initialize_models(signals, available_models)
 
@@ -281,9 +293,9 @@ class Spectrum(object):
         Args:
             signals (dict): signals
         """
-        # raise an error if params not initialized (i.e. model has not been built)
-        if not len(self.models):
-            raise ValueError("Model of the spectrum has not been built, must call build_model() first.")
+
+        # check the model has been built
+        self._check_model()
 
         # reset results of previous fit
         self._reset_fit_results()
@@ -302,9 +314,8 @@ class Spectrum(object):
             offset (dict): offset
         """
 
-        # raise an error if params not initialized (i.e. model has not been built)
-        if not len(self.models):
-            raise ValueError("Model of the spectrum has not been built, must call build_model() first.")
+        # check the model has been built
+        self._check_model()
 
         # reset results of previous fit
         self._reset_fit_results()
@@ -336,6 +347,10 @@ class Spectrum(object):
         Returns:
             list: simulated intensities
         """
+        
+        # check the model has been built
+        self._check_model()
+
         if params is None:
             params = self.params['ini'].values.tolist()
 
@@ -355,6 +370,9 @@ class Spectrum(object):
         Returns:
             dict: area of each signal.
         """
+
+        # check the model has been built
+        self._check_model()
 
         if params is None:
             params = self.params['ini'].values.tolist()
@@ -379,6 +397,9 @@ class Spectrum(object):
         """
 
         logger.debug("fit spectrum")
+
+        # check the model has been built
+        self._check_model()
 
         # check parameters
         self._check_parameters()
@@ -477,12 +498,10 @@ class Spectrum(object):
             fig_full.add_trace(fig_exp, row=1, col=1)
 
         if ini:
-            if len(self.params.index):
-                ini_intensity = self.simulate(params = self.params['ini'].values.tolist())
-                fig_ini = go.Scatter(x=self.ppm, y=ini_intensity, mode='lines', name='initial values', marker_color="#7FC97F")
-                fig_full.add_trace(fig_ini, row=1, col=1)
-            else:
-                raise ValueError("Model of the spectrum has not been built, must call build_model() first.")
+            self._check_model()
+            ini_intensity = self.simulate(params = self.params['ini'].values.tolist())
+            fig_ini = go.Scatter(x=self.ppm, y=ini_intensity, mode='lines', name='initial values', marker_color="#7FC97F")
+            fig_full.add_trace(fig_ini, row=1, col=1)
 
         if display_fit:
             if self.fit_results is None:
