@@ -29,7 +29,7 @@ class Spectrum(object):
         * plotting
     """
 
-    def __init__(self, data_path: str, dataset: str, expno: str, procno: str, rowno: str = None, window: tuple = None, data: pd.DataFrame = None) -> None:
+    def __init__(self, data, window: tuple = None) -> None:
         """Construct the Spectrum object.
 
         Args:
@@ -45,22 +45,27 @@ class Spectrum(object):
 
         logger.debug("create Spectrum object")
 
-        # initialize data
-        self.data_path = str(data_path)
-        self.dataset = str(dataset)
-        self.expno = str(expno)
-        self.procno = str(procno)
-        self.rowno = int(rowno)
-        self.window = window
-
         # set offset, fit_results, models and params attributes to default values
         self._initialize_attributes()
+        self.window = window
 
-        # load NMR data
-        if data is None:
+        # initialize data & load NMR data
+        if isinstance(data, pd.DataFrame):
+            self.data_path = None
+            self.dataset = None
+            self.expno = None
+            self.procno = None
+            self.rowno = None
+            self.ppm, self.intensity = io.IoHandler.filter_window(data.ppm, data.intensity, self.window)
+        elif isinstance(data, dict):
+            self.data_path = data["data_path"]
+            self.dataset = data["dataset"]
+            self.expno = data["expno"]
+            self.procno = data["procno"]
+            self.rowno = data["rowno"]
             self.ppm, self.intensity = io.IoHandler.read_data(self.data_path, self.dataset, self.expno, self.procno, rowno=self.rowno, window=self.window)
         else:
-            self.ppm, self.intensity = data.ppm.values.tolist(), data.intensity.values.tolist()
+            raise TypeError("Data must be provided as a dict or a dataframe.")
 
     
     def _initialize_attributes(self):
@@ -254,8 +259,12 @@ class Spectrum(object):
         logger.debug("peak peaking")
 
         # perform peak picking
-        peak_table = ng.peakpick.pick(self.intensity, pthres=threshold, algorithm='downward')
-        peak_table = pd.DataFrame(peak_table)
+        try:
+            peak_table = ng.peakpick.pick(self.intensity, pthres=threshold, algorithm='downward')
+            peak_table = pd.DataFrame(peak_table)
+        except:
+            logger.debug("No peak found.")
+            peak_table = pd.DataFrame(columns = ['X_AXIS', 'cID', 'X_LW', 'VOL'])
 
         # add chemical shifts in ppm
         peak_table.insert(0, 'ppm', [self.ppm[int(i)] for i in peak_table['X_AXIS'].values])

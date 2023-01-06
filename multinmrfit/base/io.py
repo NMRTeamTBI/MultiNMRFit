@@ -34,7 +34,6 @@ class IoHandler:
 
         return models
 
-
     @staticmethod
     def read_data(data_path, dataset, expno, procno, rowno=None, window=None):
 
@@ -61,7 +60,25 @@ class IoHandler:
             ppm = ppm[mask]
             intensity = intensity[mask]
 
+        # reset index
         ppm.reset_index(inplace=True, drop=True)
         intensity.reset_index(inplace=True, drop=True)
 
         return ppm, intensity
+
+
+    @staticmethod
+    def filter_window(ppm: list, intensity: list, window: tuple = None):
+
+        # filter selected window
+        if window is not None:
+            mask = (ppm >= window[0]) & (ppm <= window[1])
+            ppm = ppm[mask]
+            intensity = intensity[mask]
+
+        # reset index
+        ppm.reset_index(inplace=True, drop=True)
+        intensity.reset_index(inplace=True, drop=True)
+
+        return ppm, intensity
+
