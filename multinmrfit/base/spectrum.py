@@ -39,8 +39,8 @@ class Spectrum(object):
             procno (str): processing number
             rowno (str, optional): row number of the 2D pseudo spectrum, expect a 1D spectrum if None. Defaults to None.
             window (tuple, optional): range of the window of interest (in ppm) or full spectrum if None. Defaults to None.
-            data (pd.DataFrame, optional): dataframe containing the chemical shifts (column 'ppm') and intensities 
-                                           (column 'intensity'), or None if the data must be loaded directly from Topspin. Defaults to None.
+            data (dataframe, optional): dataframe containing the chemical shifts (column 'ppm') and intensities 
+                                        (column 'intensity'), or None if the data must be loaded directly from Topspin. Defaults to None.
         """
 
 
@@ -65,7 +65,8 @@ class Spectrum(object):
 
     
     def _initialize_attributes(self):
-        
+        """Initialize attributes at default values.
+        """        
         self.offset = False
         self.fit_results = None
         self.models = {}
@@ -73,7 +74,12 @@ class Spectrum(object):
 
 
     def _initialize_models(self, signals: dict, available_models: dict) -> None:
+        """Initialize models of each signal.
 
+        Args:
+            signals (dict): signals
+            available_models (dict): models
+        """
         # set (or reset if previously set) model-related attributes (parameters, models, etc)
         self._initialize_attributes()
 
@@ -102,7 +108,8 @@ class Spectrum(object):
 
 
     def _reset_fit_results(self) -> None:
-
+        """Remove results of the last fit.
+        """
         # silently remove estimated parameters & integrals from params
         self.params.drop(["opt", "opt_sd", "integral"], axis=1, inplace=True, errors="ignore")
 
@@ -117,7 +124,7 @@ class Spectrum(object):
         Args:
             id (str): signal id
             par (str): parameter name
-            k (str): key (e.g. 'ini', 'lb', 'ub')
+            k (str): parameter key ('ini', 'lb', 'ub')
             v (float): value
         """
 
@@ -198,8 +205,16 @@ class Spectrum(object):
 
 
     @staticmethod
-    def _linear_stats(res, ftol=2.220446049250313e-09) -> list:
+    def _linear_stats(res, ftol: float = 2.220446049250313e-09) -> list:
+        """Calculate standard deviation on estimated parameters using linear statistics.
 
+        Args:
+            res (scipy.optimize.OptimizeResult): fit results
+            ftol (float, optional): ftol of optimization. Defaults to 2.220446049250313e-09.
+
+        Returns:
+            list: standard deviations
+        """
         npar = len(res.x)
         tmp_i = np.zeros(npar)
         standard_deviations = np.array([np.inf]*npar)
@@ -216,8 +231,15 @@ class Spectrum(object):
         return standard_deviations
 
 
-    def peak_picking(self, threshold):
+    def peak_picking(self, threshold: int) -> pd.DataFrame:
+        """Peak picking.
 
+        Args:
+            threshold (int): threshould value for peak picking.
+
+        Returns:
+            pd.DataFrame: peak table
+        """
         logger.debug("peak peaking")
 
         # perform peak picking
@@ -235,8 +257,14 @@ class Spectrum(object):
         return peak_table
 
 
-    def build_model(self, signals, available_models, offset=None):
+    def build_model(self, signals: dict, available_models: dict, offset: dict = None) -> None:
+        """Build models of each signal to simulate the full spectrum.
 
+        Args:
+            signals (dict): signals
+            available_models (dict): models
+            offset (dict, optional): offset. Defaults to None.
+        """
         # initialize models
         self._initialize_models(signals, available_models)
 
@@ -247,8 +275,12 @@ class Spectrum(object):
         self.update_offset(offset)
 
 
-    def update_params(self, signals):
+    def update_params(self, signals: dict) -> None:
+        """Update parameters (initial values, lower and upper bounds).
 
+        Args:
+            signals (dict): signals
+        """
         # raise an error if params not initialized (i.e. model has not been built)
         if not len(self.models):
             raise ValueError("Model of the spectrum has not been built, must call build_model() first.")
@@ -263,7 +295,12 @@ class Spectrum(object):
                     self._set_param(id, par, k, v)
 
 
-    def update_offset(self, offset):
+    def update_offset(self, offset: dict) -> None:
+        """Update offset (initial value, lower and upper bounds).
+
+        Args:
+            offset (dict): offset
+        """
 
         # raise an error if params not initialized (i.e. model has not been built)
         if not len(self.models):
@@ -290,8 +327,15 @@ class Spectrum(object):
                 raise TypeError("offset must be a dict or None")
         
 
-    def simulate(self, params=None):
+    def simulate(self, params: list = None) -> list:
+        """Simulate spectrum.
 
+        Args:
+            params (list, optional): parameters values. Defaults to None.
+
+        Returns:
+            list: simulated intensities
+        """
         if params is None:
             params = self.params['ini'].values.tolist()
 
@@ -301,10 +345,15 @@ class Spectrum(object):
         return simulated_spectra
 
 
-    def integrate(self, params=None, bounds=[-100.0, 300.0]):
-        """
-        Integrate all signals of spectrum.
-        :return: area (dict)
+    def integrate(self, params: list = None, bounds: list = [-100.0, 300.0]) -> dict:
+        """Integrate each signal of the spectrum.
+
+        Args:
+            params (list, optional): parameters values, initial values if None. Defaults to None.
+            bounds (list, optional): bounds for integration. Defaults to [-100.0, 300.0].
+
+        Returns:
+            dict: area of each signal.
         """
 
         if params is None:
@@ -319,9 +368,14 @@ class Spectrum(object):
         return area
 
 
-    def fit(self, method="L-BFGS-B"):
-        """
-        Fit spectrum.
+    def fit(self, method: str = "L-BFGS-B"):
+        """Fit spectrum.
+
+        Args:
+            method (str, optional): optimization method, "L-BFGS-B" or "differential_evolution". Defaults to "L-BFGS-B".
+
+        Returns:
+            scipy.optimize.OptimizeResult: optimization results.
         """
 
         logger.debug("fit spectrum")
@@ -393,8 +447,18 @@ class Spectrum(object):
         logger.debug("parameters\n{}".format(self.params))
 
 
-    def plot(self, exp=True, ini=False, fit=False, pp=None):
-        """Plot experimental and simulated (from initial values and best fit) spectra."""
+    def plot(self, exp: bool = True, ini: bool = False, fit: bool = False, pp: pd.DataFrame = None) -> go.Figure:
+        """Plot experimental and simulated (from initial values and best fit) spectra and peak picking results.
+
+        Args:
+            exp (bool, optional): plot experimental spectrum if True. Defaults to True.
+            ini (bool, optional): plot spectrum simulated from initial parameters values if True. Defaults to False.
+            fit (bool, optional): plot spectrum simulated from the best fit if True. Defaults to False.
+            pp (pd.DataFrame, optional): plot peak picking results. Defaults to None.
+
+        Returns:
+            go.Figure: plotly figure
+        """
         
         logger.debug("create plot")
         
