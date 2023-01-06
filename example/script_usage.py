@@ -28,7 +28,7 @@ test_synthetic_dataset = pd.read_table("./data/data_sim_nmrfit.csv", sep="\t")
 test_topspin_dataset = {"data_path":data_path, "dataset":dataset, "expno":expno, "procno":procno, "rowno":rowno}
 
 # here we use one of these dataset
-data=test_topspin_dataset
+data=test_synthetic_dataset
 
 # create Spectrum object using the test_data or read data directly from TopSpin
 sp = spectrum.Spectrum(data=data, window=window)
