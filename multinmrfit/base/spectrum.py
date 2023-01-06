@@ -33,14 +33,9 @@ class Spectrum(object):
         """Construct the Spectrum object.
 
         Args:
-            data_path (str): path to TopSpin data folder
-            dataset (str): name of the dataset
-            expno (str): experiment number
-            procno (str): processing number
-            rowno (str, optional): row number of the 2D pseudo spectrum, expect a 1D spectrum if None. Defaults to None.
+            data (dataframe | dict, optional): input data, either a dataframe containing the chemical shifts (column 'ppm') and intensities 
+                                               (column 'intensity'), or a dict to load the data from Topspin files.
             window (tuple, optional): range of the window of interest (in ppm) or full spectrum if None. Defaults to None.
-            data (dataframe, optional): dataframe containing the chemical shifts (column 'ppm') and intensities 
-                                        (column 'intensity'), or None if the data must be loaded directly from Topspin. Defaults to None.
         """
 
         logger.debug("create Spectrum object")
