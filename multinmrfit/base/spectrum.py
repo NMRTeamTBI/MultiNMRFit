@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class Spectrum(object):
     """This class is responsible for most of multinmrfit heavy work:
 
-        * data initialization
+        * data loading
         * peak picking
         * model initialization
         * spectrum simulation
@@ -33,9 +33,9 @@ class Spectrum(object):
         """Construct the Spectrum object.
 
         Args:
-            data (dataframe | dict): input data, either a dataframe containing the chemical shifts (column 'ppm') and intensities 
-                                     (column 'intensity'), or a dict to load the data from Topspin files.
-            window (tuple, optional): range of the window of interest (in ppm) or full spectrum if None. Defaults to None.
+            data (dataframe | dict): input data, either a dataframe containing the chemical shifts (with columns 'ppm' and 
+                                     'intensity'), or a dict to load the data from Topspin files.
+            window (tuple, optional): lower and upper bounds of the window of interest (in ppm) or full spectrum if None. Defaults to None.
         """
 
         logger.debug("create Spectrum object")
@@ -55,17 +55,17 @@ class Spectrum(object):
         self.intensity = dataset["intensity"]
 
         # set model-related attributes (models, params, offset and fit_results) to default values
-        self._initialize_model_attributes()
+        self._set_default_model_attributes()
 
     
-    def _initialize_model_attributes(self):
+    def _set_default_model_attributes(self):
         """Initialize attributes at default values.
         """   
 
-        self.offset = False
-        self.fit_results = None
         self.models = {}
         self.params = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'ini', 'lb', 'ub'])
+        self.offset = False
+        self.fit_results = None
 
 
     def _initialize_models(self, signals: dict, available_models: dict) -> None:
@@ -77,7 +77,7 @@ class Spectrum(object):
         """
 
         # set (or reset if previously set) model-related attributes (parameters, models, etc)
-        self._initialize_model_attributes()
+        self._set_default_model_attributes()
 
         # for each signal
         for id, signal in signals.items():
@@ -186,7 +186,7 @@ class Spectrum(object):
 
     def _check_parameters(self) -> None:
         """
-        Check initial parameters values are valid (i.e. floats between lower and upper bounds).
+        Check initial parameters values are valid (i.e. numbers between lower and upper bounds).
         """
 
         # check initial values & bounds are numeric
@@ -198,7 +198,7 @@ class Spectrum(object):
         test_bounds = (self.params['ini'] < self.params['lb']) | (self.params['ini'] > self.params['ub'])
         if any(test_bounds):
             par_error = self.params.loc[test_bounds, 'par'].values.tolist()
-            raise ValueError("initial values of parameters '{}' must be within bounds.".format(par_error))
+            raise ValueError("Initial values of parameters '{}' must be within bounds.".format(par_error))
 
 
     @staticmethod
@@ -234,6 +234,13 @@ class Spectrum(object):
         # raise an error if params not initialized (i.e. model has not been built)
         if not len(self.models):
             raise ValueError("Model of the spectrum has not been built, must call build_model() first.")
+
+
+    def _check_fit_results(self) -> None:
+
+        # raise an error if params not initialized (i.e. model has not been built)
+        if self.fit_results is None:
+            raise ValueError("Spectrum has not been fitted, must call fit() first.")
 
 
     def peak_picking(self, threshold: int) -> pd.DataFrame:
@@ -482,9 +489,8 @@ class Spectrum(object):
         
         logger.debug("create plot")
         
-        display_fit = fit and ('opt' in self.params.columns)
-        
-        if display_fit:
+        if fit:
+            self._check_fit_results()
             fig_full = make_subplots(rows=2, cols=1, row_heights=[0.7, 0.3], shared_xaxes=True)
         else:
             fig_full = make_subplots(rows=1, cols=1)
@@ -492,7 +498,7 @@ class Spectrum(object):
         # generate individual plots
 
         if exp:
-            mode = 'markers' if display_fit else 'lines'
+            mode = 'markers' if fit else 'lines'
             fig_exp = go.Scatter(x=self.ppm, y=self.intensity, mode=mode, name='exp. spectrum', marker_color="#386CB0")
             fig_full.add_trace(fig_exp, row=1, col=1)
 
@@ -502,16 +508,13 @@ class Spectrum(object):
             fig_ini = go.Scatter(x=self.ppm, y=ini_intensity, mode='lines', name='initial values', marker_color="#7FC97F")
             fig_full.add_trace(fig_ini, row=1, col=1)
 
-        if display_fit:
-            if self.fit_results is None:
-                raise ValueError("Spectrum has not been fitted, must call fit() first.")
-            else:
-                fig_fit = go.Scatter(x=self.ppm, y=self.fit_results.best_fit, mode='lines', name='best fit', marker_color="#EF553B")
-                fig_full.add_trace(fig_fit, row=1, col=1)
+        if fit:
+            fig_fit = go.Scatter(x=self.ppm, y=self.fit_results.best_fit, mode='lines', name='best fit', marker_color="#EF553B")
+            fig_full.add_trace(fig_fit, row=1, col=1)
 
-                residuum = self.fit_results.best_fit - self.intensity
-                fig_resid = go.Scatter(x=self.ppm, y=residuum, mode='lines', name='residuum', marker_color="#AB63FA")
-                fig_full.add_trace(fig_resid, row=2, col=1)
+            residuum = self.fit_results.best_fit - self.intensity
+            fig_resid = go.Scatter(x=self.ppm, y=residuum, mode='lines', name='residuum', marker_color="#AB63FA")
+            fig_full.add_trace(fig_resid, row=2, col=1)
 
         if isinstance(pp, pd.DataFrame):
             x = pp['ppm'].values
@@ -521,7 +524,7 @@ class Spectrum(object):
             fig_full.add_trace(fig_pp, row=1, col=1)
 
         fig_full.update_layout(plot_bgcolor="white", xaxis=dict(linecolor="black", mirror=True, showline=True), yaxis=dict(linecolor="black", mirror=True, showline=True, title='intensity'))
-        if display_fit:
+        if fit:
             fig_full.update_layout(plot_bgcolor="white", xaxis2=dict(linecolor="black", mirror=True, showline=True, title='chemical shift (ppm)'), yaxis2=dict(linecolor="black", mirror=True, showline=True, title='residuum'))
             # add horizontal line at y=0 on residuum
             fig_full.update_layout(shapes=[{'type': 'line','y0':0,'y1': 0,'x0':np.min(self.ppm), 'x1':np.max(self.ppm),'xref':'x2','yref':'y2', 'line': {'color': 'black','width': 1.0, 'dash': 'dash'}}])
