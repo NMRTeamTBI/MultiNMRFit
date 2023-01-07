@@ -9,9 +9,9 @@ import logging
 # create logger
 logger = logging.getLogger(__name__)
 
-class IoHandler:
+class IoHandler():
 
-    def __init__():
+    def __init__(self):
         pass
 
     @staticmethod
@@ -34,8 +34,29 @@ class IoHandler:
 
         return models
 
+
+    def load_data(self, data, window: tuple = None):
+
+        # initialize metadata & load NMR data
+        if isinstance(data, pd.DataFrame):
+            dataset = {"data_path": None,
+                       "dataset": None,
+                       "expno": None,
+                       "procno": None,
+                       "rowno": None,
+                       "window": window}
+            dataset["ppm"], dataset["intensity"] = self.filter_window(data.ppm, data.intensity, window)
+        elif isinstance(data, dict):
+            dataset = data
+            dataset["window"] = window
+            dataset["ppm"], dataset["intensity"] = self.read_topspin_data(dataset["data_path"], dataset["dataset"], dataset["expno"], dataset["procno"], rowno=dataset.get("rowno", None), window=window)
+        else:
+            raise TypeError("Data must be provided as a dict or a dataframe.")
+        return dataset
+
+
     @staticmethod
-    def read_data(data_path, dataset, expno, procno, rowno=None, window=None):
+    def read_topspin_data(data_path, dataset, expno, procno, rowno=None, window=None):
 
         # get complete data path
         full_path = Path(data_path, dataset, expno, 'pdata', procno)
@@ -51,7 +72,7 @@ class IoHandler:
         uc_F = ng.fileiobase.uc_from_udic(udic, ndim-1)
         ppm = pd.Series(uc_F.ppm_scale())
         if ndim == 2:
-            data = data[rowno]
+            data = data[int(rowno)]
         intensity = pd.Series(data)
 
         # filter selected window

@@ -12,26 +12,23 @@ strm_hdlr = logging.StreamHandler()
 strm_hdlr.setFormatter(formatter)
 logger.addHandler(strm_hdlr)
 
-# get available models
+# load available models
 available_models = io.IoHandler.get_models()
-
-# define data to process
-data_path="C:/Bruker/TopSpin4.0.7/data"
-dataset="CFE_test"
-expno="991"
-procno="1"
-rowno=3
-window=(-0.2, 0.2)
 
 # data can be provided directly as a pandas dataframe or be loaded from TopSpin files
 test_synthetic_dataset = pd.read_table("./data/data_sim_nmrfit.csv", sep="\t")
-test_topspin_dataset = {"data_path":data_path, "dataset":dataset, "expno":expno, "procno":procno, "rowno":rowno}
 
-# here we use one of these dataset
-data=test_synthetic_dataset
+test_topspin_dataset = {"data_path":"C:/Bruker/TopSpin4.0.7/data",
+                        "dataset":"CFE_test",
+                        "expno":"991",
+                        "procno":"1",
+                        "rowno":"3"}
 
-# create Spectrum object using the test_data or read data directly from TopSpin
-sp = spectrum.Spectrum(data=data, window=window)
+# window of interest
+window=(-0.2, 0.2)
+
+# create Spectrum object
+sp = spectrum.Spectrum(data=test_synthetic_dataset, window=window)
 
 # perform peak picking
 peak_table = sp.peak_picking(1e6)
@@ -53,7 +50,7 @@ signals = {"singlet_TSP": {"model":"singlet", "par": {"x0": {"ini":0.0, "lb":-0.
 # build model containing all signals
 sp.build_model(signals=signals, available_models=available_models)
 
-# params can be updated at any time
+# model parameters can be updated
 sp.update_params({"singlet_TSP": {"par": {"intensity": {"ini":1e6, "ub":1e12}}}})
 #sp.update_params({"doublet_TSP": {"par": {"intensity": {"ini":1e8, "lb":5e7, "ub":1e9}}}})
 sp.update_offset(offset={})

@@ -22,7 +22,7 @@ class Spectrum(object):
 
         * data initialization
         * peak picking
-        * models initialization
+        * model initialization
         * spectrum simulation
         * spectrum fitting
         * sensitivity analysis
@@ -33,37 +33,32 @@ class Spectrum(object):
         """Construct the Spectrum object.
 
         Args:
-            data (dataframe | dict, optional): input data, either a dataframe containing the chemical shifts (column 'ppm') and intensities 
-                                               (column 'intensity'), or a dict to load the data from Topspin files.
+            data (dataframe | dict): input data, either a dataframe containing the chemical shifts (column 'ppm') and intensities 
+                                     (column 'intensity'), or a dict to load the data from Topspin files.
             window (tuple, optional): range of the window of interest (in ppm) or full spectrum if None. Defaults to None.
         """
 
         logger.debug("create Spectrum object")
 
-        # set offset, fit_results, models and params attributes to default values
-        self._initialize_attributes()
-        self.window = window
+        # load NMR data
+        loader = io.IoHandler()
+        dataset = loader.load_data(data, window=window)
 
-        # initialize data & load NMR data
-        if isinstance(data, pd.DataFrame):
-            self.data_path = None
-            self.dataset = None
-            self.expno = None
-            self.procno = None
-            self.rowno = None
-            self.ppm, self.intensity = io.IoHandler.filter_window(data.ppm, data.intensity, self.window)
-        elif isinstance(data, dict):
-            self.data_path = data["data_path"]
-            self.dataset = data["dataset"]
-            self.expno = data["expno"]
-            self.procno = data["procno"]
-            self.rowno = data["rowno"]
-            self.ppm, self.intensity = io.IoHandler.read_data(self.data_path, self.dataset, self.expno, self.procno, rowno=self.rowno, window=self.window)
-        else:
-            raise TypeError("Data must be provided as a dict or a dataframe.")
+        # set spectrum-related attributes
+        self.data_path = dataset["data_path"]
+        self.dataset = dataset["dataset"]
+        self.expno = dataset["expno"]
+        self.procno = dataset["procno"]
+        self.rowno = dataset["rowno"]
+        self.window = dataset["window"]
+        self.ppm = dataset["ppm"]
+        self.intensity = dataset["intensity"]
+
+        # set model-related attributes (models, params, offset and fit_results) to default values
+        self._initialize_model_attributes()
 
     
-    def _initialize_attributes(self):
+    def _initialize_model_attributes(self):
         """Initialize attributes at default values.
         """   
 
@@ -82,7 +77,7 @@ class Spectrum(object):
         """
 
         # set (or reset if previously set) model-related attributes (parameters, models, etc)
-        self._initialize_attributes()
+        self._initialize_model_attributes()
 
         # for each signal
         for id, signal in signals.items():
