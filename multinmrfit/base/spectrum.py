@@ -54,12 +54,12 @@ class Spectrum(object):
         self.ppm = dataset["ppm"]
         self.intensity = dataset["intensity"]
 
-        # set model-related attributes (models, params, offset and fit_results) to default values
+        # initialize model-related attributes (models, params, offset and fit_results) at default values
         self._set_default_model_attributes()
 
     
     def _set_default_model_attributes(self):
-        """Initialize attributes at default values.
+        """Initialize model-related attributes at default values.
         """   
 
         self.models = {}
@@ -95,6 +95,8 @@ class Spectrum(object):
 
             # add global parameters indices to model object
             self.models[id]._par_idx = [i for i in range(len(self.params), len(_params.index)+len(self.params))]
+
+            # add model parameters to global parameters
             self.params = pd.concat([self.params, _params])
 
         # reset index
@@ -127,6 +129,7 @@ class Spectrum(object):
 
         # update parameter in model
         self.models[id].set_params(par, (k, v))
+
         # update self.params
         self.params.loc[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v  
 
@@ -145,7 +148,7 @@ class Spectrum(object):
             list: simulated intensities
         """
 
-        # initialize spectrum
+        # initialize spectrum at offset or 0
         if offset:
             simulated_spectrum = np.empty(len(ppm))
             simulated_spectrum.fill(params[-1])
