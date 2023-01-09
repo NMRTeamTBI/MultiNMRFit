@@ -520,7 +520,7 @@ class Spectrum(object):
             x = pp['ppm'].values
             offset_plot = 0.05 * np.max(self.intensity)
             y = [i + offset_plot for i in pp['intensity'].values]
-            fig_pp = go.Scatter(x=x, y=y, mode='markers', name='peaks', marker_symbol="arrow-down", marker_line_width=1.2, marker_size=9, marker_color="#FDC086")
+            fig_pp = go.Scatter(x=x, y=y, mode='markers', name='peaks detected', marker_symbol="arrow-down", marker_line_width=1.2, marker_size=9, marker_color="#FDC086")
             fig_full.add_trace(fig_pp, row=1, col=1)
 
         fig_full.update_layout(plot_bgcolor="white", xaxis=dict(linecolor="black", mirror=True, showline=True), yaxis=dict(linecolor="black", mirror=True, showline=True, title='intensity'))
