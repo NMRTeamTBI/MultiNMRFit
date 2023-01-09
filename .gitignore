@@ -7,6 +7,3 @@ __pycache__/
 .idea/
 /.idea/
 /.idea/*
-example/.ipynb_checkpoints/
-example/.ipynb_checkpoints/*
-example/.ipynb_checkpoints/example-checkpoint.ipynb
