@@ -241,7 +241,7 @@ class Spectrum(object):
 
     def _check_fit_results(self) -> None:
 
-        # raise an error if params not initialized (i.e. model has not been built)
+        # raise an error if experimental spectrum has not been fitted
         if self.fit_results is None:
             raise ValueError("Spectrum has not been fitted, must call fit() first.")
 
