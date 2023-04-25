@@ -1,5 +1,8 @@
 """"
 First page of the streamlit GUI for NmrFit. Contains logic for handling inputs, analysis, outputs and extra options.
+
+To launch streamlit:
+    streamlit run "C:\Users\legregam\PycharmProjects\MultiNMRFit\multinmrfit\ui\Inputs_&_Outputs.py"
 """
 
 import streamlit as st
@@ -13,7 +16,7 @@ st.title(f"Welcome to NMRFit (v{multinmrfit.__version__})")
 
 # Initialize other pages
 st.session_state.pages = {f"Page_{num}": False for num in range(1, 5)}
-st.session_state.pages["Page 1"] = True
+st.session_state.pages["Page_1"] = True
 
 st.header("Use this section to handle inputs and outputs")
 
@@ -24,12 +27,13 @@ config_file = st.file_uploader(
     help="Choose a configuration file to initialize the software with run parameters"
 )
 
-# Generate button to select the NMR data folder (Keys should be standardized)
-data_folder_path = directory_selector(
-    message="Select NMR data directory",
-    button_key="page_1_data_path_selector",
-    path_key="input_directory"
-)
+with st.expander(label="Input", expanded=True):
+    # Generate button to select the NMR data folder (Keys should be standardized)
+    data_folder_path = directory_selector(
+        message="Select NMR data directory",
+        button_key="page_1_data_path_selector",
+        path_key="input_directory"
+    )
 
 # Generate form that will contain most of the page
 input_form = st.form(key="page1_input_form")

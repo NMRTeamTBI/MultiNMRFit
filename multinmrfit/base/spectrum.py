@@ -332,17 +332,27 @@ class Spectrum(object):
         # update offset to its new value
         if offset is None:
             if self.offset:
-                self.params.drop(self.params[(self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset')].index, inplace=True)
+                self.params.drop(self.params[
+                                     (self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset')
+                                 ].index, inplace=True)
                 self.offset = False
         else:
             if isinstance(offset, dict):
                 if self.offset:
                     for k, v in offset.items():
-                        self.params.loc[(self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset'), k] = v
+                        self.params.loc[
+                            (self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset'), k] = v
                 else:
                     self.offset = True
                     default_offset_bound = 0.2 * np.max(self.intensity)
-                    self.params.loc[len(self.params.index)] = ['full_spectrum', None, 'offset', offset.get('ini', 0), offset.get('lb', -default_offset_bound), offset.get('ub', default_offset_bound)]
+                    self.params.loc[len(self.params.index)] = [
+                        'full_spectrum',
+                        None,
+                        'offset',
+                        offset.get('ini', 0),
+                        offset.get('lb', -default_offset_bound),
+                        offset.get('ub', default_offset_bound)
+                    ]
             else:
                 raise TypeError("offset must be a dict or None")
         
