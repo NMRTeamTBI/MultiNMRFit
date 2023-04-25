@@ -41,7 +41,6 @@ input_form = st.form(key="page1_input_form")
 with input_form:
     with st.container():
         st.write("Handle Inputs")
-        # TODO: Ask if sub-groups should be in containers
 
         # Add button to enter specific NMR experiment data folder name
         exp_data_folder = st.text_input(
