@@ -11,7 +11,7 @@ from sess_i.base.main import SessI
 
 session = SessI(
     session_state = st.session_state,
-    page = "i/o"
+    page = "inputs_outputs"
 )
 
 # set page title with multinmrfit version
@@ -31,8 +31,6 @@ session.set_widget_defaults(
     output_res_filename   =   'results_filename'
 )
 
-
-# Add button to enter specific NMR experiment data folder name
 with st.form('Inputs/Outputs'):
     with st.container():
         st.write("## Inputs")
