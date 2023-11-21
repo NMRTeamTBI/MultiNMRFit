@@ -85,8 +85,8 @@ session.register_widgets({
     "output_res_path"       : out_res_path,
     "output_res_folder"     : out_res_folder,
     "output_res_filename"   : out_res_name
-
 })
-st.write(session)
-st.write(st.session_state["Global_Widget_Space"])
+
+# st.write(session)
+# st.write(st.session_state["Global_Widget_Space"])
 
