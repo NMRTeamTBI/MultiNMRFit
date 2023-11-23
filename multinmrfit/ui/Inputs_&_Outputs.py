@@ -35,24 +35,24 @@ session.set_widget_defaults(
 with st.form('Inputs/Outputs'):
     with st.container():
         st.write("## Inputs")
-        exp_data_path = st.text_input(
+        input_exp_data_path = st.text_input(
             label="Enter data path",
             key = "input_exp_data_path",
             value = session.widget_space["input_exp_data_path"],
             help="Select NMR experiment data path"
         )
-        exp_data_folder = st.text_input(
+        input_exp_data_folder = st.text_input(
             label="Enter data folder",
             key = "input_exp_data_folder",
             value = session.widget_space["input_exp_data_folder"],
         )
-        expno = st.number_input(
+        input_expno = st.number_input(
             label="Enter Expno",
             key="input_expno",  
             value = session.widget_space["input_expno"],
             help='Enter the expno(s) use in the analysis. If multiple numbers (separated with "," ) are provided it will automatically turned them into a list'
         )
-        procno = st.number_input(
+        input_procno = st.number_input(
             label="Enter Procno",
             key="input_procno",  
             value = session.widget_space["input_procno"],
@@ -60,17 +60,17 @@ with st.form('Inputs/Outputs'):
         )
     with st.container():
         st.write("## Outputs")
-        out_res_path = st.text_input(
+        output_res_path = st.text_input(
             label="Enter output path",
             key="output_res_path",
             value = session.widget_space["output_res_path"],
         )
-        out_res_folder = st.text_input(
+        output_res_folder = st.text_input(
             label="Enter output path",
             key="output_res_folder",
             value = session.widget_space["output_res_folder"],
         )
-        out_res_name = st.text_input(
+        output_res_filename = st.text_input(
             label="Enter output path",
             key="output_res_filename",
             value = session.widget_space["output_res_filename"],
@@ -79,13 +79,13 @@ with st.form('Inputs/Outputs'):
     submitted = st.form_submit_button('submitted')
 
 session.register_widgets({
-    "input_exp_data_path" : exp_data_path,
-    "input_exp_data_folder" : exp_data_folder,
-    "input_expno" : expno,
-    "input_procno" : procno,
-    "output_res_path" : out_res_path,
-    "output_res_folder" : out_res_folder,
-    "output_res_filename" : out_res_name
+    "input_exp_data_path" : input_exp_data_path,
+    "input_exp_data_folder" : input_exp_data_folder,
+    "input_expno" : input_expno,
+    "input_procno" : input_procno,
+    "output_res_path" : output_res_path,
+    "output_res_folder" : output_res_folder,
+    "output_res_filename" : output_res_filename
 })
 
 # st.write(session)

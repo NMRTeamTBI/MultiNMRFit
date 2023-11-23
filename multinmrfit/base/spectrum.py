@@ -487,7 +487,7 @@ class Spectrum(object):
         logger.debug("parameters\n{}".format(self.params))
 
 
-    def plot(self, exp: bool = True, ini: bool = False, fit: bool = False, pp: pd.DataFrame = None) -> go.Figure:
+    def plot(self, exp: bool = True, ini: bool = False, fit: bool = False, pp: pd.DataFrame = None, threshold: float = None) -> go.Figure:
         """Plot experimental and simulated (from initial values and best fit) spectra and peak picking results.
 
         Args:
@@ -535,6 +535,9 @@ class Spectrum(object):
             y = [i + offset_plot for i in pp['intensity'].values]
             fig_pp = go.Scatter(x=x, y=y, mode='markers', name='peaks detected', marker_symbol="arrow-down", marker_line_width=1.2, marker_size=9, marker_color="#FDC086")
             fig_full.add_trace(fig_pp, row=1, col=1)
+            
+        if isinstance(threshold, float):
+            fig_full.add_hline(y=threshold,line_width=3, line_dash="dash", line_color="green")
 
         fig_full.update_layout(plot_bgcolor="white", xaxis=dict(linecolor="black", mirror=True, showline=True), yaxis=dict(linecolor="black", mirror=True, showline=True, title='intensity'))
         if fit:

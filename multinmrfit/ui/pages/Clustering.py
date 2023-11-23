@@ -18,14 +18,13 @@ session = SessI(
 
 session.set_widget_defaults(
     reference_spectrum = 1,
-    spectrum_limit_max = 10.0,
-    spectrum_limit_min = 8.0,
+    spectrum_limit_max = 0.2,
+    spectrum_limit_min = -0.2,
 )
 
 test_synthetic_dataset = pd.read_table("./example/data/data_sim_nmrfit.csv", sep="\t")
 
 with st.expander("Reference spectrum", expanded=True):
-    st.write("Reference spectrum")
 
     reference_spectrum = st.number_input(
             label="Enter the number of the reference spectrum",
@@ -56,7 +55,6 @@ with st.expander("Reference spectrum", expanded=True):
         "spectrum_limit_min"    : spec_lim_min,
     })
 
-    st.write(session)
 
     sp = spectrum.Spectrum(
         data=test_synthetic_dataset,
@@ -74,10 +72,8 @@ with st.expander("Reference spectrum", expanded=True):
         key="reference_spectrum"
     )
 
-
-
-with st.expander("Clustering", expanded=True):
-
+with st.form("Clustering"):
+    st.write("Peak picking & CLustering")
     peakpicking_threshold = st.number_input(
         label="Enter peak picking threshold",
         key = "peakpicking_threshold",
@@ -92,15 +88,28 @@ with st.expander("Clustering", expanded=True):
 
     st.write("List of detected peaks")
     peak_table = sp.peak_picking(session.widget_space["peakpicking_threshold"])
-    edited_df = st.data_editor(peak_table)
+    edited_peak_table = st.data_editor(peak_table)
 
+    session.register_widgets({
+        "edited_peak_table"    : edited_peak_table,
+    })
+    st.write(session)
     st.write("Plot with detected peaks")
 
-    fig = sp.plot(pp=peak_table)
-    fig.update_layout(autosize=False, width=670, height=400)
+    fig = sp.plot(pp=peak_table,threshold=session.widget_space["peakpicking_threshold"])
+    fig.update_layout(autosize=False, width=900, height=500)
     st.plotly_chart(fig)
-    
-    
-    sp.fit()
-    
+
+    fitting = st.form_submit_button("Fitting")
+
+if fitting:
+    with st.expander("Fitting the reference spectrum", expanded=True): 
+        available_models = io.IoHandler.get_models()
+        signals = {"singlet_TSP": {"model":"singlet", "par": {"x0": {"ini":0.0, "lb":-0.05, "ub":0.05}}}}
+        sp.build_model(signals=signals, available_models=available_models)
+
+        sp.fit()
+        fig = sp.plot(ini=True, fit=True)
+        fig.update_layout(autosize=False, width=900, height=900)
+        st.plotly_chart(fig)
 
