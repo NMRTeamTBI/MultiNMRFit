@@ -6,7 +6,7 @@ import pandas as pd
 
 from sess_i.base.main import SessI
 import multinmrfit.base.spectrum as spectrum
-import multinmrfit.base.io as io
+import multinmrfit.ui.utils as utils
 
 st.set_page_config(page_title="Clustering",layout="wide")
 st.title("Clustering")
@@ -16,23 +16,35 @@ session = SessI(
     page="clustering"
 )
 
+######
+# reads-in data 
+utils = utils.IoHandler()
+dataset = {"data_path":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_path']),
+           "dataset":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_folder']),
+           "expno":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_expno']),
+           "procno":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_procno']),
+           }
+# Get n_row from the full experiment
+n_row, exp_dim = utils.get_dim(dataset)
+# Estimate the ppm limits for the default values
+ppm_min, ppm_max = utils.get_ppm_Limits(dataset)
+######
+
 session.set_widget_defaults(
     reference_spectrum = 1,
-    spectrum_limit_max = 0.2,
-    spectrum_limit_min = -0.2,
+    spectrum_limit_max = ppm_max,
+    spectrum_limit_min = ppm_min,
 )
 
-test_synthetic_dataset = pd.read_table("./example/data/data_sim_nmrfit.csv", sep="\t")
 
 with st.expander("Reference spectrum", expanded=True):
-
-    reference_spectrum = st.number_input(
-            label="Enter the number of the reference spectrum",
+    reference_spectrum = st.selectbox(
+            label="Select the number of the reference spectrum",
             key = "reference_spectrum",
-            value = session.widget_space["reference_spectrum"],
-            help="Enter the number of the spectrum used for peak picking and clustering"
+            options =list(range(1,n_row+1)), 
+            help="Select the number of the spectrum used for peak picking and clustering"
             )
-
+    
     col1, col2 = st.columns(2)
     with col1:
         spec_lim_max = st.number_input(
@@ -50,14 +62,15 @@ with st.expander("Reference spectrum", expanded=True):
 
 
     session.register_widgets({
-        "reference_spectrum"    : reference_spectrum,
+        "reference_spectrum"    : reference_spectrum, #account for python vs data shape
         "spectrum_limit_max"    : spec_lim_max,
         "spectrum_limit_min"    : spec_lim_min,
     })
 
+    dataset['rowno'] = session.widget_space["reference_spectrum"]-1
 
     sp = spectrum.Spectrum(
-        data=test_synthetic_dataset,
+        data=dataset,
         window=(
             min(session.widget_space["spectrum_limit_min"],session.widget_space["spectrum_limit_max"]),
             max(session.widget_space["spectrum_limit_min"],session.widget_space["spectrum_limit_max"]))

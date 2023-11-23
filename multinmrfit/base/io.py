@@ -1,6 +1,7 @@
 from pathlib import Path
 import pandas as pd
 import nmrglue as ng
+import numpy as np
 import importlib
 import os
 import multinmrfit
@@ -58,9 +59,9 @@ class IoHandler():
     @staticmethod
     def read_topspin_data(data_path, dataset, expno, procno, rowno=None, window=None):
 
+        # Pierre's version ####
         # get complete data path
         full_path = Path(data_path, dataset, expno, 'pdata', procno)
-
         # get dimension
         ndim = 1 if rowno is None else 2
 

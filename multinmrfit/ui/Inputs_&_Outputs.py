@@ -23,9 +23,9 @@ st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 st.header("Use this section to handle inputs and outputs")
 
 session.set_widget_defaults(
-    input_exp_data_path = "/path/to/data",
-    input_exp_data_folder = "nmr_data_folder",
-    input_expno = 1,
+    input_exp_data_path = "/Users/cyrilcharlier/Documents/Research/nmrData",
+    input_exp_data_folder = "8SD_enzyme300123",
+    input_expno = 23,
     input_procno = 1,
     output_res_path = 'path/to/results',
     output_res_folder = 'results_folder',
@@ -88,6 +88,6 @@ session.register_widgets({
     "output_res_filename" : output_res_filename
 })
 
-# st.write(session)
-# st.write(st.session_state["Global_Widget_Space"])
+st.write(session)
+st.write(st.session_state["Global_Widget_Space"])
 
