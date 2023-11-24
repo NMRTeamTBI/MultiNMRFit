@@ -293,8 +293,6 @@ class Spectrum(object):
 
         logger.debug("peak table\n{}".format(peak_table))
         
-        print(peak_table)
-        
         return peak_table
 
 

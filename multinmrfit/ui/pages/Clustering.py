@@ -115,7 +115,7 @@ with st.form("Clustering"):
             "intensity":"peak intensity",
             "cID":"cluster ID"
         },
-        # hide_index=True
+        hide_index=True
         )
 
     session.register_widgets({
@@ -125,7 +125,32 @@ with st.form("Clustering"):
     create_models = st.form_submit_button("Create models")
 
     if create_models:
-        st.write(edited_peak_table.cID)
+        cluster_ids = utils.model_cluster_assignment(edited_peak_table.cID)
+
+        col21, col22, col23 = st.columns(3)
+
+        with col21:
+            st.write("Cluster ID")
+
+        with col22:
+            st.write("Number of peaks")
+
+        with col23:
+            st.write("Models availables")
+
+        for index, key in enumerate(cluster_ids):
+
+            col21, col22, col23 = st.columns(3)
+
+            with col21:
+                st.text_input("",value=key)
+            #     # st.selectbox(label="", key=key + "text_wight" + str(i))
+
+            with col22:
+                st.number_input("", value=cluster_ids[key]['n'] )
+
+            with col23:
+                st.selectbox("",options=[i for i in cluster_ids[key]['models']])
 
     fitting = st.form_submit_button("Fitting")
 

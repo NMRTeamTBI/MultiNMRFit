@@ -6,6 +6,7 @@ import importlib
 import os
 import multinmrfit
 import logging
+from itertools import groupby
 
 # create logger
 logger = logging.getLogger(__name__)
@@ -28,6 +29,28 @@ class IoHandler():
         ppm_max = max(ppm)
         return ppm_min, ppm_max
 
+    def model_cluster_list(self):
+        models_peak_number = self.get_models_peak_number()
+        return models_peak_number
+    
+    def model_cluster_assignment(self,cluster_ids):
+        model_list = self.get_models_peak_number()
+        # get list of different possible models with a similar number of peaks
+        d = {n:[k for k in model_list.keys() if model_list[k] == n] for n in set(model_list.values())}
+
+        # get cluster ID defined by user and their occurences
+        n_cID = cluster_ids.value_counts()[1:]
+
+        # get user defined cluster names
+        cluster_names = n_cID.index.values.tolist()
+
+        cluster = {}
+        for c in range(len(n_cID)):    
+            cluster[cluster_names[c]]= {'n':int(n_cID[c]),'models':list(d[int(n_cID[c])])}
+        return cluster
+        
+
+    
     @staticmethod
     def read_topspin_data(data_path, dataset, expno, procno):
 
@@ -59,10 +82,10 @@ class IoHandler():
 
 
     @staticmethod
-    def get_models():
+    def get_models_peak_number():
         """
         Load signal models.
-        :return: dict containing the different model objects, with model.name as keys
+        :return: dict containing the different model peak numbers, with model.name as keys
         """
 
         models = {}
@@ -74,6 +97,7 @@ class IoHandler():
                 module = importlib.import_module("multinmrfit.models.{}".format(file[:-3]))
                 model_class = getattr(module, "SignalModel")
                 logger.debug("model name: {}".format(model_class().name))
-                models[model_class().name] = model_class
-
+                # models[model_class().name] = model_class
+                models[model_class().name] = model_class().peak_number
         return models
+
