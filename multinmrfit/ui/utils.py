@@ -16,24 +16,51 @@ class IoHandler():
         pass
 
     def get_dim(self,dataset):
-        """Estimate the number of rows in the experiment"""
+        """
+        Estimate the number of rows in the experiment
+        
+        Returns:
+            integer : number of rows
+            tuple : dimensions of the data to be fitted
+        """
         ppm, data = self.read_topspin_data(dataset["data_path"], dataset["dataset"], dataset["expno"], dataset["procno"])
         n_row = data.shape[0]
         data_shape = data.shape
         return n_row, data_shape
 
     def get_ppm_Limits(self,dataset):
-        """Estimate the ppm limits in the experiment"""
+        """
+        Estimate the ppm limits in the experiment
+        (minimum of ppm scale, maximim of ppm scale)
+
+        Returns:
+            integers : ppm_min, ppm_max 
+        """
         ppm, data = self.read_topspin_data(dataset["data_path"], dataset["dataset"], dataset["expno"], dataset["procno"])
         ppm_min = min(ppm)
         ppm_max = max(ppm)
         return ppm_min, ppm_max
 
     def model_cluster_list(self):
+        """
+        Estimate the number of peaks per model
+        
+        Returns:
+            dict : models_peak_number
+        """
         models_peak_number = self.get_models_peak_number()
         return models_peak_number
     
     def model_cluster_assignment(self,cluster_ids):
+        """
+        Estimate the number of peaks per model
+
+        Args:
+            cluster_ids (pd.DataFrame): cluster ids provided by the user
+        Returns:
+            dict : models_peak_number
+        """
+
         model_list = self.get_models_peak_number()
         # get list of different possible models with a similar number of peaks
         d = {n:[k for k in model_list.keys() if model_list[k] == n] for n in set(model_list.values())}
@@ -85,7 +112,8 @@ class IoHandler():
     def get_models_peak_number():
         """
         Load signal models.
-        :return: dict containing the different model peak numbers, with model.name as keys
+        
+        Returns: dict containing the different model peak numbers, with model.name as keys
         """
 
         models = {}
