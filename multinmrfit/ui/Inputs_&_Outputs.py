@@ -88,6 +88,6 @@ session.register_widgets({
     "output_res_filename" : output_res_filename
 })
 
-st.write(session)
-st.write(st.session_state["Global_Widget_Space"])
+# st.write(session)
+# st.write(st.session_state["Global_Widget_Space"])
 

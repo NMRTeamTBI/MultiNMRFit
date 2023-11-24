@@ -262,9 +262,11 @@ class Spectrum(object):
         try:
             peak_table = ng.peakpick.pick(self.intensity, pthres=threshold, algorithm='downward')
             peak_table = pd.DataFrame(peak_table)
+            
         except:
             logger.debug("No peak found.")
             peak_table = pd.DataFrame(columns = ['X_AXIS', 'cID', 'X_LW', 'VOL'])
+
 
         # add chemical shifts in ppm
         peak_table.insert(0, 'ppm', [self.ppm[int(i)] for i in peak_table['X_AXIS'].values])
@@ -272,8 +274,27 @@ class Spectrum(object):
         # add intensities
         peak_table.insert(0, 'intensity', [self.intensity[int(i)] for i in peak_table['X_AXIS'].values])
 
-        logger.debug("peak table\n{}".format(peak_table))
+        # drop peak position in points, volumes and linewidths in points
+        peak_table.drop(['X_AXIS','VOL','X_LW','cID'],axis=1,inplace=True)
+        # all clear cluster_ids from nmrglue to be replace from cluster_ids from mulitnmrfit
+        peak_table['cID'] = ""
 
+        # change type of the cluster column only to allow cluster names
+        peak_table["cID"] = peak_table['cID'].astype(str) 
+
+        # sort by peak position in ppm 
+        peak_table.sort_values(by=['ppm'],inplace=True)
+
+        # Change Column names
+        peak_table.reset_index(inplace=True,drop=True)
+
+        # Change columns order
+        peak_table = peak_table[['ppm','intensity','cID']]
+
+        logger.debug("peak table\n{}".format(peak_table))
+        
+        print(peak_table)
+        
         return peak_table
 
 

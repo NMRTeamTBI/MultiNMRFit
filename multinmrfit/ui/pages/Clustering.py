@@ -22,7 +22,7 @@ utils = utils.IoHandler()
 dataset = {"data_path":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_path']),
            "dataset":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_folder']),
            "expno":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_expno']),
-           "procno":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_procno']),
+           "procno":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_procno'])
            }
 # Get n_row from the full experiment
 n_row, exp_dim = utils.get_dim(dataset)
@@ -99,30 +99,45 @@ with st.form("Clustering"):
         "peakpicking_threshold"    : peakpicking_threshold,
     })
 
-    st.write("List of detected peaks")
     peak_table = sp.peak_picking(session.widget_space["peakpicking_threshold"])
-    edited_peak_table = st.data_editor(peak_table)
 
-    session.register_widgets({
-        "edited_peak_table"    : edited_peak_table,
-    })
-    st.write(session)
     st.write("Plot with detected peaks")
 
     fig = sp.plot(pp=peak_table,threshold=session.widget_space["peakpicking_threshold"])
     fig.update_layout(autosize=False, width=900, height=500)
     st.plotly_chart(fig)
 
+    st.write("List of detected peaks")
+    edited_peak_table = st.data_editor(
+        peak_table,
+        column_config={
+            "ppm":"peak position",
+            "intensity":"peak intensity",
+            "cID":"cluster ID"
+        },
+        # hide_index=True
+        )
+
+    session.register_widgets({
+        "edited_peak_table"    : edited_peak_table,
+    })
+    
+    create_models = st.form_submit_button("Create models")
+
+    if create_models:
+        st.write(edited_peak_table.cID)
+
     fitting = st.form_submit_button("Fitting")
 
-if fitting:
-    with st.expander("Fitting the reference spectrum", expanded=True): 
-        available_models = io.IoHandler.get_models()
-        signals = {"singlet_TSP": {"model":"singlet", "par": {"x0": {"ini":0.0, "lb":-0.05, "ub":0.05}}}}
-        sp.build_model(signals=signals, available_models=available_models)
+# if fitting:
+#     with st.expander("Fitting the reference spectrum", expanded=True): 
+#         st.write(edited_peak_table)
+#         available_models = io.IoHandler.get_models()
+#         signals = {"singlet_TSP": {"model":"singlet", "par": {"x0": {"ini":0.0, "lb":-0.05, "ub":0.05}}}}
+#         sp.build_model(signals=signals, available_models=available_models)
 
-        sp.fit()
-        fig = sp.plot(ini=True, fit=True)
-        fig.update_layout(autosize=False, width=900, height=900)
-        st.plotly_chart(fig)
+#         sp.fit()
+#         fig = sp.plot(ini=True, fit=True)
+#         fig.update_layout(autosize=False, width=900, height=900)
+#         st.plotly_chart(fig)
 

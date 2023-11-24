@@ -59,7 +59,6 @@ class IoHandler():
     @staticmethod
     def read_topspin_data(data_path, dataset, expno, procno, rowno=None, window=None):
 
-        # Pierre's version ####
         # get complete data path
         full_path = Path(data_path, dataset, expno, 'pdata', procno)
         # get dimension
