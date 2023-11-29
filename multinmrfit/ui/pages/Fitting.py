@@ -11,18 +11,35 @@ session = SessI(
     page="Fitting"
 )
 
-sp = st.session_state['Object_Space']['reference_spectrum']
+sp = session.get_object(
+    key = "reference_spectrum"
+    )   
+
+user_models = session.get_object(
+    key = "user_models"
+    )   
+
+user_models = session.get_object(
+    key = "user_models"
+    )   
+
+edited_peak_table = session.get_object(
+        key="edited_peak_table"
+    )
+
 
 utils = utils.IoHandler()
-signals = utils.create_models(st.session_state["Global_Widget_Space"]["clustering"]['user_models'])
-available_models = utils.get_models()
+signals = utils.create_models(user_models)
 st.write(signals)
-sp.build_model(signals=signals, available_models=available_models)
-sp.fit()
-st.write(sp.params)
-fig = sp.plot(ini=True, fit=True)
-fig.update_layout(autosize=False, width=900, height=900)
-st.plotly_chart(fig)
+st.write(edited_peak_table)
+# available_models = utils.get_models()
+# st.write(signals)
+# sp.build_model(signals=signals, available_models=available_models)
+# sp.fit()
+# st.write(sp.params)
+# fig = sp.plot(ini=True, fit=True)
+# fig.update_layout(autosize=False, width=900, height=900)
+# st.plotly_chart(fig)
 
 # st.write(signals)
 

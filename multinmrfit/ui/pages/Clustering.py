@@ -118,12 +118,14 @@ with st.form("Clustering"):
         hide_index=True
         )
     
+    session.register_object(
+        obj=edited_peak_table,
+        key="edited_peak_table"
+    )
+
     # !!! Needs be clicked twice before it does something correcly otherwise missing the last row !!!#
     create_models = st.form_submit_button("Create models") 
     
-session.register_widgets({
-    "edited_peak_table"    : edited_peak_table,
-})
 
 with st.form("create and update models"):
     user_models = {}
