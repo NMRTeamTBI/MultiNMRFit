@@ -125,52 +125,51 @@ session.register_widgets({
     "edited_peak_table"    : edited_peak_table,
 })
 
-if create_models:
-    with st.form("create_models"):
-        user_models = {}
-        clusters_and_models = utils.model_cluster_assignment(edited_peak_table)
+with st.form("create and update models"):
+    user_models = {}
+    clusters_and_models = utils.model_cluster_assignment(edited_peak_table)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.write("Cluster ID")
+    with col2:
+        st.write("Models")
+
+    for key in clusters_and_models:
 
         col1, col2 = st.columns(2)
-
         with col1:
-            st.write("Cluster ID")
+            st.text_input(
+                label='label',
+                label_visibility='collapsed',
+                value=f"{key} ({clusters_and_models[key]['n']} peaks)",
+                disabled=True
+                )
+
         with col2:
-            st.write("Models")
+            model = st.selectbox(
+                label='label',
+                label_visibility='collapsed',
+                options=[i for i in clusters_and_models[key]['models']],
+                key=f"Parameter_value_{key}"
+                )
 
-        for key in clusters_and_models:
+        user_models[key] = {'n':clusters_and_models[key]['n'],'model':model}
 
-            col1, col2 = st.columns(2)
-            with col1:
-                st.text_input(
-                    label='label',
-                    label_visibility='collapsed',
-                    value=f"{key} ({clusters_and_models[key]['n']} peaks)",
-                    disabled=True
-                    )
+    session.register_object(
+        obj=user_models,
+        key="user_models"
+    )
 
-            with col2:
-                model = st.selectbox(
-                    label='label',
-                    label_visibility='collapsed',
-                    options=[i for i in clusters_and_models[key]['models']],
-                    key=f"Parameter_value_{key}"
-                    )
-
-            user_models[key] = {'n':clusters_and_models[key]['n'],'model':model}
-
-        session.register_object(
-            obj=user_models,
-            key="user_models"
-        )
-
-        fitting= st.form_submit_button("fitting")
-
-
-# st.write(user_models)
-# st.write(session.widget_space['user_models'])
-
-
-# if fitting:
+    fitting= st.form_submit_button("Fitting")
+    
+if fitting:
+    with st.expander(label="test", expanded=True):
+        example = session.get_object(
+            key = "user_models"
+            )   
+        st.write(example)
 #     with st.expander("test", expanded=True):
 #         st.write(session.widget_space['user_models'])
 #         st.write('##')
