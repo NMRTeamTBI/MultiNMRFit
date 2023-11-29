@@ -51,40 +51,36 @@ class IoHandler():
         models_peak_number = self.get_models_peak_number()
         return models_peak_number
     
-    def model_cluster_assignment(self,cluster_ids):
+    def model_cluster_assignment(self,edited_peak_table):
         """
         Estimate the number of peaks per model
 
         Args:
-            cluster_ids (pd.DataFrame): cluster ids provided by the user
+            edited_peak_table (pd.DataFrame)
         Returns:
-            dict : models_peak_number
+            dict : {cluster_id:{'n':number of peaks,'models'=[list of possible models with that number of peaks]}
         """
 
         # filtering and removing none assigned rows
-        cluster_ids= cluster_ids.replace(r'^\s*$', np.nan, regex=True)
-        cluster_ids.dropna(axis=0,inplace=True)
-        # test = test1[test1['cID'] != 'NaN']
-        # cluster_ids = cluster_ids[cluster_ids['cID'] != '']
-        print(cluster_ids)
-        # model_list = self.get_models_peak_number()
+        edited_peak_table= edited_peak_table.replace(r'^\s*$', np.nan, regex=True)
+        edited_peak_table.dropna(axis=0,inplace=True)
 
-        # # get list of different possible models with a similar number of peaks
-        # d = {n:[k for k in model_list.keys() if model_list[k] == n] for n in set(model_list.values())}
+        model_list = self.get_models_peak_number()
 
-        # print(d)
+        # get list of different possible models with a similar number of peaks
+        d = {n:[k for k in model_list.keys() if model_list[k] == n] for n in set(model_list.values())}
+
         # # get cluster ID defined by user and their occurences
+        n_cID = edited_peak_table.cID.value_counts()
 
-        # n_cID = cluster_ids.value_counts()[1:]
-        # print(n_cID)
-        # # get user defined cluster names
-        # cluster_names = n_cID.index.values.tolist()
-
-        # cluster = {}
-        # for c in range(len(n_cID)):    
-        #     cluster[cluster_names[c]]= {'n':int(n_cID[c]),'models':list(d[int(n_cID[c])])}
+        # get user defined cluster names
+        cluster_names = n_cID.index.values.tolist()
         
-        return cluster_ids
+        cluster_and_models = {}
+        for c in range(len(n_cID)):    
+            cluster_and_models[cluster_names[c]]= {'n':int(n_cID[c]),'models':list(d[int(n_cID[c])])}
+        
+        return cluster_and_models
         
     def create_models(self,dict):
         models = self.get_models()
