@@ -128,41 +128,46 @@ session.register_widgets({
 if create_models:
     with st.form("create_models"):
         user_models = {}
-        cluster_ids = utils.model_cluster_assignment(edited_peak_table)
-        st.write(cluster_ids)
-        # col1, col2, col3 = st.columns(3)
+        clusters_and_models = utils.model_cluster_assignment(edited_peak_table)
 
-        # with col1:
-        #     st.write("Cluster ID")
-        # with col2:
-        #     st.write("Number of peaks")
-        # with col3:
-        #     st.write("Models availables")
+        col1, col2 = st.columns(2)
 
-        # for index, key in enumerate(cluster_ids):
-        #     col1, col2, col3 = st.columns(3)
-        #     with col1:
-        #         # cluster_id = st.text_input(label='label',label_visibility='collapsed',value=key,disabled=True)
-        #         st.text_input(label='label',label_visibility='collapsed',value=key,disabled=True)
+        with col1:
+            st.write("Cluster ID")
+        with col2:
+            st.write("Models")
 
-        #     with col2:
-        #         # cluster_npeaks = st.number_input(label='label',label_visibility='collapsed', value=cluster_ids[key]['n'] )
-        #         st.number_input(label='label',label_visibility='collapsed')#, value=cluster_ids[key]['n'] )
+        for key in clusters_and_models:
 
-        #     with col3:
-        #         # cluster_model = st.selectbox(label='label',label_visibility='collapsed',options=[i for i in cluster_ids[key]['models']])
-        #         st.selectbox(label='label',label_visibility='collapsed',options=[i for i in cluster_ids[key]['models']])
+            col1, col2 = st.columns(2)
+            with col1:
+                st.text_input(
+                    label='label',
+                    label_visibility='collapsed',
+                    value=f"{key} ({clusters_and_models[key]['n']} peaks)",
+                    disabled=True
+                    )
 
-        #     # user_models[cluster_id] = {'n':cluster_npeaks,'model':cluster_model}
-            
-        # # This should be checked...!!
-        # session.register_widgets({
-        #         "user_models"    : user_models,
-        #     })
+            with col2:
+                model = st.selectbox(
+                    label='label',
+                    label_visibility='collapsed',
+                    options=[i for i in clusters_and_models[key]['models']],
+                    key=f"Parameter_value_{key}"
+                    )
 
-        # st.write(session.widget_space['user_models'])
+            user_models[key] = {'n':clusters_and_models[key]['n'],'model':model}
+
+        session.register_object(
+            obj=user_models,
+            key="user_models"
+        )
 
         fitting= st.form_submit_button("fitting")
+
+
+# st.write(user_models)
+# st.write(session.widget_space['user_models'])
 
 
 # if fitting:

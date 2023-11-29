@@ -76,11 +76,11 @@ class IoHandler():
         # get user defined cluster names
         cluster_names = n_cID.index.values.tolist()
         
-        cluster_and_models = {}
+        clusters_and_models = {}
         for c in range(len(n_cID)):    
-            cluster_and_models[cluster_names[c]]= {'n':int(n_cID[c]),'models':list(d[int(n_cID[c])])}
+            clusters_and_models[cluster_names[c]]= {'n':int(n_cID[c]),'models':list(d[int(n_cID[c])])}
         
-        return cluster_and_models
+        return clusters_and_models
         
     def create_models(self,dict):
         models = self.get_models()
