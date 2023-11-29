@@ -60,8 +60,9 @@ class IoHandler():
         Returns:
             dict : models_peak_number
         """
-
+        print('hello')
         model_list = self.get_models_peak_number()
+        
         # get list of different possible models with a similar number of peaks
         d = {n:[k for k in model_list.keys() if model_list[k] == n] for n in set(model_list.values())}
 
@@ -74,10 +75,33 @@ class IoHandler():
         cluster = {}
         for c in range(len(n_cID)):    
             cluster[cluster_names[c]]= {'n':int(n_cID[c]),'models':list(d[int(n_cID[c])])}
+        
         return cluster
         
+    def create_models(self,dict):
+        models = self.get_models()
+        signals = {}
+        for idx, key in enumerate(dict):
 
-    
+            cluster_model = dict[key]['model']
+            signals[key]={'model':cluster_model}
+
+            cluster_params = models[cluster_model]()._params
+            tmp ={}
+            for p in cluster_params.par:
+                cluster_params[cluster_params.par==p].ini.values[0]
+                tmp[p] = {
+                'ini':cluster_params[cluster_params.par==p].ini.values[0],
+                'lb':cluster_params[cluster_params.par==p].lb.values[0],
+                'ub':cluster_params[cluster_params.par==p].ub.values[0],
+                                }
+                
+            signals[key]={
+            'model':cluster_model,
+            'par':tmp}
+            
+        return signals
+
     @staticmethod
     def read_topspin_data(data_path, dataset, expno, procno):
 
@@ -106,15 +130,14 @@ class IoHandler():
             data = data[~np.all(data == 0, axis=1)]
 
         return ppm, data
-
-
+    
     @staticmethod
     def get_models_peak_number():
-        """
-        Load signal models.
+        # """
+        # Load signal models.
         
-        Returns: dict containing the different model peak numbers, with model.name as keys
-        """
+        # Returns: dict containing the different model peak numbers, with model.name as keys
+        # """
 
         models = {}
         model_dir = Path(multinmrfit.__file__).parent / "models"
@@ -127,5 +150,25 @@ class IoHandler():
                 logger.debug("model name: {}".format(model_class().name))
                 # models[model_class().name] = model_class
                 models[model_class().name] = model_class().peak_number
+        return models
+
+    @staticmethod
+    def get_models():
+        """
+        Load signal models.
+        :return: dict containing the different model objects, with model.name as keys
+        """
+
+        models = {}
+        model_dir = Path(multinmrfit.__file__).parent / "models"
+
+        for file in os.listdir(str(model_dir)):
+            if "model_" in file:
+                logger.debug("add model from file '{}'".format(file))
+                module = importlib.import_module("multinmrfit.models.{}".format(file[:-3]))
+                model_class = getattr(module, "SignalModel")
+                logger.debug("model name: {}".format(model_class().name))
+                models[model_class().name] = model_class
+
         return models
 

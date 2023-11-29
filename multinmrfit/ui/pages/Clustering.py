@@ -124,38 +124,51 @@ with st.form("Clustering"):
     
     create_models = st.form_submit_button("Create models")
 
+def callback(v):
+    st.write(v)
+
 if create_models:
     with st.form("create_models"):
-            cluster_ids = utils.model_cluster_assignment(edited_peak_table.cID)
+        user_models = {}
 
-            col21, col22, col23 = st.columns(3)
+        cluster_ids = utils.model_cluster_assignment(edited_peak_table.cID)
 
-            with col21:
-                st.write("Cluster ID")
+        col1, col2, col3 = st.columns(3)
 
-            with col22:
-                st.write("Number of peaks")
+        with col1:
+            st.write("Cluster ID")
+        with col2:
+            st.write("Number of peaks")
+        with col3:
+            st.write("Models availables")
 
-            with col23:
-                st.write("Models availables")
+        for index, key in enumerate(cluster_ids):
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                cluster_id = st.text_input("1",value=key)
 
-            for index, key in enumerate(cluster_ids):
+            with col2:
+                cluster_npeaks = st.number_input("1", value=cluster_ids[key]['n'] )
 
-                col21, col22, col23 = st.columns(3)
+            with col3:
+                cluster_model = st.selectbox("3",options=[i for i in cluster_ids[key]['models']])
 
-                with col21:
-                    st.text_input("",value=key)
-                #     # st.selectbox(label="", key=key + "text_wight" + str(i))
+            user_models[cluster_id] = {'n':cluster_npeaks,'model':cluster_model}
+            
+        # This should be checked...!!
+        session.register_widgets({
+                "user_models"    : user_models,
+            })
 
-                with col22:
-                    st.number_input("", value=cluster_ids[key]['n'] )
+        st.write(session.widget_space['user_models'])
 
-                with col23:
-                    st.selectbox("",options=[i for i in cluster_ids[key]['models']])
+        fitting= st.form_submit_button("fitting")
 
-            fitting = st.form_submit_button("Fitting")
 
 # if fitting:
+#     with st.expander("test", expanded=True):
+#         st.write(session.widget_space['user_models'])
+#         st.write('##')
 #     with st.expander("Fitting the reference spectrum", expanded=True): 
 #         st.write(edited_peak_table)
 #         available_models = io.IoHandler.get_models()
