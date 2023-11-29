@@ -32,8 +32,8 @@ ppm_min, ppm_max = utils.get_ppm_Limits(dataset)
 
 session.set_widget_defaults(
     reference_spectrum = 1,
-    spectrum_limit_max = ppm_max,
-    spectrum_limit_min = ppm_min,
+    spectrum_limit_max = 0.2,#ppm_max,
+    spectrum_limit_min = -0.26,#ppm_min,
 )
 
 
@@ -117,50 +117,50 @@ with st.form("Clustering"):
         },
         hide_index=True
         )
-
-    session.register_widgets({
-        "edited_peak_table"    : edited_peak_table,
-    })
     
-    create_models = st.form_submit_button("Create models")
-
-def callback(v):
-    st.write(v)
+    # !!! Needs be clicked twice before it does something correcly otherwise missing the last row !!!#
+    create_models = st.form_submit_button("Create models") 
+    
+session.register_widgets({
+    "edited_peak_table"    : edited_peak_table,
+})
 
 if create_models:
     with st.form("create_models"):
         user_models = {}
+        cluster_ids = utils.model_cluster_assignment(edited_peak_table)
+        st.write(cluster_ids)
+        # col1, col2, col3 = st.columns(3)
 
-        cluster_ids = utils.model_cluster_assignment(edited_peak_table.cID)
+        # with col1:
+        #     st.write("Cluster ID")
+        # with col2:
+        #     st.write("Number of peaks")
+        # with col3:
+        #     st.write("Models availables")
 
-        col1, col2, col3 = st.columns(3)
+        # for index, key in enumerate(cluster_ids):
+        #     col1, col2, col3 = st.columns(3)
+        #     with col1:
+        #         # cluster_id = st.text_input(label='label',label_visibility='collapsed',value=key,disabled=True)
+        #         st.text_input(label='label',label_visibility='collapsed',value=key,disabled=True)
 
-        with col1:
-            st.write("Cluster ID")
-        with col2:
-            st.write("Number of peaks")
-        with col3:
-            st.write("Models availables")
+        #     with col2:
+        #         # cluster_npeaks = st.number_input(label='label',label_visibility='collapsed', value=cluster_ids[key]['n'] )
+        #         st.number_input(label='label',label_visibility='collapsed')#, value=cluster_ids[key]['n'] )
 
-        for index, key in enumerate(cluster_ids):
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                cluster_id = st.text_input("1",value=key)
+        #     with col3:
+        #         # cluster_model = st.selectbox(label='label',label_visibility='collapsed',options=[i for i in cluster_ids[key]['models']])
+        #         st.selectbox(label='label',label_visibility='collapsed',options=[i for i in cluster_ids[key]['models']])
 
-            with col2:
-                cluster_npeaks = st.number_input("1", value=cluster_ids[key]['n'] )
-
-            with col3:
-                cluster_model = st.selectbox("3",options=[i for i in cluster_ids[key]['models']])
-
-            user_models[cluster_id] = {'n':cluster_npeaks,'model':cluster_model}
+        #     # user_models[cluster_id] = {'n':cluster_npeaks,'model':cluster_model}
             
-        # This should be checked...!!
-        session.register_widgets({
-                "user_models"    : user_models,
-            })
+        # # This should be checked...!!
+        # session.register_widgets({
+        #         "user_models"    : user_models,
+        #     })
 
-        st.write(session.widget_space['user_models'])
+        # st.write(session.widget_space['user_models'])
 
         fitting= st.form_submit_button("fitting")
 
