@@ -1,6 +1,7 @@
 import streamlit as st
-from sess_i.base.main import SessI
+import pandas as pd
 
+from sess_i.base.main import SessI
 import multinmrfit.ui.utils as utils
 
 st.set_page_config(page_title="Fitting",layout="wide")
@@ -30,8 +31,27 @@ edited_peak_table = session.get_object(
 
 utils = utils.IoHandler()
 signals = utils.create_models(user_models)
-st.write(signals)
-st.write(edited_peak_table)
+# st.write(list(signals.keys()))
+
+with st.expander(label="test", expanded=True)
+cluster_to_update = st.selectbox(
+    label='cluster',
+    options=list(signals.keys())
+    )
+
+session.register_widgets({"cluster_to_update":cluster_to_update})
+
+# st.write(session.widget_space["cluster_to_update"])
+
+edited_peak_table = st.data_editor(
+        pd.DataFrame.from_dict(signals[session.widget_space["cluster_to_update"]]['par'],orient='index'),
+        # column_config={
+        #     "ppm":"peak position",
+        #     "intensity":"peak intensity",
+        #     "cID":"cluster ID"
+        # },
+        hide_index=False
+        )
 # available_models = utils.get_models()
 # st.write(signals)
 # sp.build_model(signals=signals, available_models=available_models)

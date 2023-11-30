@@ -29,3 +29,4 @@ class SignalModel(Model):
 
         return peak_1
 
+    # def pplist2signal(self,peak_list):
