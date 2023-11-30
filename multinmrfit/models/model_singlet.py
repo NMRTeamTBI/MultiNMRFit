@@ -24,11 +24,13 @@ class SignalModel(Model):
 
 
     def pplist2signal(self, peak_list):
-        
+        detected_peak_position = peak_list.ppm.values[0]
+        detected_peak_intensity = peak_list.intensity.values[0]
+
         signal = {
             "model":self.name ,
-            'par':{'x0':{'ini':peak_list.ppm,'lb':peak_list.ppm-1,'ub':peak_list.ppm+1},
-                  'intensity':{'ini':peak_list.intensity,'ub':10*peak_list.intensity}       
+            'par':{'x0':{'ini':detected_peak_position,'lb':detected_peak_position-1,'ub':detected_peak_position+1},
+                  'intensity':{'ini':detected_peak_intensity,'ub':1.1*detected_peak_intensity}       
                           }
             }
         # add lw

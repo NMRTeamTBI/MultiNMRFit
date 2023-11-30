@@ -3,7 +3,6 @@ import logging
 import sys
 import pandas as pd
 
-
 from sess_i.base.main import SessI
 import multinmrfit.base.spectrum as spectrum
 import multinmrfit.ui.utils as utils
@@ -18,7 +17,7 @@ session = SessI(
 
 ######
 # reads-in data 
-utils = utils.IoHandler()
+utils = utils.UtilsHandler()
 dataset = {"data_path":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_path']),
            "dataset":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_folder']),
            "expno":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_expno']),
