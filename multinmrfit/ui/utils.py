@@ -7,11 +7,12 @@ import os
 import multinmrfit
 import logging
 from itertools import groupby
+import multinmrfit.base.io as io
 
 # create logger
 logger = logging.getLogger(__name__)
 
-class IoHandler():
+class UtilsHandler():
     def __init__(self):
         pass
 
@@ -82,28 +83,21 @@ class IoHandler():
         
         return clusters_and_models
         
-    def create_models(self,dict):
-        models = self.get_models()
+    def create_signals(self,cluster_dict,edited_peak_table):
+
+        models = io.IoHandler.get_models()
         signals = {}
-        for idx, key in enumerate(dict):
+ 
+        for key in cluster_dict:
 
-            cluster_model = dict[key]['model']
-            signals[key]={'model':cluster_model}
+            model = models[cluster_dict[key]['model']]()
 
-            cluster_params = models[cluster_model]()._params
-            tmp ={}
-            for p in cluster_params.par:
-                cluster_params[cluster_params.par==p].ini.values[0]
-                tmp[p] = {
-                'ini':cluster_params[cluster_params.par==p].ini.values[0],
-                'lb':cluster_params[cluster_params.par==p].lb.values[0],
-                'ub':cluster_params[cluster_params.par==p].ub.values[0],
-                                }
-                
-            signals[key]={
-            'model':cluster_model,
-            'par':tmp}
-            
+            # signals[key]={'model':cluster_model}
+
+            filtered_peak_table = edited_peak_table[edited_peak_table.cID==key]
+
+            signals[key] = model.pplist2signal(filtered_peak_table)
+      
         return signals
 
     @staticmethod
@@ -135,7 +129,7 @@ class IoHandler():
 
         return ppm, data
     
-    @staticmethod
+    @staticmethod # To check
     def get_models_peak_number():
         # """
         # Load signal models.
@@ -156,23 +150,5 @@ class IoHandler():
                 models[model_class().name] = model_class().peak_number
         return models
 
-    @staticmethod
-    def get_models():
-        """
-        Load signal models.
-        :return: dict containing the different model objects, with model.name as keys
-        """
 
-        models = {}
-        model_dir = Path(multinmrfit.__file__).parent / "models"
-
-        for file in os.listdir(str(model_dir)):
-            if "model_" in file:
-                logger.debug("add model from file '{}'".format(file))
-                module = importlib.import_module("multinmrfit.models.{}".format(file[:-3]))
-                model_class = getattr(module, "SignalModel")
-                logger.debug("model name: {}".format(model_class().name))
-                models[model_class().name] = model_class
-
-        return models
 

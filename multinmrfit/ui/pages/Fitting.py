@@ -29,29 +29,29 @@ edited_peak_table = session.get_object(
     )
 
 
-utils = utils.IoHandler()
-signals = utils.create_models(user_models)
-# st.write(list(signals.keys()))
+utils = utils.UtilsHandler()
+signals = utils.create_signals(user_models,edited_peak_table)
+st.write(signals)
 
-with st.expander(label="test", expanded=True)
-cluster_to_update = st.selectbox(
-    label='cluster',
-    options=list(signals.keys())
-    )
+# with st.expander(label="test", expanded=True):
+# cluster_to_update = st.selectbox(
+#     label='cluster',
+#     options=list(signals.keys())
+#     )
 
-session.register_widgets({"cluster_to_update":cluster_to_update})
+# session.register_widgets({"cluster_to_update":cluster_to_update})
 
-# st.write(session.widget_space["cluster_to_update"])
+# # st.write(session.widget_space["cluster_to_update"])
 
-edited_peak_table = st.data_editor(
-        pd.DataFrame.from_dict(signals[session.widget_space["cluster_to_update"]]['par'],orient='index'),
-        # column_config={
-        #     "ppm":"peak position",
-        #     "intensity":"peak intensity",
-        #     "cID":"cluster ID"
-        # },
-        hide_index=False
-        )
+# edited_peak_table = st.data_editor(
+#         pd.DataFrame.from_dict(signals[session.widget_space["cluster_to_update"]]['par'],orient='index'),
+#         # column_config={
+#         #     "ppm":"peak position",
+#         #     "intensity":"peak intensity",
+#         #     "cID":"cluster ID"
+#         # },
+#         hide_index=False
+#         )
 # available_models = utils.get_models()
 # st.write(signals)
 # sp.build_model(signals=signals, available_models=available_models)

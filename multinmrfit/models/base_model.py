@@ -29,5 +29,6 @@ class Model(object):
         sim_spectra = self.simulate(params, ppm)
         integral = np.sum(sim_spectra) * np.abs(ppm[0] - ppm[1])
         return integral
+    
 
 

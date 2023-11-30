@@ -22,6 +22,19 @@ class SignalModel(Model):
                           'ub' : [10.0, 1e15, 0.03, 1.0]}
         self._params = pd.DataFrame(default_params)
 
+
+    def pplist2signal(self, peak_list):
+        
+        signal = {
+            "model":self.name ,
+            'par':{'x0':{'ini':peak_list.ppm,'lb':peak_list.ppm-1,'ub':peak_list.ppm+1},
+                  'intensity':{'ini':peak_list.intensity,'ub':10*peak_list.intensity}       
+                          }
+            }
+        # add lw
+        return signal
+
+
     @staticmethod
     def simulate(params: list, ppm: list):
 
@@ -29,4 +42,4 @@ class SignalModel(Model):
 
         return peak_1
 
-    # def pplist2signal(self,peak_list):
+
