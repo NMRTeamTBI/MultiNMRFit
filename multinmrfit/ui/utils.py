@@ -66,10 +66,10 @@ class UtilsHandler():
         edited_peak_table= edited_peak_table.replace(r'^\s*$', np.nan, regex=True)
         edited_peak_table.dropna(axis=0,inplace=True)
 
-        models_peak_number = self.get_models_peak_number()
+        model_list = self.get_models_peak_number()
 
         # get list of different possible models with a similar number of peaks
-        d = {n:[k for k in models_peak_number.keys() if models_peak_number[k] == n] for n in set(models_peak_number.values())}
+        d = {n:[k for k in model_list.keys() if model_list[k] == n] for n in set(model_list.values())}
 
         # # get cluster ID defined by user and their occurences
         n_cID = edited_peak_table.cID.value_counts()
