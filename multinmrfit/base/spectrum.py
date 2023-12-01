@@ -275,7 +275,7 @@ class Spectrum(object):
         peak_table.insert(0, 'intensity', [self.intensity[int(i)] for i in peak_table['X_AXIS'].values])
 
         # drop peak position in points, volumes and linewidths in points
-        peak_table.drop(['X_AXIS','VOL','X_LW','cID'],axis=1,inplace=True)
+        peak_table.drop(['X_AXIS','VOL','cID'],axis=1,inplace=True)
         # all clear cluster_ids from nmrglue to be replace from cluster_ids from mulitnmrfit
         peak_table['cID'] = ""
 
@@ -289,10 +289,10 @@ class Spectrum(object):
         peak_table.reset_index(inplace=True,drop=True)
 
         # Change columns order
-        peak_table = peak_table[['ppm','intensity','cID']]
+        peak_table = peak_table[['ppm','intensity','X_LW','cID']]
 
         logger.debug("peak table\n{}".format(peak_table))
-        
+        print(peak_table)
         return peak_table
 
 

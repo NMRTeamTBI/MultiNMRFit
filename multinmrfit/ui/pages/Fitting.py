@@ -32,16 +32,16 @@ edited_peak_table = session.get_object(
 
 utils = utils.UtilsHandler()
 signals = utils.create_signals(user_models,edited_peak_table)
-st.write(signals)
+
 available_models = io.IoHandler.get_models()
 sp.build_model(signals=signals, available_models=available_models)
 
 sp.fit()
-st.write(sp.params)
+
 fig = sp.plot(ini=True, fit=True)
 fig.update_layout(autosize=False, width=900, height=900)
 st.plotly_chart(fig)
-
+st.write(sp.params)
 # with st.expander(label="test", expanded=True):
 # cluster_to_update = st.selectbox(
 #     label='cluster',

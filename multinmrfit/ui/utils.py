@@ -66,10 +66,10 @@ class UtilsHandler():
         edited_peak_table= edited_peak_table.replace(r'^\s*$', np.nan, regex=True)
         edited_peak_table.dropna(axis=0,inplace=True)
 
-        model_list = self.get_models_peak_number()
+        models_peak_number = self.get_models_peak_number()
 
         # get list of different possible models with a similar number of peaks
-        d = {n:[k for k in model_list.keys() if model_list[k] == n] for n in set(model_list.values())}
+        d = {n:[k for k in models_peak_number.keys() if models_peak_number[k] == n] for n in set(models_peak_number.values())}
 
         # # get cluster ID defined by user and their occurences
         n_cID = edited_peak_table.cID.value_counts()
@@ -136,19 +136,13 @@ class UtilsHandler():
         
         # Returns: dict containing the different model peak numbers, with model.name as keys
         # """
-
-        models = {}
-        model_dir = Path(multinmrfit.__file__).parent / "models"
-
-        for file in os.listdir(str(model_dir)):
-            if "model_" in file:
-                logger.debug("add model from file '{}'".format(file))
-                module = importlib.import_module("multinmrfit.models.{}".format(file[:-3]))
-                model_class = getattr(module, "SignalModel")
-                logger.debug("model name: {}".format(model_class().name))
-                # models[model_class().name] = model_class
-                models[model_class().name] = model_class().peak_number
-        return models
+        
+        models_peak_number = {}
+        models = io.IoHandler.get_models()
+        for m in models:
+            models_peak_number[m] = models[m]().peak_number
+ 
+        return models_peak_number
 
 
 
