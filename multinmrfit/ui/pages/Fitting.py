@@ -29,19 +29,21 @@ edited_peak_table = session.get_object(
         key="edited_peak_table"
     )
 
+with st.expander(label="Fit reference spectrum", expanded=True):
+    
+    utils = utils.UtilsHandler()
+    signals = utils.create_signals(user_models,edited_peak_table)
 
-utils = utils.UtilsHandler()
-signals = utils.create_signals(user_models,edited_peak_table)
+    available_models = io.IoHandler.get_models()
+    sp.build_model(signals=signals, available_models=available_models)
 
-available_models = io.IoHandler.get_models()
-sp.build_model(signals=signals, available_models=available_models)
+    sp.fit()
 
-sp.fit()
+    fig = sp.plot(ini=True, fit=True)
+    fig.update_layout(autosize=False, width=900, height=900)
+    st.plotly_chart(fig)
+    st.write(sp.params)
 
-fig = sp.plot(ini=True, fit=True)
-fig.update_layout(autosize=False, width=900, height=900)
-st.plotly_chart(fig)
-st.write(sp.params)
 # with st.expander(label="test", expanded=True):
 # cluster_to_update = st.selectbox(
 #     label='cluster',
