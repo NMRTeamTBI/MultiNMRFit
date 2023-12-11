@@ -27,22 +27,23 @@ dataset = {"data_path":str(st.session_state["Global_Widget_Space"]["inputs_outpu
 #load synthetic data for dev
 test_synthetic_dataset = pd.read_table("/Users/cyrilcharlier/Documents/Research/Code/git/MultiNMRFit/example/data/data_sim_nmrfit.csv", sep="\t")
 
-window = (-1, 10)
+window = (-2, 0.2)
 
 # Get n_row from the full experiment
 # n_row, exp_dim = utils.get_dim(dataset)
 n_row, exp_dim = 100, (100,4096) # simulated data
 # Estimate the ppm limits for the default values
 # ppm_min, ppm_max = utils.get_ppm_Limits(dataset)
-ppm_min, ppm_max = min(test_synthetic_dataset.iloc[:,0]),max(test_synthetic_dataset.iloc[:,0])
+ppm_min, ppm_max = 0.2,-0.2
+# min(test_synthetic_dataset.iloc[:,0]),max(test_synthetic_dataset.iloc[:,0])
 
 ######
 sp = spectrum.Spectrum(data=test_synthetic_dataset, window=window)
 
 session.set_widget_defaults(
     reference_spectrum = 1,
-    spectrum_limit_max = 10,#ppm_max,
-    spectrum_limit_min = -1,#ppm_min,
+    spectrum_limit_max = 0.2,#ppm_max,
+    spectrum_limit_min = -0.2,#ppm_min,
 )
 
 
