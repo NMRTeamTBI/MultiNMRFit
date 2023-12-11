@@ -25,7 +25,7 @@ dataset = {"data_path":str(st.session_state["Global_Widget_Space"]["inputs_outpu
            }
 
 #load synthetic data for dev
-test_synthetic_dataset = pd.read_table("/Users/cyrilcharlier/Documents/Research/Code/git/MultiNMRFit/example/data/data_sim_nmrfit.csv", sep="\t")
+test_synthetic_dataset = pd.read_table(r"./example/data/data_sim_nmrfit.csv", sep="\t")
 
 window = (-2, 0.2)
 
@@ -117,7 +117,17 @@ with st.form("Clustering"):
     fig.update_layout(autosize=False, width=900, height=500)
     st.plotly_chart(fig)
 
+    # Initialize user_models from session state if exists else empty
+    if not session.object_space["user_models"]:
+        user_models = {}
+    else:
+        user_models = session.object_space["user_models"]
+        # Initialize cluster IDs from previous run on page
+        peak_table["cID"] = [key for key in user_models.keys()]
+
+
     st.write("List of detected peaks")
+
     edited_peak_table = st.data_editor(
         peak_table,
         column_config={
@@ -138,7 +148,7 @@ with st.form("Clustering"):
     
 
 with st.form("create and update models"):
-    user_models = {}
+
     clusters_and_models = utils.model_cluster_assignment(edited_peak_table)
 
     col1, col2 = st.columns(2)
@@ -149,6 +159,8 @@ with st.form("create and update models"):
         st.write("Models")
 
     for key in clusters_and_models:
+        options = [i for i in clusters_and_models[key]['models']]
+        # st.write(clusters_and_models)
 
         col1, col2 = st.columns(2)
         with col1:
@@ -163,11 +175,13 @@ with st.form("create and update models"):
             model = st.selectbox(
                 label='label',
                 label_visibility='collapsed',
-                options=[i for i in clusters_and_models[key]['models']],
+                options=options,
+                index=user_models[key]["model_idx"] if user_models else 0,
+                # value=user_models[key]["model"] if user_models else None,
                 key=f"Parameter_value_{key}"
                 )
 
-        user_models[key] = {'n':clusters_and_models[key]['n'],'model':model}
+        user_models[key] = {'n':clusters_and_models[key]['n'],'model':model, "model_idx": options.index(model)}
 
     session.register_object(
         obj=user_models,
