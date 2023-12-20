@@ -154,8 +154,8 @@ class UtilsHandler():
 
         results = [ref_spectrum]
 
-        list_spectra_part1 = sorted([i for i in list_of_spectra if i[0] > ref_spectrum.rowno])
-        list_spectra_part2 = sorted([i for i in list_of_spectra if i[0] < ref_spectrum.rowno])
+        list_spectra_part1 = sorted([i for i in list_of_spectra if i > ref_spectrum.rowno])
+        list_spectra_part2 = sorted([i for i in list_of_spectra if i < ref_spectrum.rowno])
 
         for i, rowno in enumerate(list_spectra_part1):
 
