@@ -20,7 +20,7 @@ setuptools.setup(
     url="https://github.com/NMRTeamTBI/NMRFit",
     packages=setuptools.find_packages(),
     python_requires='>=3.5',
-    install_requires=['pandas>=0.17.1', 'scipy>=0.12.1', 'nmrglue>=0.6', 'numpy>=1.14.0', 'plotly'],
+    install_requires=['pandas>=0.17.1', 'scipy>=0.12.1', 'nmrglue>=0.6', 'numpy>=1.14.0', 'plotly', 'streamlit'],
     package_data={'': ['data/*.png', ], },
     include_package_data=True,
     classifiers=[
