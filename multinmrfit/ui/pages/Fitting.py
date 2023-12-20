@@ -29,7 +29,7 @@ edited_peak_table = session.get_object(
         key="edited_peak_table"
     )
 
-with st.expander(label="Fit reference spectrum", expanded=True):
+with st.form("Fit reference spectrum"):
     
     utils_obj = utils.UtilsHandler()
     signals = utils_obj.create_signals(user_models, edited_peak_table)
