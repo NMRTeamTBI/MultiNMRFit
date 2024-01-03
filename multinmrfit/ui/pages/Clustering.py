@@ -24,26 +24,20 @@ dataset = {"data_path":str(st.session_state["Global_Widget_Space"]["inputs_outpu
            "procno":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_procno'])
            }
 
-#load synthetic data for dev
-test_synthetic_dataset = pd.read_table("/Users/cyrilcharlier/Documents/Research/Code/git/MultiNMRFit/example/data/data_sim_nmrfit.csv", sep="\t")
 
-window = (-2, 0.2)
 
 # Get n_row from the full experiment
-# n_row, exp_dim = utils.get_dim(dataset)
-n_row, exp_dim = 100, (100,4096) # simulated data
+n_row, exp_dim = utils.get_dim(dataset)
 # Estimate the ppm limits for the default values
-# ppm_min, ppm_max = utils.get_ppm_Limits(dataset)
-ppm_min, ppm_max = 0.2,-0.2
+ppm_min, ppm_max = utils.get_ppm_Limits(dataset)
 # min(test_synthetic_dataset.iloc[:,0]),max(test_synthetic_dataset.iloc[:,0])
 
 ######
-sp = spectrum.Spectrum(data=test_synthetic_dataset, window=window)
 
 session.set_widget_defaults(
     reference_spectrum = 1,
-    spectrum_limit_max = 0.2,#ppm_max,
-    spectrum_limit_min = -0.2,#ppm_min,
+    spectrum_limit_max = ppm_max,
+    spectrum_limit_min = ppm_min,
 )
 
 
@@ -79,12 +73,12 @@ with st.expander("Reference spectrum", expanded=True):
 
     dataset['rowno'] = session.widget_space["reference_spectrum"]-1
 
-    # sp = spectrum.Spectrum(
-    #     data=dataset,
-    #     window=(
-    #         min(session.widget_space["spectrum_limit_min"],session.widget_space["spectrum_limit_max"]),
-    #         max(session.widget_space["spectrum_limit_min"],session.widget_space["spectrum_limit_max"]))
-    #         )
+    sp = spectrum.Spectrum(
+        data=dataset,
+        window=(
+            min(session.widget_space["spectrum_limit_min"],session.widget_space["spectrum_limit_max"]),
+            max(session.widget_space["spectrum_limit_min"],session.widget_space["spectrum_limit_max"]))
+            )
     
     fig = sp.plot(exp=True)
     fig.update_layout(autosize=False, width=900, height=500)
@@ -110,7 +104,14 @@ with st.form("Clustering"):
     })
 
     peak_table = sp.peak_picking(session.widget_space["peakpicking_threshold"])
-    st.write(peak_table)
+
+    st.dataframe(
+        peak_table,
+        column_config={
+            'cID':None,
+        },
+        hide_index=True
+        )
     st.write("Plot with detected peaks")
 
     fig = sp.plot(pp=peak_table,threshold=session.widget_space["peakpicking_threshold"])
