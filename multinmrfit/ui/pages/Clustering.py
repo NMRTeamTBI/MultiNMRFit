@@ -85,6 +85,11 @@ with st.expander("Reference spectrum", expanded=True):
     st.plotly_chart(fig)  
 
     session.register_object(
+        obj=dataset,
+        key="dataset"
+    )
+    
+    session.register_object(
         obj=sp,
         key="reference_spectrum"
     )
@@ -151,7 +156,8 @@ with st.form("Clustering"):
 with st.form("create and update models"):
 
     clusters_and_models = utils.model_cluster_assignment(edited_peak_table)
-
+    print('')
+    print(clusters_and_models)
     col1, col2 = st.columns(2)
 
     with col1:
@@ -160,6 +166,8 @@ with st.form("create and update models"):
         st.write("Models")
 
     for key in clusters_and_models:
+        # print(key)
+        print('###')
         options = [i for i in clusters_and_models[key]['models']]
         # st.write(clusters_and_models)
 
