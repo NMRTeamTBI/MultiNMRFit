@@ -25,7 +25,7 @@ dataset = {"data_path":str(st.session_state["Global_Widget_Space"]["inputs_outpu
            }
 
 #load synthetic data for dev
-test_synthetic_dataset = pd.read_table("/Users/cyrilcharlier/Documents/Research/Code/git/MultiNMRFit/example/data/data_sim_nmrfit.csv", sep="\t")
+test_synthetic_dataset = pd.read_table("./example/data/data_sim_nmrfit.csv", sep="\t")
 
 window = (-2, 0.2)
 
@@ -110,7 +110,7 @@ with st.form("Clustering"):
     })
 
     peak_table = sp.peak_picking(session.widget_space["peakpicking_threshold"])
-
+    st.write(peak_table)
     st.write("Plot with detected peaks")
 
     fig = sp.plot(pp=peak_table,threshold=session.widget_space["peakpicking_threshold"])
