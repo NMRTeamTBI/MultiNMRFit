@@ -148,12 +148,12 @@ class UtilsHandler():
     @staticmethod
     def fit_from_ref(ref_spectrum, dataset, signals, list_of_spectra):
 
-        utils = utils.UtilsHandler()
+        # utils = utils.UtilsHandler()
 
         available_models = io.IoHandler.get_models()
 
         results = [ref_spectrum]
-
+        [print(i) for i in list_of_spectra if i[0] > ref_spectrum.rowno]
         list_spectra_part1 = sorted([i for i in list_of_spectra if i[0] > ref_spectrum.rowno])
         list_spectra_part2 = sorted([i for i in list_of_spectra if i[0] < ref_spectrum.rowno])
 
