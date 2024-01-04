@@ -29,9 +29,14 @@ edited_peak_table = session.get_object(
         key="edited_peak_table"
     )
 
+dataset = session.get_object(
+    key = "dataset"
+    )   
+
+utils_obj = utils.UtilsHandler()
+
 with st.form("Fit reference spectrum"):
     
-    utils_obj = utils.UtilsHandler()
     signals = utils_obj.create_signals(user_models, edited_peak_table)
 
     available_models = io.IoHandler.get_models()
