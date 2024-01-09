@@ -15,7 +15,7 @@ session = SessI(
 )
 
 # set page title with multinmrfit version
-st.set_page_config(page_title=f"multiNMRFit (v{multinmrfit.__version__})",layout="wide")
+st.set_page_config(page_title=f"multiNMRFit (v{multinmrfit.__version__})", layout="wide")
 # st.set_page_config(layout="wide")
 st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 
@@ -23,11 +23,11 @@ st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 st.header("Use this section to handle inputs and outputs")
 
 session.set_widget_defaults(
-    input_exp_data_path = "/Users/cyrilcharlier/Documents/Research/nmrData",
+    input_exp_data_path = "C:/Users/millard/Documents/GIT/multinmrfit/data/",
     input_exp_data_folder = "8SD_enzyme300123",
     input_expno = 23,
     input_procno = 1,
-    output_res_path = 'path/to/results',
+    output_res_path = 'C:/Users/millard/Documents/GIT/multinmrfit/data/',
     output_res_folder = 'results_folder',
     output_res_filename = 'results_filename'
 )
@@ -79,13 +79,13 @@ with st.form('Inputs/Outputs'):
     submitted = st.form_submit_button('submitted')
 
 session.register_widgets({
-    "input_exp_data_path" : input_exp_data_path,
-    "input_exp_data_folder" : input_exp_data_folder,
-    "input_expno" : input_expno,
-    "input_procno" : input_procno,
-    "output_res_path" : output_res_path,
-    "output_res_folder" : output_res_folder,
-    "output_res_filename" : output_res_filename
+    "input_exp_data_path": input_exp_data_path,
+    "input_exp_data_folder": input_exp_data_folder,
+    "input_expno": input_expno,
+    "input_procno": input_procno,
+    "output_res_path": output_res_path,
+    "output_res_folder": output_res_folder,
+    "output_res_filename": output_res_filename
 })
 
 # st.write(session)

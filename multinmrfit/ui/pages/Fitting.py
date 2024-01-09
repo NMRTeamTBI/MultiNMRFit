@@ -21,10 +21,6 @@ user_models = session.get_object(
     key = "user_models"
     )   
 
-user_models = session.get_object(
-    key = "user_models"
-    )   
-
 edited_peak_table = session.get_object(
         key="edited_peak_table"
     )

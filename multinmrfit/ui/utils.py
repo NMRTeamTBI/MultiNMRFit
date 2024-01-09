@@ -14,26 +14,43 @@ import multinmrfit.base.spectrum as spectrum
 # create logger
 logger = logging.getLogger(__name__)
 
-class UtilsHandler():
-    def __init__(self):
-        pass
+class Process(object):
 
-    def get_dim(self, dataset):
+    def __init__(self, dataset, window=None):
+        self.data_path = dataset["data_path"]
+        self.dataset = dataset["dataset"]
+        self.expno = dataset["expno"]
+        self.procno = dataset["procno"]
+        self.ref_spectrum_rowno = dataset.get("rowno", 1)
+        self.window = window
+        dataset["rowno"] = dataset.get("rowno", 1)
+
+        # get dimensions
+        self.exp_dim = self.get_dim()
+
+        # get list of spectra
+        self.spectra_list = list(range(1, self.exp_dim[0]+1))
+        
+        # load reference spectrum
+        self.ref_spectrum = spectrum.Spectrum(data=dataset, window=self.window)
+
+        # get ppm limits
+        self.ppm_limits = (max(self.ref_spectrum.ppm), min(self.ref_spectrum.ppm))
+        print(self.ppm_limits)
+
+    def get_dim(self):
         """
         Estimate the number of rows in the experiment
         
         Returns:
-            integer: number of rows
-            tuple: dimensions of the data to be fitted
+            tuple: dimensions of the spectrum
         """
 
-        _, data = self.read_topspin_data(dataset["data_path"], dataset["dataset"], dataset["expno"], dataset["procno"])
-        n_row = data.shape[0]
-        data_shape = data.shape
+        _, data = self.read_topspin_data(self.data_path, self.dataset, self.expno, self.procno)
 
-        return n_row, data_shape
+        return data.shape
 
-    def get_ppm_Limits(self,dataset):
+    def get_ppm_limits(self):
         """
         Estimate the ppm limits in the experiment
         (minimum of ppm scale, maximim of ppm scale)
@@ -43,9 +60,8 @@ class UtilsHandler():
             float: ppm_max
         """
 
-        ppm, _ = self.read_topspin_data(dataset["data_path"], dataset["dataset"], dataset["expno"], dataset["procno"])
-
-        return min(ppm), max(ppm)
+        ppm, _ = self.read_topspin_data(self.data_path, self.dataset, self.expno, self.procno)
+        self.ppm_limits = (min(ppm), max(ppm))
 
     # instead of using this function, call directly self.get_models_peak_number()
     #def model_cluster_list(self):
@@ -60,7 +76,7 @@ class UtilsHandler():
     #
     #    return models_peak_number
     
-    def model_cluster_assignment(self,edited_peak_table):
+    def model_cluster_assignment(self, edited_peak_table):
         """
         Estimate the number of peaks per model
 
@@ -148,7 +164,7 @@ class UtilsHandler():
     @staticmethod
     def fit_from_ref(ref_spectrum, dataset, signals, list_of_spectra):
 
-        utils = utils.UtilsHandler()
+        utils = utils.Process()
 
         available_models = io.IoHandler.get_models()
 

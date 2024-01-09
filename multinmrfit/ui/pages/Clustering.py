@@ -12,46 +12,30 @@ st.title("Clustering")
 
 session = SessI(
     session_state = st.session_state,
-    page="clustering"
+    page = "clustering"
 )
 
 ######
 # reads-in data 
-utils = utils.UtilsHandler()
-dataset = {"data_path":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_path']),
-           "dataset":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_folder']),
-           "expno":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_expno']),
-           "procno":str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_procno'])
+dataset = {"data_path": str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_path']),
+           "dataset": str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_folder']),
+           "expno": str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_expno']),
+           "procno": str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_procno'])
            }
 
-#load synthetic data for dev
-test_synthetic_dataset = pd.read_table(r"./example/data/data_sim_nmrfit.csv", sep="\t")
-
-window = (-2, 0.2)
-
-# Get n_row from the full experiment
-# n_row, exp_dim = utils.get_dim(dataset)
-n_row, exp_dim = 100, (100,4096) # simulated data
-# Estimate the ppm limits for the default values
-# ppm_min, ppm_max = utils.get_ppm_Limits(dataset)
-ppm_min, ppm_max = 0.2,-0.2
-# min(test_synthetic_dataset.iloc[:,0]),max(test_synthetic_dataset.iloc[:,0])
-
-######
-sp = spectrum.Spectrum(data=test_synthetic_dataset, window=window)
+process = utils.Process(dataset, window=None)
 
 session.set_widget_defaults(
-    reference_spectrum = 1,
-    spectrum_limit_max = 0.2,#ppm_max,
-    spectrum_limit_min = -0.2,#ppm_min,
+    reference_spectrum = process.spectra_list[0],
+    spectrum_limit_max = float(process.ppm_limits[0]),
+    spectrum_limit_min = float(process.ppm_limits[1])
 )
-
 
 with st.expander("Reference spectrum", expanded=True):
     reference_spectrum = st.selectbox(
             label="Select the number of the reference spectrum",
-            key = "reference_spectrum",
-            options =list(range(1,n_row+1)), 
+            key="reference_spectrum",
+            options=process.spectra_list, 
             help="Select the number of the spectrum used for peak picking and clustering"
             )
     
@@ -70,14 +54,15 @@ with st.expander("Reference spectrum", expanded=True):
             value = session.widget_space["spectrum_limit_min"]
             )
 
-
     session.register_widgets({
-        "reference_spectrum"    : reference_spectrum, #account for python vs data shape
-        "spectrum_limit_max"    : spec_lim_max,
-        "spectrum_limit_min"    : spec_lim_min,
+        "reference_spectrum": reference_spectrum,
+        "spectrum_limit_max": spec_lim_max,
+        "spectrum_limit_min": spec_lim_min,
     })
 
     dataset['rowno'] = session.widget_space["reference_spectrum"]-1
+
+    process = utils.Process(dataset, window=(float(spec_lim_min), float(spec_lim_max)))
 
     # sp = spectrum.Spectrum(
     #     data=dataset,
@@ -86,13 +71,13 @@ with st.expander("Reference spectrum", expanded=True):
     #         max(session.widget_space["spectrum_limit_min"],session.widget_space["spectrum_limit_max"]))
     #         )
     
-    fig = sp.plot(exp=True)
+    fig = process.ref_spectrum.plot(exp=True)
     fig.update_layout(autosize=False, width=900, height=500)
     st.plotly_chart(fig)  
 
     session.register_object(
-        obj=sp,
-        key="reference_spectrum"
+        obj=process,
+        key="process"
     )
 
 with st.form("Clustering"):
@@ -100,20 +85,20 @@ with st.form("Clustering"):
     peakpicking_threshold = st.number_input(
         label="Enter peak picking threshold",
         key = "peakpicking_threshold",
-        value = max(session.object_space["reference_spectrum"].intensity)/5,
+        value = max(session.object_space["process"].ref_spectrum.intensity)/5,
         step=1e5,
         help="Enter threshold used for peak detection"
         )
 
     session.register_widgets({
-        "peakpicking_threshold"    : peakpicking_threshold,
+        "peakpicking_threshold": peakpicking_threshold,
     })
 
-    peak_table = sp.peak_picking(session.widget_space["peakpicking_threshold"])
+    peak_table = process.ref_spectrum.peak_picking(session.widget_space["peakpicking_threshold"])
 
     st.write("Plot with detected peaks")
 
-    fig = sp.plot(pp=peak_table,threshold=session.widget_space["peakpicking_threshold"])
+    fig = process.ref_spectrum.plot(pp=peak_table,threshold=session.widget_space["peakpicking_threshold"])
     fig.update_layout(autosize=False, width=900, height=500)
     st.plotly_chart(fig)
 
@@ -149,7 +134,7 @@ with st.form("Clustering"):
 
 with st.form("create and update models"):
 
-    clusters_and_models = utils.model_cluster_assignment(edited_peak_table)
+    clusters_and_models = process.model_cluster_assignment(edited_peak_table)
 
     col1, col2 = st.columns(2)
 
@@ -181,7 +166,9 @@ with st.form("create and update models"):
                 key=f"Parameter_value_{key}"
                 )
 
-        user_models[key] = {'n':clusters_and_models[key]['n'],'model':model, "model_idx": options.index(model)}
+        user_models[key] = {'n':clusters_and_models[key]['n'],
+                            'model':model,
+                            "model_idx": options.index(model)}
 
     session.register_object(
         obj=user_models,
