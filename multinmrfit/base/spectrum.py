@@ -292,7 +292,7 @@ class Spectrum(object):
         peak_table = peak_table[['ppm','intensity','X_LW','cID']]
 
         logger.debug("peak table\n{}".format(peak_table))
-        print(peak_table)
+
         return peak_table
 
 

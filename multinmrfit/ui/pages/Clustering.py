@@ -62,6 +62,7 @@ with st.expander("Reference spectrum", expanded=True):
 
     dataset['rowno'] = session.widget_space["reference_spectrum"]-1
 
+<<<<<<< HEAD
     process = utils.Process(dataset, window=(float(spec_lim_min), float(spec_lim_max)))
 
     # sp = spectrum.Spectrum(
@@ -70,14 +71,32 @@ with st.expander("Reference spectrum", expanded=True):
     #         min(session.widget_space["spectrum_limit_min"],session.widget_space["spectrum_limit_max"]),
     #         max(session.widget_space["spectrum_limit_min"],session.widget_space["spectrum_limit_max"]))
     #         )
+=======
+    sp = spectrum.Spectrum(
+        data=dataset,
+        window=(
+            min(session.widget_space["spectrum_limit_min"],session.widget_space["spectrum_limit_max"]),
+            max(session.widget_space["spectrum_limit_min"],session.widget_space["spectrum_limit_max"]))
+            )
+>>>>>>> ddc4bb263030ad5438d7fc122bb48aa78904462e
     
     fig = process.ref_spectrum.plot(exp=True)
     fig.update_layout(autosize=False, width=900, height=500)
     st.plotly_chart(fig)  
 
     session.register_object(
+<<<<<<< HEAD
         obj=process,
         key="process"
+=======
+        obj=dataset,
+        key="dataset"
+    )
+
+    session.register_object(
+        obj=sp,
+        key="reference_spectrum"
+>>>>>>> ddc4bb263030ad5438d7fc122bb48aa78904462e
     )
 
 with st.form("Clustering"):
@@ -96,6 +115,13 @@ with st.form("Clustering"):
 
     peak_table = process.ref_spectrum.peak_picking(session.widget_space["peakpicking_threshold"])
 
+    st.dataframe(
+        peak_table,
+        column_config={
+            'cID':None,
+        },
+        hide_index=True
+        )
     st.write("Plot with detected peaks")
 
     fig = process.ref_spectrum.plot(pp=peak_table,threshold=session.widget_space["peakpicking_threshold"])
@@ -144,6 +170,7 @@ with st.form("create and update models"):
         st.write("Models")
 
     for key in clusters_and_models:
+
         options = [i for i in clusters_and_models[key]['models']]
         # st.write(clusters_and_models)
 
