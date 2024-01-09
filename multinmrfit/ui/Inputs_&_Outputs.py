@@ -7,12 +7,20 @@ To launch streamlit:
 
 import streamlit as st
 import multinmrfit
+import pickle
+import pathlib
 from sess_i.base.main import SessI
 
 session = SessI(
     session_state = st.session_state,
     page = "inputs_outputs"
 )
+
+def save_defaults(options):
+    save_path = pathlib.Path(multinmrfit.__file__).resolve().parent / "ui" / "conf" / 'default_conf.pickle'
+    with open(save_path, 'wb') as handle:
+        pickle.dump(options, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 # set page title with multinmrfit version
 st.set_page_config(page_title=f"multiNMRFit (v{multinmrfit.__version__})", layout="wide")
@@ -28,15 +36,29 @@ if not session.object_space["steps_done"]:
     session.register_object(obj=steps_done, key="steps_done")
 
 # set defaults
-session.set_widget_defaults(
-    input_exp_data_path = "C:/Users/millard/Documents/GIT/multinmrfit/data/",
-    input_exp_data_folder = "8SD_enzyme300123",
-    input_expno = 23,
-    input_procno = 1,
-    output_res_path = 'C:/Users/millard/Documents/GIT/multinmrfit/data/',
-    output_res_folder = 'results_folder',
-    output_res_filename = 'results_filename'
-)
+try:
+    load_path = pathlib.Path(multinmrfit.__file__).resolve().parent / "ui" / "conf" / 'default_conf.pickle'
+    with open(load_path, 'rb') as handle:
+        options = pickle.load(handle)
+    session.set_widget_defaults(
+        input_exp_data_path = options["input_exp_data_path"],
+        input_exp_data_folder = options["input_exp_data_folder"],
+        input_expno = options["input_expno"],
+        input_procno = options["input_procno"],
+        output_res_path = options["output_res_path"],
+        output_res_folder = options["output_res_folder"],
+        output_res_filename = options["output_res_filename"]
+    )
+except:
+    session.set_widget_defaults(
+        input_exp_data_path = "C:/Users/millard/Documents/GIT/multinmrfit/data/",
+        input_exp_data_folder = "8SD_enzyme300123",
+        input_expno = 23,
+        input_procno = 1,
+        output_res_path = 'C:/Users/millard/Documents/GIT/multinmrfit/data/',
+        output_res_folder = 'results_folder',
+        output_res_filename = 'results_filename'
+    )
 
 st.header("Use this section to handle inputs and outputs")
 
@@ -84,12 +106,7 @@ with st.form('Inputs/Outputs'):
             value = session.widget_space["output_res_filename"],
         )
 
-    load_spectrum = st.form_submit_button('Load spectrum')
-
-if load_spectrum:
-
-    # update inputs & outputs
-    session.register_widgets({
+    options = {
         "input_exp_data_path": input_exp_data_path,
         "input_exp_data_folder": input_exp_data_folder,
         "input_expno": input_expno,
@@ -97,7 +114,14 @@ if load_spectrum:
         "output_res_path": output_res_path,
         "output_res_folder": output_res_folder,
         "output_res_filename": output_res_filename
-    })
+    }
+
+    load_spectrum = st.form_submit_button('Load spectrum')
+
+if load_spectrum:
+
+    # update inputs & outputs
+    session.register_widgets(options)
 
     # reset previous processing steps
     session.object_space["steps_done"]["load"] = True
@@ -106,3 +130,4 @@ if load_spectrum:
     session.object_space["steps_done"]["fit_all"] = False
 
 
+save_conf = st.button("Save as default", on_click=save_defaults, args=(options,))
