@@ -99,7 +99,7 @@ if load_spectrum:
         "output_res_filename": output_res_filename
     })
 
-    # reset previous processing steps (but not processing parameters)
+    # reset previous processing steps
     session.object_space["steps_done"]["load"] = True
     session.object_space["steps_done"]["clustering"] = False
     session.object_space["steps_done"]["fit_ref"] = False

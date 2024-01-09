@@ -111,16 +111,16 @@ with st.form("Clustering"):
 
         peak_table = process.ref_spectrum.peak_picking(session.widget_space["peakpicking_threshold"])
 
-        st.dataframe(
-            peak_table,
-            column_config={
-                'cID':None,
-            },
-            hide_index=True
-            )
-        st.write("Plot with detected peaks")
+        #st.dataframe(
+        #    peak_table,
+        #    column_config={
+        #        'cID':None,
+        #    },
+        #    hide_index=True
+        #    )
+        #st.write("Peaks detected")
 
-        fig = process.ref_spectrum.plot(pp=peak_table,threshold=session.widget_space["peakpicking_threshold"])
+        fig = process.ref_spectrum.plot(pp=peak_table, threshold=session.widget_space["peakpicking_threshold"])
         fig.update_layout(autosize=False, width=900, height=500)
         st.plotly_chart(fig)
 
@@ -133,7 +133,7 @@ with st.form("Clustering"):
             peak_table["cID"] = [key for key in user_models.keys()]
 
 
-        st.write("List of detected peaks")
+        st.write("Peak list")
 
         edited_peak_table = st.data_editor(
             peak_table,
