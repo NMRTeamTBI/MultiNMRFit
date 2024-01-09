@@ -8,7 +8,7 @@ import multinmrfit.base.spectrum as spectrum
 import multinmrfit.ui.utils as utils
 
 st.set_page_config(page_title="Clustering",layout="wide")
-st.title("Clustering")
+st.title("Process reference spectrum")
 
 session = SessI(
     session_state = st.session_state,
@@ -25,70 +25,78 @@ dataset = {"data_path": str(st.session_state["Global_Widget_Space"]["inputs_outp
            "procno": str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_procno'])
            }
 
-# initialize process
-process = utils.Process(dataset, window=None)
+if session.object_space["steps_done"]["load"]:
 
-# set default parameters
-session.set_widget_defaults(
-    reference_spectrum = process.spectra_list[0],
-    spectrum_limit_max = float(process.ppm_limits[0]),
-    spectrum_limit_min = float(process.ppm_limits[1])
-)
+    # initialize process
+    process = utils.Process(dataset, window=None)
 
-with st.form("Reference spectrum"):
+    # set default parameters
+    session.set_widget_defaults(
+        reference_spectrum = process.spectra_list[0],
+        spectrum_limit_max = float(process.ppm_limits[0]),
+        spectrum_limit_min = float(process.ppm_limits[1])
+    )
 
-    reference_spectrum = st.selectbox(
-            label="Select the number of the reference spectrum",
-            key="reference_spectrum",
-            options=process.spectra_list, 
-            help="Select the number of the spectrum used for peak picking and clustering"
-            )
-    
-    col1, col2 = st.columns(2)
+    with st.form("Reference spectrum"):
 
-    with col1:
-        spec_lim_max = st.number_input(
-            label="Spectral limits (max)",
-            key="spectrum_limit_max",
-            value = session.widget_space["spectrum_limit_max"]
-            )
+        st.write("Define reference spectrum")
+
+        reference_spectrum = st.selectbox(
+                label="Select reference spectrum",
+                key="reference_spectrum",
+                options=process.spectra_list, 
+                help="Select the number of the spectrum used for peak picking and clustering"
+                )
         
-    with col2:
-        spec_lim_min = st.number_input(
-            label="Spectral limits (min)",
-            key="spectrum_limit_min",
-            value = session.widget_space["spectrum_limit_min"]
-            )
+        col1, col2 = st.columns(2)
 
-    session.register_widgets({
-        "reference_spectrum": reference_spectrum,
-        "spectrum_limit_max": spec_lim_max,
-        "spectrum_limit_min": spec_lim_min,
-    })
+        with col1:
+            spec_lim_max = st.number_input(
+                label="Spectral limits (max)",
+                key="spectrum_limit_max",
+                value = session.widget_space["spectrum_limit_max"]
+                )
+            
+        with col2:
+            spec_lim_min = st.number_input(
+                label="Spectral limits (min)",
+                key="spectrum_limit_min",
+                value = session.widget_space["spectrum_limit_min"]
+                )
 
-    dataset['rowno'] = session.widget_space["reference_spectrum"]-1
+        session.register_widgets({
+            "reference_spectrum": reference_spectrum,
+            "spectrum_limit_max": spec_lim_max,
+            "spectrum_limit_min": spec_lim_min,
+        })
 
-    # build new process
-    process = utils.Process(dataset, window=(float(spec_lim_min), float(spec_lim_max)))
+        dataset['rowno'] = session.widget_space["reference_spectrum"]-1
 
-    # display reference spectrum
-    fig = process.ref_spectrum.plot(exp=True)
-    fig.update_layout(autosize=False, width=900, height=500)
-    st.plotly_chart(fig)  
+        # build new process
+        process = utils.Process(dataset, window=(float(spec_lim_min), float(spec_lim_max)))
 
-    # save process in object space
-    session.register_object(obj=process, key="process")
+        # display reference spectrum
+        fig = process.ref_spectrum.plot(exp=True)
+        fig.update_layout(autosize=False, width=900, height=500)
+        st.plotly_chart(fig)  
 
-    # validate and go to next step
-    create_clusters = st.form_submit_button("Annotate")
+        # save process in object space
+        session.register_object(obj=process, key="process")
 
-    if create_clusters:
-        session.object_space["steps_done"]["clustering"] = True
+        # validate and go to next step
+        create_clusters = st.form_submit_button("Annotate")
 
+        if create_clusters:
+            session.object_space["steps_done"]["clustering"] = True
+            session.object_space["steps_done"]["fit_ref"] = False
+            session.object_space["steps_done"]["fit_all"] = False
+
+else:
+    st.write("Please load a dataset to process...")
 
 with st.form("Clustering"):
     if session.object_space["steps_done"]["clustering"]:
-        st.write("Peak picking & CLustering")
+        st.write("Peak picking & Clustering")
         peakpicking_threshold = st.number_input(
             label="Enter peak picking threshold",
             key = "peakpicking_threshold",
@@ -146,12 +154,13 @@ with st.form("Clustering"):
         create_models = st.form_submit_button("Build model") 
 
         if create_models:
-            session.object_space["steps_done"]["ref_fitted"] = True
+            session.object_space["steps_done"]["fit_ref"] = True
+            session.object_space["steps_done"]["fit_all"] = False
 
 
 with st.form("create and update models"):
 
-    if session.object_space["steps_done"]["ref_fitted"]:
+    if session.object_space["steps_done"]["fit_ref"]:
 
         clusters_and_models = process.model_cluster_assignment(edited_peak_table)
 
@@ -195,7 +204,7 @@ with st.form("create and update models"):
         fitting = st.form_submit_button("Fit reference spectrum")
         
         if fitting:
-            session.object_space["steps_done"]["all_fitted"] = True
+            session.object_space["steps_done"]["fit_all"] = True
             with st.expander(label="test", expanded=True):
                 example = session.get_object(
                     key = "user_models"

@@ -21,9 +21,10 @@ st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 
 # store which processing steps have been done
 if not session.object_space["steps_done"]:
-    steps_done = {"clustering":False,
-                "ref_fitted":False,
-                "all_fitted":False}
+    steps_done = {"load":False,
+                  "clustering":False,
+                  "fit_ref":False,
+                  "fit_all":False}
     session.register_object(obj=steps_done, key="steps_done")
 
 # set defaults
@@ -83,9 +84,9 @@ with st.form('Inputs/Outputs'):
             value = session.widget_space["output_res_filename"],
         )
 
-    submitted = st.form_submit_button('Submit')
+    load_spectrum = st.form_submit_button('Load spectrum')
 
-if submitted:
+if load_spectrum:
 
     # update inputs & outputs
     session.register_widgets({
@@ -99,8 +100,9 @@ if submitted:
     })
 
     # reset previous processing steps (but not processing parameters)
+    session.object_space["steps_done"]["load"] = True
     session.object_space["steps_done"]["clustering"] = False
-    session.object_space["steps_done"]["ref_fitted"] = False
-    session.object_space["steps_done"]["all_fitted"] = False
+    session.object_space["steps_done"]["fit_ref"] = False
+    session.object_space["steps_done"]["fit_all"] = False
 
 
