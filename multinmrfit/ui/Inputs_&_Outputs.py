@@ -19,9 +19,14 @@ st.set_page_config(page_title=f"multiNMRFit (v{multinmrfit.__version__})", layou
 # st.set_page_config(layout="wide")
 st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 
-# text
-st.header("Use this section to handle inputs and outputs")
+# store which processing steps have been done
+if not session.object_space["steps_done"]:
+    steps_done = {"clustering":False,
+                "ref_fitted":False,
+                "all_fitted":False}
+    session.register_object(obj=steps_done, key="steps_done")
 
+# set defaults
 session.set_widget_defaults(
     input_exp_data_path = "C:/Users/millard/Documents/GIT/multinmrfit/data/",
     input_exp_data_folder = "8SD_enzyme300123",
@@ -31,6 +36,8 @@ session.set_widget_defaults(
     output_res_folder = 'results_folder',
     output_res_filename = 'results_filename'
 )
+
+st.header("Use this section to handle inputs and outputs")
 
 with st.form('Inputs/Outputs'):
     with st.container():
@@ -76,18 +83,24 @@ with st.form('Inputs/Outputs'):
             value = session.widget_space["output_res_filename"],
         )
 
-    submitted = st.form_submit_button('submitted')
+    submitted = st.form_submit_button('Submit')
 
-session.register_widgets({
-    "input_exp_data_path": input_exp_data_path,
-    "input_exp_data_folder": input_exp_data_folder,
-    "input_expno": input_expno,
-    "input_procno": input_procno,
-    "output_res_path": output_res_path,
-    "output_res_folder": output_res_folder,
-    "output_res_filename": output_res_filename
-})
+if submitted:
 
-# st.write(session)
-# st.write(st.session_state["Global_Widget_Space"])
+    # update inputs & outputs
+    session.register_widgets({
+        "input_exp_data_path": input_exp_data_path,
+        "input_exp_data_folder": input_exp_data_folder,
+        "input_expno": input_expno,
+        "input_procno": input_procno,
+        "output_res_path": output_res_path,
+        "output_res_folder": output_res_folder,
+        "output_res_filename": output_res_filename
+    })
+
+    # reset previous processing steps (but not processing parameters)
+    session.object_space["steps_done"]["clustering"] = False
+    session.object_space["steps_done"]["ref_fitted"] = False
+    session.object_space["steps_done"]["all_fitted"] = False
+
 
