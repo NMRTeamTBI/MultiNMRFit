@@ -2,11 +2,7 @@ from pathlib import Path
 import pandas as pd
 import nmrglue as ng
 import numpy as np
-import importlib
-import os
-import multinmrfit
 import logging
-from itertools import groupby
 import multinmrfit.base.io as io
 import multinmrfit.base.spectrum as spectrum
 

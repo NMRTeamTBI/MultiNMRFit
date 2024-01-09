@@ -1,10 +1,5 @@
 import streamlit as st
-import logging
-import sys
-import pandas as pd
-
 from sess_i.base.main import SessI
-import multinmrfit.base.spectrum as spectrum
 import multinmrfit.ui.utils as utils
 
 st.set_page_config(page_title="Clustering",layout="wide")
@@ -125,13 +120,13 @@ with st.form("Clustering"):
         st.plotly_chart(fig)
 
         # Initialize user_models from session state if exists else empty
-        if not session.object_space["user_models"]:
-            user_models = {}
-        else:
-            user_models = session.object_space["user_models"]
-            # Initialize cluster IDs from previous run on page
-            peak_table["cID"] = [key for key in user_models.keys()]
-
+        user_models = {}
+        #if not session.object_space["user_models"]:
+        #    user_models = {}
+        #else:
+        #    user_models = session.object_space["user_models"]
+        #    # Initialize cluster IDs from previous run on page
+        #    peak_table["cID"] = [key for key in user_models.keys()]
 
         st.write("Peak list")
 

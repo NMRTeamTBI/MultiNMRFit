@@ -29,11 +29,11 @@ dataset = session.get_object(
     key = "dataset"
     )   
 
-utils_obj = utils.UtilsHandler()
+process = session.get_object(key="process")   
 
 with st.form("Fit reference spectrum"):
     
-    signals = utils_obj.create_signals(user_models, edited_peak_table)
+    signals = process.create_signals(user_models, edited_peak_table)
 
     available_models = io.IoHandler.get_models()
     sp.build_model(signals=signals, available_models=available_models)
@@ -51,7 +51,7 @@ with st.form("Fit reference spectrum"):
 with st.form("fit all spectra"):
 
     list_of_spectra = [2,3]
-    results = utils_obj.fit_from_ref(sp, dataset, signals, list_of_spectra)
+    results = process.fit_from_ref(sp, dataset, signals, list_of_spectra)
 
 # with st.expander(label="test", expanded=True):
 # cluster_to_update = st.selectbox(
