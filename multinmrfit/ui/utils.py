@@ -32,7 +32,6 @@ class Process(object):
 
         # get ppm limits
         self.ppm_limits = (max(self.ref_spectrum.ppm), min(self.ref_spectrum.ppm))
-        print(self.ppm_limits)
 
     def get_dim(self):
         """

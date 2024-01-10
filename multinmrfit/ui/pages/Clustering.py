@@ -10,9 +10,6 @@ session = SessI(
     page = "clustering"
 )
 
-# load processing state
-steps_done = session.object_space["steps_done"]
-
 # get dataset
 dataset = {"data_path": str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_path']),
            "dataset": str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_folder']),
@@ -20,7 +17,7 @@ dataset = {"data_path": str(st.session_state["Global_Widget_Space"]["inputs_outp
            "procno": str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_procno'])
            }
 
-if session.object_space["steps_done"]["load"]:
+if session.object_space["steps_to_show"]["clustering"]:
 
     # initialize process
     process = utils.Process(dataset, window=None)
@@ -70,28 +67,9 @@ if session.object_space["steps_done"]["load"]:
         # build new process
         process = utils.Process(dataset, window=(float(spec_lim_min), float(spec_lim_max)))
 
-        # display reference spectrum
-        fig = process.ref_spectrum.plot(exp=True)
-        fig.update_layout(autosize=False, width=900, height=500)
-        st.plotly_chart(fig)  
-
         # save process in object space
         session.register_object(obj=process, key="process")
 
-        # validate and go to next step
-        create_clusters = st.form_submit_button("Annotate")
-
-        if create_clusters:
-            session.object_space["steps_done"]["clustering"] = True
-            session.object_space["steps_done"]["fit_ref"] = False
-            session.object_space["steps_done"]["fit_all"] = False
-
-else:
-    st.write("Please load a dataset to process...")
-
-with st.form("Clustering"):
-    if session.object_space["steps_done"]["clustering"]:
-        st.write("Peak picking & Clustering")
         peakpicking_threshold = st.number_input(
             label="Enter peak picking threshold",
             key = "peakpicking_threshold",
@@ -104,6 +82,7 @@ with st.form("Clustering"):
             "peakpicking_threshold": peakpicking_threshold,
         })
 
+        # perform peak picking
         peak_table = process.ref_spectrum.peak_picking(session.widget_space["peakpicking_threshold"])
 
         #st.dataframe(
@@ -117,6 +96,7 @@ with st.form("Clustering"):
 
         fig = process.ref_spectrum.plot(pp=peak_table, threshold=session.widget_space["peakpicking_threshold"])
         fig.update_layout(autosize=False, width=900, height=500)
+        fig.update_layout(legend=dict(yanchor="top",xanchor="right", y=1.15)) 
         st.plotly_chart(fig)
 
         # Initialize user_models from session state if exists else empty
@@ -149,13 +129,17 @@ with st.form("Clustering"):
         create_models = st.form_submit_button("Build model") 
 
         if create_models:
-            session.object_space["steps_done"]["fit_ref"] = True
-            session.object_space["steps_done"]["fit_all"] = False
+            session.object_space["steps_to_show"]["fit_ref"] = True
+            session.object_space["steps_to_show"]["fit_all"] = False
+
+else:
+
+    st.write("Please load a dataset to process...")
 
 
 with st.form("create and update models"):
 
-    if session.object_space["steps_done"]["fit_ref"]:
+    if session.object_space["steps_to_show"]["fit_ref"]:
 
         clusters_and_models = process.model_cluster_assignment(edited_peak_table)
 
@@ -199,7 +183,7 @@ with st.form("create and update models"):
         fitting = st.form_submit_button("Fit reference spectrum")
         
         if fitting:
-            session.object_space["steps_done"]["fit_all"] = True
+            session.object_space["steps_to_show"]["fit_all"] = True
             with st.expander(label="test", expanded=True):
                 example = session.get_object(
                     key = "user_models"

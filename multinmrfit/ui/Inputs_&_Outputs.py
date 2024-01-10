@@ -17,10 +17,35 @@ session = SessI(
 )
 
 def save_defaults(options):
-    save_path = pathlib.Path(multinmrfit.__file__).resolve().parent / "ui" / "conf" / 'default_conf.pickle'
-    with open(save_path, 'wb') as handle:
+    save_path = pathlib.Path(multinmrfit.__file__).resolve().parent / "ui" / "conf"
+    pathlib.Path(save_path).mkdir(parents=True, exist_ok=True)
+    with open(save_path / 'default_conf.pickle', 'wb') as handle:
         pickle.dump(options, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+def load_defaults():
+    try:
+        load_path = pathlib.Path(multinmrfit.__file__).resolve().parent / "ui" / "conf" / 'default_conf.pickle'
+        with open(load_path, 'rb') as handle:
+            options = pickle.load(handle)
+        session.set_widget_defaults(
+            input_exp_data_path = options["input_exp_data_path"],
+            input_exp_data_folder = options["input_exp_data_folder"],
+            input_expno = options["input_expno"],
+            input_procno = options["input_procno"],
+            output_res_path = options["output_res_path"],
+            output_res_folder = options["output_res_folder"],
+            output_res_filename = options["output_res_filename"]
+        )
+    except:
+        session.set_widget_defaults(
+            input_exp_data_path = "path/to/topspin/data/folder/",
+            input_exp_data_folder = "dataset_name",
+            input_expno = 1,
+            input_procno = 1,
+            output_res_path = "path/to/output/data",
+            output_res_folder = 'results_folder',
+            output_res_filename = 'results_filename'
+        )
 
 # set page title with multinmrfit version
 st.set_page_config(page_title=f"multiNMRFit (v{multinmrfit.__version__})", layout="wide")
@@ -28,39 +53,16 @@ st.set_page_config(page_title=f"multiNMRFit (v{multinmrfit.__version__})", layou
 st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 
 # store which processing steps have been done
-if not session.object_space["steps_done"]:
-    steps_done = {"load":False,
-                  "clustering":False,
-                  "fit_ref":False,
-                  "fit_all":False}
-    session.register_object(obj=steps_done, key="steps_done")
+if not session.object_space["steps_to_show"]:
+    steps_to_show = {"clustering":False,
+                     "fit_ref":False,
+                     "fit_all":False}
+    session.register_object(obj=steps_to_show, key="steps_to_show")
 
 # set defaults
-try:
-    load_path = pathlib.Path(multinmrfit.__file__).resolve().parent / "ui" / "conf" / 'default_conf.pickle'
-    with open(load_path, 'rb') as handle:
-        options = pickle.load(handle)
-    session.set_widget_defaults(
-        input_exp_data_path = options["input_exp_data_path"],
-        input_exp_data_folder = options["input_exp_data_folder"],
-        input_expno = options["input_expno"],
-        input_procno = options["input_procno"],
-        output_res_path = options["output_res_path"],
-        output_res_folder = options["output_res_folder"],
-        output_res_filename = options["output_res_filename"]
-    )
-except:
-    session.set_widget_defaults(
-        input_exp_data_path = "C:/Users/millard/Documents/GIT/multinmrfit/data/",
-        input_exp_data_folder = "8SD_enzyme300123",
-        input_expno = 23,
-        input_procno = 1,
-        output_res_path = 'C:/Users/millard/Documents/GIT/multinmrfit/data/',
-        output_res_folder = 'results_folder',
-        output_res_filename = 'results_filename'
-    )
+load_defaults()
 
-st.header("Use this section to handle inputs and outputs")
+st.header("Inputs & Outputs")
 
 with st.form('Inputs/Outputs'):
     with st.container():
@@ -106,6 +108,11 @@ with st.form('Inputs/Outputs'):
             value = session.widget_space["output_res_filename"],
         )
 
+    load_spectrum = st.form_submit_button('Load spectrum')
+
+if load_spectrum:
+
+    # get input & output fields
     options = {
         "input_exp_data_path": input_exp_data_path,
         "input_exp_data_folder": input_exp_data_folder,
@@ -116,18 +123,13 @@ with st.form('Inputs/Outputs'):
         "output_res_filename": output_res_filename
     }
 
-    load_spectrum = st.form_submit_button('Load spectrum')
-
-if load_spectrum:
-
     # update inputs & outputs
     session.register_widgets(options)
 
-    # reset previous processing steps
-    session.object_space["steps_done"]["load"] = True
-    session.object_space["steps_done"]["clustering"] = False
-    session.object_space["steps_done"]["fit_ref"] = False
-    session.object_space["steps_done"]["fit_all"] = False
+    # save as defaults for next run
+    save_defaults(options)
 
-
-save_conf = st.button("Save as default", on_click=save_defaults, args=(options,))
+    # reset processing steps to show
+    session.object_space["steps_to_show"]["clustering"] = True
+    session.object_space["steps_to_show"]["fit_ref"] = False
+    session.object_space["steps_to_show"]["fit_all"] = False
