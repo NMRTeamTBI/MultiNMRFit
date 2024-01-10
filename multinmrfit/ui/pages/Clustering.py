@@ -62,7 +62,7 @@ if session.object_space["steps_to_show"]["clustering"]:
             "spectrum_limit_min": spec_lim_min,
         })
 
-        dataset['rowno'] = session.widget_space["reference_spectrum"]-1
+        dataset['rowno'] = str(session.widget_space["reference_spectrum"])
 
         # build new process
         process = utils.Process(dataset, window=(float(spec_lim_min), float(spec_lim_max)))
