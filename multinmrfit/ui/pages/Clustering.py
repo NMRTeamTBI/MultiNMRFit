@@ -110,8 +110,8 @@ with st.form("Clustering"):
         #    user_models = {}
         #else:
         #    user_models = session.object_space["user_models"]
-        #    # Initialize cluster IDs from previous run on page
-        #    peak_table["cID"] = [key for key in user_models.keys()]
+            # Initialize cluster IDs from previous run on page
+            #peak_table["cID"] = [key for key in user_models.keys()]
 
         st.write("Peak list")
 
@@ -131,7 +131,7 @@ with st.form("Clustering"):
         )
 
         # !!! Needs be clicked twice before it does something correcly otherwise missing the last row !!!#
-        create_models = st.form_submit_button("Build model") 
+        create_models = st.form_submit_button("Assign peaks") 
 
         if create_models:
             session.object_space["steps_to_show"]["fit_ref"] = True
@@ -171,7 +171,6 @@ with st.form("create model"):
                     options=options,
                     index=0,
                     #index=user_models[key]["model_idx"] if user_models else 0,
-                    # value=user_models[key]["model"] if user_models else None,
                     key=f"Parameter_value_{key}"
                     )
 
@@ -181,14 +180,12 @@ with st.form("create model"):
 
         session.register_object(obj=user_models, key="user_models")
 
-        fitting = st.form_submit_button("Fit reference spectrum")
+        fitting = st.form_submit_button("Build model")
         
         if fitting:
             session.object_space["steps_to_show"]["fit_all"] = True
             with st.expander(label="test", expanded=True):
-                example = session.get_object(
-                    key = "user_models"
-                    )   
+                example = session.get_object(key="user_models")   
                 st.write(example)
 #     with st.expander("test", expanded=True):
 #         st.write(session.widget_space['user_models'])

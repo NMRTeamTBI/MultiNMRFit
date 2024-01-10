@@ -13,8 +13,8 @@ session = SessI(
     page="Fitting"
 )
 
-sp = session.get_object(
-    key = "reference_spectrum"
+process = session.get_object(
+    key = "process"
     )   
 
 user_models = session.get_object(
@@ -25,33 +25,25 @@ edited_peak_table = session.get_object(
         key="edited_peak_table"
     )
 
-dataset = session.get_object(
-    key = "dataset"
-    )   
 
-process = session.get_object(key="process")   
+if session.object_space["steps_to_show"]["fit_all"]:
+    with st.form("Fit reference spectrum"):
+        
+        process.create_signals(user_models, edited_peak_table)
+        process.fit_reference_spectrum()
+        
+        fig = process.ref_spectrum.plot(ini=True, fit=True)
+        fig.update_layout(autosize=False, width=900, height=900)
+        st.plotly_chart(fig)
+        st.write(process.ref_spectrum.params)
 
-with st.form("Fit reference spectrum"):
-    
-    signals = process.create_signals(user_models, edited_peak_table)
-
-    available_models = io.IoHandler.get_models()
-    sp.build_model(signals=signals, available_models=available_models)
-
-    sp.fit()
-
-    fig = sp.plot(ini=True, fit=True)
-    fig.update_layout(autosize=False, width=900, height=900)
-    st.plotly_chart(fig)
-    st.write(sp.params)
-
-    fit_ok = st.form_submit_button("Fit ok") 
-    
+        fit_ok = st.form_submit_button("Fit all spectra") 
+        
 
 with st.form("fit all spectra"):
 
     list_of_spectra = [2,3]
-    results = process.fit_from_ref(sp, dataset, signals, list_of_spectra)
+    #results = process.fit_from_ref(sp, dataset, signals, list_of_spectra)
 
 # with st.expander(label="test", expanded=True):
 # cluster_to_update = st.selectbox(

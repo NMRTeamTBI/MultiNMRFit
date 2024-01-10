@@ -112,7 +112,15 @@ class Process(object):
             filtered_peak_table = edited_peak_table[edited_peak_table.cID==key]
             signals[key] = model.pplist2signal(filtered_peak_table)
       
-        return signals
+        self.signals = signals
+    
+    def fit_reference_spectrum(self):
+        available_models = io.IoHandler.get_models()
+
+        self.ref_spectrum.build_model(signals=self.signals, available_models=available_models)
+
+        self.ref_spectrum.fit()
+
 
     @staticmethod
     def read_topspin_data(data_path, dataset, expno, procno):
