@@ -55,6 +55,7 @@ st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 # processing steps to show
 if session.object_space["steps_to_show"] is None:
     steps_to_show = {"clustering":False,
+                     "build_model":False,
                      "fit_ref":False,
                      "fit_all":False}
     session.register_object(obj=steps_to_show, key="steps_to_show")
@@ -129,5 +130,6 @@ if load_spectrum:
 
     # reset processing steps to show
     session.object_space["steps_to_show"]["clustering"] = True
+    session.object_space["steps_to_show"]["build_model"] = False
     session.object_space["steps_to_show"]["fit_ref"] = False
     session.object_space["steps_to_show"]["fit_all"] = False

@@ -134,13 +134,14 @@ with st.form("Clustering"):
         create_models = st.form_submit_button("Assign peaks") 
 
         if create_models:
-            session.object_space["steps_to_show"]["fit_ref"] = True
+            session.object_space["steps_to_show"]["build_model"] = True
+            session.object_space["steps_to_show"]["fit_ref"] = False
             session.object_space["steps_to_show"]["fit_all"] = False
 
 
 with st.form("create model"):
 
-    if session.object_space["steps_to_show"]["fit_ref"]:
+    if session.object_space["steps_to_show"]["build_model"]:
 
         clusters_and_models = process.model_cluster_assignment(edited_peak_table)
 
@@ -183,7 +184,8 @@ with st.form("create model"):
         fitting = st.form_submit_button("Build model")
         
         if fitting:
-            session.object_space["steps_to_show"]["fit_all"] = True
+            session.object_space["steps_to_show"]["fit_ref"] = True
+            session.object_space["steps_to_show"]["fit_all"] = False
             with st.expander(label="test", expanded=True):
                 example = session.get_object(key="user_models")   
                 st.write(example)

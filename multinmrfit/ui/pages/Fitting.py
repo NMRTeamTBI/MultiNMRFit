@@ -26,7 +26,7 @@ edited_peak_table = session.get_object(
     )
 
 
-if session.object_space["steps_to_show"]["fit_all"]:
+if session.object_space["steps_to_show"]["fit_ref"]:
     with st.form("Fit reference spectrum"):
         
         process.create_signals(user_models, edited_peak_table)
