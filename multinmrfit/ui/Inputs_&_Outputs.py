@@ -52,7 +52,7 @@ st.set_page_config(page_title=f"multiNMRFit (v{multinmrfit.__version__})", layou
 # st.set_page_config(layout="wide")
 st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 
-# store which processing steps have been done
+# processing steps to show
 if not session.object_space["steps_to_show"]:
     steps_to_show = {"clustering":False,
                      "fit_ref":False,

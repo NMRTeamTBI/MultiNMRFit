@@ -29,6 +29,7 @@ if session.object_space["steps_to_show"]["clustering"]:
         spectrum_limit_min = float(process.ppm_limits[1])
     )
 
+    # add widgets
     reference_spectrum = st.selectbox(
                 label="Select reference spectrum",
                 key="reference_spectrum",
@@ -58,6 +59,7 @@ if session.object_space["steps_to_show"]["clustering"]:
             "spectrum_limit_min": spec_lim_min,
         })
 
+    # update reference spectrum
     dataset['rowno'] = session.widget_space["reference_spectrum"]-1
 
     # build new process
@@ -136,7 +138,7 @@ with st.form("Clustering"):
             session.object_space["steps_to_show"]["fit_all"] = False
 
 
-with st.form("create and update models"):
+with st.form("create model"):
 
     if session.object_space["steps_to_show"]["fit_ref"]:
 
