@@ -62,11 +62,9 @@ if not session.object_space["steps_to_show"]:
 # set defaults
 load_defaults()
 
-st.header("Inputs & Outputs")
-
 with st.form('Inputs/Outputs'):
     with st.container():
-        st.write("## Inputs")
+        st.write("### Inputs")
         input_exp_data_path = st.text_input(
             label="Enter data path",
             key = "input_exp_data_path",
@@ -91,7 +89,7 @@ with st.form('Inputs/Outputs'):
             help='Enter the procno. (Must be the same for all the experiments)'
         )
     with st.container():
-        st.write("## Outputs")
+        st.write("### Outputs")
         output_res_path = st.text_input(
             label="Enter output path",
             key="output_res_path",

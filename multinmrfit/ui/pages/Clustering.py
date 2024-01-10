@@ -73,7 +73,7 @@ else:
 
 with st.form("Clustering"):
     if session.object_space["steps_to_show"]["clustering"]:
-        st.write("Peak picking & Clustering")
+        st.write("### Peak picking & Clustering")
         peakpicking_threshold = st.number_input(
             label="Enter peak picking threshold",
             key = "peakpicking_threshold",
