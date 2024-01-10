@@ -154,7 +154,6 @@ with st.form("create model"):
         for key in clusters_and_models:
 
             options = [i for i in clusters_and_models[key]['models']]
-            # st.write(clusters_and_models)
 
             col1, col2 = st.columns(2)
             with col1:
@@ -170,7 +169,8 @@ with st.form("create model"):
                     label='label',
                     label_visibility='collapsed',
                     options=options,
-                    index=user_models[key]["model_idx"] if user_models else 0,
+                    index=0,
+                    #index=user_models[key]["model_idx"] if user_models else 0,
                     # value=user_models[key]["model"] if user_models else None,
                     key=f"Parameter_value_{key}"
                     )
