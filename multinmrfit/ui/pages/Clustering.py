@@ -53,7 +53,8 @@ if session.object_space["steps_to_show"]["clustering"]:
         })
 
     # update reference spectrum
-    process.set_ref_spectrum(session.widget_space["reference_spectrum"]-1)
+    process.set_ref_spectrum(session.widget_space["reference_spectrum"]-1, window=(spec_lim_min, spec_lim_max))
+
 
 else:
 

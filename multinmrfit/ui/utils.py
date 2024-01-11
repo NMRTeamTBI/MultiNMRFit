@@ -19,6 +19,7 @@ class Process(object):
         self.procno = dataset["procno"]
         self.ref_spectrum_rowno = dataset.get("rowno", 1)
         self.window = window
+        self.ppm = None
         dataset["rowno"] = dataset.get("rowno", 1)
 
         # get dimensions
@@ -34,14 +35,16 @@ class Process(object):
         # get ppm limits
         self.ppm_limits = (max(self.ppm), min(self.ppm))
 
-    def set_ref_spectrum(self, rowno):
+    def set_ref_spectrum(self, rowno, window=None):
         # build reference spectrum
         self.ref_spectrum_rowno = int(rowno)
-        tmp_data = pd.concat([self.ppm_full, pd.Series(self.data_full[int(self.ref_spectrum_rowno)])], axis=1)
-        tmp_data.columns=["ppm", "intensity"]
-        print(tmp_data)
+        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[int(self.ref_spectrum_rowno)])], axis=1)
+        tmp_data.columns = ["ppm", "intensity"]
+
+        if window is not None:
+            self.window = window
         
-        self.ref_spectrum = spectrum.Spectrum(data=tmp_data, window=self.window)
+        self.ref_spectrum = spectrum.Spectrum(data=tmp_data, window=window)
         self.ppm = self.ref_spectrum.ppm
 
     def load_2D_spectrum(self):

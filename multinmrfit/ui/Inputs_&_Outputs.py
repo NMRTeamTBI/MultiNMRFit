@@ -133,8 +133,6 @@ if load_spectrum:
             "procno": str(input_procno)
             }
 
-    st.write(dataset)
-
     # initialize process
     process = utils.Process(dataset, window=None)
     session.object_space["process"] = process
