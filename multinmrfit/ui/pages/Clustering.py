@@ -12,15 +12,8 @@ session = SessI(
 
 if session.object_space["steps_to_show"]["clustering"]:
 
-    ## get dataset
-    dataset = {"data_path": str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_path']),
-            "dataset": str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_exp_data_folder']),
-            "expno": str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_expno']),
-            "procno": str(st.session_state["Global_Widget_Space"]["inputs_outputs"]['input_procno'])
-            }
-
-    # initialize process
-    process = utils.Process(dataset, window=None)
+    # get process
+    process = session.object_space["process"]
 
     # set default parameters
     session.set_widget_defaults(
@@ -60,13 +53,7 @@ if session.object_space["steps_to_show"]["clustering"]:
         })
 
     # update reference spectrum
-    dataset['rowno'] = session.widget_space["reference_spectrum"]-1
-
-    # build new process
-    process = utils.Process(dataset, window=(float(spec_lim_min), float(spec_lim_max)))
-
-    # save process in object space
-    session.register_object(obj=process, key="process")
+    process.set_ref_spectrum(session.widget_space["reference_spectrum"]-1)
 
 else:
 

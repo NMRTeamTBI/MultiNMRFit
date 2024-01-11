@@ -27,11 +27,48 @@ class Process(object):
         # get list of spectra
         self.spectra_list = list(range(1, self.exp_dim[0]+1))
         
-        # load reference spectrum
-        self.ref_spectrum = spectrum.Spectrum(data=dataset, window=self.window)
+        # load spectrum
+        self.ppm_full, self.data_full = self.load_2D_spectrum()
+        self.set_ref_spectrum(self.ref_spectrum_rowno)
 
         # get ppm limits
-        self.ppm_limits = (max(self.ref_spectrum.ppm), min(self.ref_spectrum.ppm))
+        self.ppm_limits = (max(self.ppm), min(self.ppm))
+
+    def set_ref_spectrum(self, rowno):
+        # build reference spectrum
+        self.ref_spectrum_rowno = int(rowno)
+        tmp_data = pd.concat([self.ppm_full, pd.Series(self.data_full[int(self.ref_spectrum_rowno)])], axis=1)
+        tmp_data.columns=["ppm", "intensity"]
+        print(tmp_data)
+        
+        self.ref_spectrum = spectrum.Spectrum(data=tmp_data, window=self.window)
+        self.ppm = self.ref_spectrum.ppm
+
+    def load_2D_spectrum(self):
+        # get complete data path
+        full_path = Path(self.data_path, self.dataset, self.expno, 'pdata', self.procno)
+
+        # read processed data
+        try:
+            dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
+
+            # extract ppm and intensities
+            udic = ng.bruker.guess_udic(dic, data)
+            uc_F = ng.fileiobase.uc_from_udic(udic, 1)
+            ppm = pd.Series(uc_F.ppm_scale())
+        except:
+            raise ValueError("An unknown error has occurred when opening spectrum '{}'.".format(full_path))
+
+        ## filter selected window
+        #if self.window is not None:
+        #    mask = (ppm >= self.window[0]) & (ppm <= self.window[1])
+        #    ppm = ppm[mask]
+        #    data = data[:, mask]
+
+        ## reset index
+        #ppm.reset_index(inplace=True, drop=True)
+
+        return ppm, data
 
     def get_dim(self):
         """

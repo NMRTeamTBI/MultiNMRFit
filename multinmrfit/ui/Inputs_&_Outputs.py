@@ -10,6 +10,8 @@ import multinmrfit
 import pickle
 import pathlib
 from sess_i.base.main import SessI
+import multinmrfit.ui.utils as utils
+
 
 session = SessI(
     session_state = st.session_state,
@@ -49,7 +51,6 @@ def load_defaults():
 
 # set page title with multinmrfit version
 st.set_page_config(page_title=f"multiNMRFit (v{multinmrfit.__version__})", layout="wide")
-# st.set_page_config(layout="wide")
 st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 
 # processing steps to show
@@ -125,6 +126,21 @@ if load_spectrum:
     # update inputs & outputs
     session.register_widgets(options)
 
+    ## get dataset
+    dataset = {"data_path": str(input_exp_data_path),
+            "dataset": str(input_exp_data_folder),
+            "expno": str(input_expno),
+            "procno": str(input_procno)
+            }
+
+    st.write(dataset)
+
+    # initialize process
+    process = utils.Process(dataset, window=None)
+    session.object_space["process"] = process
+    st.write("Dataset loaded successfully.")
+
+
     # save as defaults for next run
     save_defaults(options)
 
@@ -133,3 +149,7 @@ if load_spectrum:
     session.object_space["steps_to_show"]["build_model"] = False
     session.object_space["steps_to_show"]["fit_ref"] = False
     session.object_space["steps_to_show"]["fit_all"] = False
+
+elif session.object_space["steps_to_show"]["clustering"]:
+
+    st.write("Dataset loaded successfully.")
