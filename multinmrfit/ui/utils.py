@@ -166,11 +166,12 @@ class Process(object):
             signals[key] = model.pplist2signal(filtered_peak_table)
       
         self.signals = signals
+        self.ref_spectrum.build_model(signals=self.signals, available_models=self.models)
+
     
     def fit_reference_spectrum(self):
 
-        self.ref_spectrum.build_model(signals=self.signals, available_models=self.models)
-
+        
         self.ref_spectrum.fit()
 
 

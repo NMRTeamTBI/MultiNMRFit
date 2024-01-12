@@ -1,6 +1,5 @@
 import streamlit as st
 from sess_i.base.main import SessI
-import multinmrfit.ui.utils as utils
 import numpy as np
 
 st.set_page_config(page_title="Clustering",layout="wide")
@@ -192,7 +191,7 @@ with st.form("create model"):
         
         if fitting:
             process.create_signals(process.user_models)
-        
+
 
             session.object_space["steps_to_show"]["fit_ref"] = True
             session.object_space["steps_to_show"]["fit_all"] = False

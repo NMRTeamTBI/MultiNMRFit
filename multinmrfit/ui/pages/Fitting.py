@@ -1,9 +1,6 @@
 import streamlit as st
-import pandas as pd
-
 from sess_i.base.main import SessI
-import multinmrfit.ui.utils as utils
-import multinmrfit.base.io as io
+
 
 st.set_page_config(page_title="Fitting",layout="wide")
 st.title("Fitting")
@@ -13,26 +10,25 @@ session = SessI(
     page="Fitting"
 )
 
-process = session.get_object(
-    key = "process"
-    )   
+process = session.get_object(key="process")   
 
 if session.object_space["steps_to_show"]["fit_ref"]:
     with st.form("Fit reference spectrum"):
         
-        process.fit_reference_spectrum()
         
-        fig = process.ref_spectrum.plot(ini=True, fit=True)
-        fig.update_layout(autosize=False, width=900, height=900)
-        st.plotly_chart(fig)
         st.write(process.ref_spectrum.params)
 
         fit_ok = st.form_submit_button("Fit all spectra") 
         
 
-with st.form("fit all spectra"):
+if fit_ok:
+    with st.form("fit all spectra"):
+        process.fit_reference_spectrum()
+        fig = process.ref_spectrum.plot(ini=True, fit=True)
+        fig.update_layout(autosize=False, width=900, height=900)
+        st.plotly_chart(fig)
 
-    list_of_spectra = [2,3]
+        list_of_spectra = [2,3]
     #results = process.fit_from_ref(sp, dataset, signals, list_of_spectra)
 
 # with st.expander(label="test", expanded=True):
