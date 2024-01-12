@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 class Process(object):
 
     def __init__(self, dataset, window=None):
+
+        # data to process
         self.data_path = dataset["data_path"]
         self.dataset = dataset["dataset"]
         self.expno = dataset["expno"]
@@ -20,6 +22,11 @@ class Process(object):
         self.ref_spectrum_rowno = dataset.get("rowno", 1)
         self.window = window
         self.ppm = None
+                # initialize peak_table
+        self.edited_peak_table = None
+        self.user_models = {}
+        self.peakpicking_threshold = None
+
         dataset["rowno"] = dataset.get("rowno", 1)
 
         # get dimensions
@@ -32,22 +39,36 @@ class Process(object):
         self.ppm_full, self.data_full = self.load_2D_spectrum()
         self.set_ref_spectrum(self.ref_spectrum_rowno)
 
-        # get ppm limits
-        self.ppm_limits = (max(self.ppm), min(self.ppm))
+
+    def update_pp_threshold(self, pp_threshold):
+        self.peakpicking_threshold = pp_threshold
+        self.edited_peak_table = self.ref_spectrum.peak_picking(pp_threshold)
 
     def set_ref_spectrum(self, rowno, window=None):
-        # build reference spectrum
+
+        # extract reference spectrum
         self.ref_spectrum_rowno = int(rowno)
-        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[int(self.ref_spectrum_rowno)])], axis=1)
+        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[int(self.ref_spectrum_rowno)-1])], axis=1)
         tmp_data.columns = ["ppm", "intensity"]
 
+        # update window
         if window is not None:
             self.window = window
         
+        # create spectrum
         self.ref_spectrum = spectrum.Spectrum(data=tmp_data, window=window)
+
+        # update chemical shifts
         self.ppm = self.ref_spectrum.ppm
+        # get ppm limits
+        self.ppm_limits = (min(self.ppm), max(self.ppm))
+
+
+        self.update_pp_threshold(max(self.ref_spectrum.intensity)/5)
+        
 
     def load_2D_spectrum(self):
+
         # get complete data path
         full_path = Path(self.data_path, self.dataset, self.expno, 'pdata', self.procno)
 
@@ -61,15 +82,6 @@ class Process(object):
             ppm = pd.Series(uc_F.ppm_scale())
         except:
             raise ValueError("An unknown error has occurred when opening spectrum '{}'.".format(full_path))
-
-        ## filter selected window
-        #if self.window is not None:
-        #    mask = (ppm >= self.window[0]) & (ppm <= self.window[1])
-        #    ppm = ppm[mask]
-        #    data = data[:, mask]
-
-        ## reset index
-        #ppm.reset_index(inplace=True, drop=True)
 
         return ppm, data
 

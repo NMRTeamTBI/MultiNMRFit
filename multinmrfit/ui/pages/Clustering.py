@@ -1,6 +1,7 @@
 import streamlit as st
 from sess_i.base.main import SessI
 import multinmrfit.ui.utils as utils
+import numpy as np
 
 st.set_page_config(page_title="Clustering",layout="wide")
 st.title("Process reference spectrum")
@@ -18,8 +19,8 @@ if session.object_space["steps_to_show"]["clustering"]:
     # set default parameters
     session.set_widget_defaults(
         reference_spectrum = process.spectra_list[0],
-        spectrum_limit_max = float(process.ppm_limits[0]),
-        spectrum_limit_min = float(process.ppm_limits[1])
+        spectrum_limit_min = float(process.ppm_limits[0]),
+        spectrum_limit_max = float(process.ppm_limits[1])
     )
 
     # add widgets
@@ -51,10 +52,11 @@ if session.object_space["steps_to_show"]["clustering"]:
             "spectrum_limit_max": spec_lim_max,
             "spectrum_limit_min": spec_lim_min,
         })
-
-    # update reference spectrum
-    process.set_ref_spectrum(session.widget_space["reference_spectrum"]-1, window=(spec_lim_min, spec_lim_max))
-
+    
+    ppm_step = 0.01
+    if process.ref_spectrum_rowno != reference_spectrum or np.abs(process.ppm_limits[0]-spec_lim_min) > ppm_step or np.abs(process.ppm_limits[1]-spec_lim_max) > ppm_step:
+        # update reference spectrum
+        process.set_ref_spectrum(session.widget_space["reference_spectrum"], window=(spec_lim_min, spec_lim_max))
 
 else:
 
@@ -67,16 +69,16 @@ with st.form("Clustering"):
         peakpicking_threshold = st.number_input(
             label="Enter peak picking threshold",
             key = "peakpicking_threshold",
-            value = max(session.object_space["process"].ref_spectrum.intensity)/5,
+            value = process.peakpicking_threshold,
             step=1e5,
             help="Enter threshold used for peak detection"
             )
 
-        session.register_widgets({
-            "peakpicking_threshold": peakpicking_threshold,
-        })
+        if peakpicking_threshold != process.peakpicking_threshold:
+            process.update_pp_threshold(peakpicking_threshold)
+        #process.peakpicking_threshold = peakpicking_threshold
 
-        peak_table = process.ref_spectrum.peak_picking(session.widget_space["peakpicking_threshold"])
+        #peak_table = process.ref_spectrum.peak_picking(process.peakpicking_threshold)
 
         #st.dataframe(
         #    peak_table,
@@ -87,13 +89,19 @@ with st.form("Clustering"):
         #    )
         #st.write("Peaks detected")
 
-        fig = process.ref_spectrum.plot(pp=peak_table, threshold=session.widget_space["peakpicking_threshold"])
+        fig = process.ref_spectrum.plot(pp=process.edited_peak_table, threshold=process.peakpicking_threshold)
         fig.update_layout(autosize=False, width=900, height=500)
         fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
         st.plotly_chart(fig)
 
         # Initialize user_models from session state if exists else empty
-        user_models = {}
+        #user_models = {}
+        #if not session.object_space["user_models"]:
+        #    user_models = {}
+        #else:
+        #    user_models = session.object_space["user_models"]
+            # Initialize cluster IDs from previous run on page
+            #peak_table["cID"] = [key for key in user_models.keys()]
         #if not session.object_space["user_models"]:
         #    user_models = {}
         #else:
@@ -103,25 +111,36 @@ with st.form("Clustering"):
 
         st.write("Peak list")
 
-        edited_peak_table = st.data_editor(
-            peak_table,
-            column_config={
-                "ppm":"peak position",
-                "intensity":"peak intensity",
-                "cID":"cluster ID"
-            },
-            hide_index=True
-            )
-        
-        session.register_object(
-            obj=edited_peak_table,
-            key="edited_peak_table"
-        )
+        #if process.edited_peak_table is None:
 
+            #edited_peak_table = st.data_editor(
+            #    process.edited_peak_table,
+            #    column_config={
+            #        "ppm":"peak position",
+            #        "intensity":"peak intensity",
+            #        "cID":"cluster ID"
+            #    },
+            #    hide_index=True
+            #    )
+        #else:
+        edited_peak_table = st.data_editor(
+            process.edited_peak_table,
+            column_config={
+                    "ppm":"peak position",
+                    "intensity":"peak intensity",
+                    "cID":"cluster ID"
+                },
+                hide_index=True
+                )
+
+        
         # !!! Needs be clicked twice before it does something correcly otherwise missing the last row !!!#
         create_models = st.form_submit_button("Assign peaks") 
 
         if create_models:
+            process.edited_peak_table = edited_peak_table
+            process.user_models = {}
+
             session.object_space["steps_to_show"]["build_model"] = True
             session.object_space["steps_to_show"]["fit_ref"] = False
             session.object_space["steps_to_show"]["fit_all"] = False
@@ -131,7 +150,7 @@ with st.form("create model"):
 
     if session.object_space["steps_to_show"]["build_model"]:
 
-        clusters_and_models = process.model_cluster_assignment(edited_peak_table)
+        clusters_and_models = process.model_cluster_assignment(process.edited_peak_table)
 
         col1, col2 = st.columns(2)
 
@@ -163,20 +182,22 @@ with st.form("create model"):
                     key=f"Parameter_value_{key}"
                     )
 
-            user_models[key] = {'n':clusters_and_models[key]['n'],
+            process.user_models[key] = {'n':clusters_and_models[key]['n'],
                                 'model':model,
                                 "model_idx": options.index(model)}
 
-        session.register_object(obj=user_models, key="user_models")
+        #process.user_models = user_models
 
         fitting = st.form_submit_button("Build model")
         
         if fitting:
+            process.create_signals(process.user_models, process.edited_peak_table)
+        
+
             session.object_space["steps_to_show"]["fit_ref"] = True
             session.object_space["steps_to_show"]["fit_all"] = False
             with st.expander(label="test", expanded=True):
-                example = session.get_object(key="user_models")   
-                st.write(example)
+                st.write(process.user_models)
 #     with st.expander("test", expanded=True):
 #         st.write(session.widget_space['user_models'])
 #         st.write('##')

@@ -17,19 +17,9 @@ process = session.get_object(
     key = "process"
     )   
 
-user_models = session.get_object(
-    key = "user_models"
-    )   
-
-edited_peak_table = session.get_object(
-        key="edited_peak_table"
-    )
-
-
 if session.object_space["steps_to_show"]["fit_ref"]:
     with st.form("Fit reference spectrum"):
         
-        process.create_signals(user_models, edited_peak_table)
         process.fit_reference_spectrum()
         
         fig = process.ref_spectrum.plot(ini=True, fit=True)
