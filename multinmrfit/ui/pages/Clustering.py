@@ -150,7 +150,7 @@ with st.form("create model"):
 
     if session.object_space["steps_to_show"]["build_model"]:
 
-        clusters_and_models = process.model_cluster_assignment(process.edited_peak_table)
+        clusters_and_models = process.model_cluster_assignment()
 
         col1, col2 = st.columns(2)
 
@@ -191,7 +191,7 @@ with st.form("create model"):
         fitting = st.form_submit_button("Build model")
         
         if fitting:
-            process.create_signals(process.user_models, process.edited_peak_table)
+            process.create_signals(process.user_models)
         
 
             session.object_space["steps_to_show"]["fit_ref"] = True

@@ -14,6 +14,8 @@ class Process(object):
 
     def __init__(self, dataset, window=None):
 
+        self.models = io.IoHandler.get_models()
+
         # data to process
         self.data_path = dataset["data_path"]
         self.dataset = dataset["dataset"]
@@ -80,7 +82,7 @@ class Process(object):
             udic = ng.bruker.guess_udic(dic, data)
             uc_F = ng.fileiobase.uc_from_udic(udic, 1)
             ppm = pd.Series(uc_F.ppm_scale())
-        except:
+        except Exception:
             raise ValueError("An unknown error has occurred when opening spectrum '{}'.".format(full_path))
 
         return ppm, data
@@ -123,7 +125,7 @@ class Process(object):
     #
     #    return models_peak_number
     
-    def model_cluster_assignment(self, edited_peak_table):
+    def model_cluster_assignment(self):
         """
         Estimate the number of peaks per model
 
@@ -134,7 +136,7 @@ class Process(object):
         """
 
         # filtering and removing none assigned rows
-        edited_peak_table = edited_peak_table.replace(r'^\s*$', np.nan, regex=True)
+        edited_peak_table = self.edited_peak_table.replace(r'^\s*$', np.nan, regex=True)
         edited_peak_table.dropna(axis=0, inplace=True)
 
         model_list = self.get_models_peak_number()
@@ -154,22 +156,20 @@ class Process(object):
         
         return clusters_and_models
         
-    def create_signals(self, cluster_dict, edited_peak_table):
+    def create_signals(self, cluster_dict):
 
-        models = io.IoHandler.get_models()
         signals = {}
  
         for key in cluster_dict:
-            model = models[cluster_dict[key]['model']]()
-            filtered_peak_table = edited_peak_table[edited_peak_table.cID==key]
+            model = self.models[cluster_dict[key]['model']]()
+            filtered_peak_table = self.edited_peak_table[self.edited_peak_table.cID==key]
             signals[key] = model.pplist2signal(filtered_peak_table)
       
         self.signals = signals
     
     def fit_reference_spectrum(self):
-        available_models = io.IoHandler.get_models()
 
-        self.ref_spectrum.build_model(signals=self.signals, available_models=available_models)
+        self.ref_spectrum.build_model(signals=self.signals, available_models=self.models)
 
         self.ref_spectrum.fit()
 

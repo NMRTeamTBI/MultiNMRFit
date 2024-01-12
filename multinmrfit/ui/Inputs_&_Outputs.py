@@ -127,10 +127,10 @@ if load_spectrum:
     session.register_widgets(options)
 
     ## get dataset
-    dataset = {"data_path": str(input_exp_data_path),
-            "dataset": str(input_exp_data_folder),
-            "expno": str(input_expno),
-            "procno": str(input_procno)
+    dataset = {"data_path": str(options["input_exp_data_path"]),
+            "dataset": str(options["input_exp_data_folder"]),
+            "expno": str(options["input_expno"]),
+            "procno": str(options["input_procno"])
             }
 
     # initialize process
