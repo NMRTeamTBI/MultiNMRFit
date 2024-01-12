@@ -52,9 +52,9 @@ if session.object_space["steps_to_show"]["clustering"]:
             "spectrum_limit_min": spec_lim_min,
         })
     
+    # update reference spectrum when widgets' values are changed
     ppm_step = 0.01
     if process.ref_spectrum_rowno != reference_spectrum or np.abs(process.ppm_limits[0]-spec_lim_min) > ppm_step or np.abs(process.ppm_limits[1]-spec_lim_max) > ppm_step:
-        # update reference spectrum
         process.set_ref_spectrum(session.widget_space["reference_spectrum"], window=(spec_lim_min, spec_lim_max))
 
 else:
@@ -67,26 +67,14 @@ with st.form("Clustering"):
         st.write("### Peak picking & Clustering")
         peakpicking_threshold = st.number_input(
             label="Enter peak picking threshold",
-            key = "peakpicking_threshold",
-            value = process.peakpicking_threshold,
+            key="peakpicking_threshold",
+            value=process.peakpicking_threshold,
             step=1e5,
             help="Enter threshold used for peak detection"
             )
 
         if peakpicking_threshold != process.peakpicking_threshold:
             process.update_pp_threshold(peakpicking_threshold)
-        #process.peakpicking_threshold = peakpicking_threshold
-
-        #peak_table = process.ref_spectrum.peak_picking(process.peakpicking_threshold)
-
-        #st.dataframe(
-        #    peak_table,
-        #    column_config={
-        #        'cID':None,
-        #    },
-        #    hide_index=True
-        #    )
-        #st.write("Peaks detected")
 
         fig = process.ref_spectrum.plot(pp=process.edited_peak_table, threshold=process.peakpicking_threshold)
         fig.update_layout(autosize=False, width=900, height=500)
@@ -110,18 +98,6 @@ with st.form("Clustering"):
 
         st.write("Peak list")
 
-        #if process.edited_peak_table is None:
-
-            #edited_peak_table = st.data_editor(
-            #    process.edited_peak_table,
-            #    column_config={
-            #        "ppm":"peak position",
-            #        "intensity":"peak intensity",
-            #        "cID":"cluster ID"
-            #    },
-            #    hide_index=True
-            #    )
-        #else:
         edited_peak_table = st.data_editor(
             process.edited_peak_table,
             column_config={
@@ -132,14 +108,11 @@ with st.form("Clustering"):
                 hide_index=True
                 )
 
-        
-        # !!! Needs be clicked twice before it does something correcly otherwise missing the last row !!!#
         create_models = st.form_submit_button("Assign peaks") 
 
         if create_models:
             process.edited_peak_table = edited_peak_table
             process.user_models = {}
-
             session.object_space["steps_to_show"]["build_model"] = True
             session.object_space["steps_to_show"]["fit_ref"] = False
             session.object_space["steps_to_show"]["fit_all"] = False
@@ -185,29 +158,10 @@ with st.form("create model"):
                                 'model':model,
                                 "model_idx": options.index(model)}
 
-        #process.user_models = user_models
-
         fitting = st.form_submit_button("Build model")
         
         if fitting:
             process.create_signals(process.user_models)
-
-
             session.object_space["steps_to_show"]["fit_ref"] = True
             session.object_space["steps_to_show"]["fit_all"] = False
-            with st.expander(label="test", expanded=True):
-                st.write(process.user_models)
-#     with st.expander("test", expanded=True):
-#         st.write(session.widget_space['user_models'])
-#         st.write('##')
-#     with st.expander("Fitting the reference spectrum", expanded=True): 
-#         st.write(edited_peak_table)
-#         available_models = io.IoHandler.get_models()
-#         signals = {"singlet_TSP": {"model":"singlet", "par": {"x0": {"ini":0.0, "lb":-0.05, "ub":0.05}}}}
-#         sp.build_model(signals=signals, available_models=available_models)
-
-#         sp.fit()
-#         fig = sp.plot(ini=True, fit=True)
-#         fig.update_layout(autosize=False, width=900, height=900)
-#         st.plotly_chart(fig)
 

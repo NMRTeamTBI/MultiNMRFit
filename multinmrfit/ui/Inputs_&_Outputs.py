@@ -126,7 +126,7 @@ if load_spectrum:
     # update inputs & outputs
     session.register_widgets(options)
 
-    ## get dataset
+    # get dataset
     dataset = {"data_path": str(options["input_exp_data_path"]),
             "dataset": str(options["input_exp_data_folder"]),
             "expno": str(options["input_expno"]),
@@ -135,6 +135,8 @@ if load_spectrum:
 
     # initialize process
     process = utils.Process(dataset, window=None)
+
+    # save in session state
     session.object_space["process"] = process
     st.write("Dataset loaded successfully.")
 

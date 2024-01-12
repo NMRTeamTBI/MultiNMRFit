@@ -202,8 +202,7 @@ class Process(object):
 
         return ppm, data
     
-    @staticmethod # To check
-    def get_models_peak_number():
+    def get_models_peak_number(self):
         # """
         # Load signal models.
         #
@@ -211,14 +210,14 @@ class Process(object):
         # """
         
         models_peak_number = {}
-        models = io.IoHandler.get_models()
-        for m in models:
-            models_peak_number[m] = models[m]().peak_number
+
+        for m in self.models:
+            models_peak_number[m] = self.models[m]().peak_number
  
         return models_peak_number
 
-    @staticmethod
-    def fit_from_ref(ref_spectrum, dataset, signals, list_of_spectra):
+
+    def fit_from_ref(self, ref_spectrum, dataset, signals, list_of_spectra):
 
         utils = utils.Process()
 
