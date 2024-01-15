@@ -14,21 +14,49 @@ process = session.get_object(key="process")
 
 if session.object_space["steps_to_show"]["fit_ref"]:
     with st.form("Fit reference spectrum"):
+        st.write("### Parameters")
+        parameters = st.data_editor(
+            process.ref_spectrum.params,
+                hide_index=True,
+                disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral"],
+                column_config={"opt":None, "opt_sd":None, "integral":None}
+                )
         
-        
-        st.write(process.ref_spectrum.params)
+        fit_ok = st.form_submit_button("Fit reference spectrum") 
+else:
 
-        fit_ok = st.form_submit_button("Fit all spectra") 
-        
+    st.write("Please define clusters...")
+  
 
 if fit_ok:
+
+    # update parameters
+    process.update_params(parameters)
+
     with st.form("fit all spectra"):
+
+       
+
+        # fit reference spectrum
         process.fit_reference_spectrum()
+
+        # plot fit results
         fig = process.ref_spectrum.plot(ini=True, fit=True)
         fig.update_layout(autosize=False, width=900, height=900)
         st.plotly_chart(fig)
 
+        p2 = st.data_editor(
+            process.ref_spectrum.params,
+                hide_index=True,
+                column_config={"ini":None, "lb":None, "ub":None},
+                disabled=True
+                )
+
+        fit_all = st.form_submit_button("Fit all spectra") 
+
         list_of_spectra = [2,3]
+
+
     #results = process.fit_from_ref(sp, dataset, signals, list_of_spectra)
 
 # with st.expander(label="test", expanded=True):

@@ -216,6 +216,18 @@ class Process(object):
  
         return models_peak_number
 
+    def update_params(self, params):
+        pars = {}
+        for s in params.index:
+            signal_id = params['signal_id'][s]
+            par = params['par'][s]
+            pars[signal_id] = pars.get(signal_id, {"par":{}})
+            pars[signal_id]["par"][par] = pars[signal_id]["par"].get(par, {})
+            for k in ["ini", "lb", "ub"]:
+                pars[signal_id]["par"][par][k] = params[k][s]
+        print(pars)
+        self.ref_spectrum.update_params(pars)
+
 
     def fit_from_ref(self, ref_spectrum, dataset, signals, list_of_spectra):
 
