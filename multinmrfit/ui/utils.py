@@ -217,6 +217,8 @@ class Process(object):
         return models_peak_number
 
     def update_params(self, params):
+
+        # build dictionary from dataframe to update parameters
         pars = {}
         for s in params.index:
             signal_id = params['signal_id'][s]
@@ -225,7 +227,8 @@ class Process(object):
             pars[signal_id]["par"][par] = pars[signal_id]["par"].get(par, {})
             for k in ["ini", "lb", "ub"]:
                 pars[signal_id]["par"][par][k] = params[k][s]
-        print(pars)
+        
+        # update parameters
         self.ref_spectrum.update_params(pars)
 
 
