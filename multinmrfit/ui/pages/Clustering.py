@@ -77,7 +77,7 @@ with st.form("Clustering"):
             process.update_pp_threshold(peakpicking_threshold)
 
         fig = process.ref_spectrum.plot(pp=process.edited_peak_table, threshold=process.peakpicking_threshold)
-        fig.update_layout(autosize=False, width=900, height=500)
+        fig.update_layout(autosize=False, width=800, height=500)
         fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
         st.plotly_chart(fig)
 

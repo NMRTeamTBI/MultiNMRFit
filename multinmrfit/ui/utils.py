@@ -3,6 +3,7 @@ import pandas as pd
 import nmrglue as ng
 import numpy as np
 import logging
+import copy
 import multinmrfit.base.io as io
 import multinmrfit.base.spectrum as spectrum
 
@@ -16,7 +17,9 @@ class Process(object):
 
         self.models = io.IoHandler.get_models()
 
-        # data to process
+        self.opt = dataset
+
+        # extract data to process
         self.data_path = dataset["data_path"]
         self.dataset = dataset["dataset"]
         self.expno = dataset["expno"]
@@ -24,7 +27,7 @@ class Process(object):
         self.ref_spectrum_rowno = dataset.get("rowno", 1)
         self.window = window
         self.ppm = None
-                # initialize peak_table
+        # initialize peak_table
         self.edited_peak_table = None
         self.user_models = {}
         self.peakpicking_threshold = None
@@ -40,6 +43,9 @@ class Process(object):
         # load spectrum
         self.ppm_full, self.data_full = self.load_2D_spectrum()
         self.set_ref_spectrum(self.ref_spectrum_rowno)
+
+        self.signals = None
+        self.results = None
 
 
     def update_pp_threshold(self, pp_threshold):
@@ -158,22 +164,19 @@ class Process(object):
         
     def create_signals(self, cluster_dict):
 
-        signals = {}
+        self.signals = {}
  
         for key in cluster_dict:
             model = self.models[cluster_dict[key]['model']]()
             filtered_peak_table = self.edited_peak_table[self.edited_peak_table.cID==key]
-            signals[key] = model.pplist2signal(filtered_peak_table)
+            self.signals[key] = model.pplist2signal(filtered_peak_table)
       
-        self.signals = signals
         self.ref_spectrum.build_model(signals=self.signals, available_models=self.models)
 
     
     def fit_reference_spectrum(self):
 
-        
         self.ref_spectrum.fit()
-
 
     @staticmethod
     def read_topspin_data(data_path, dataset, expno, procno):
@@ -231,38 +234,50 @@ class Process(object):
         # update parameters
         if spectrum is None:
             self.ref_spectrum.update_params(pars)
+        else:
+            self.results[spectrum].update_params(pars)
 
+    def _fit_batch(self, list_of_spectra):
 
-    def fit_from_ref(self, ref_spectrum, dataset, signals, list_of_spectra):
-
-        utils = utils.Process()
-
-        available_models = io.IoHandler.get_models()
-
-        results = [ref_spectrum]
-
-        list_spectra_part1 = sorted([i for i in list_of_spectra if i > ref_spectrum.rowno])
-        list_spectra_part2 = sorted([i for i in list_of_spectra if i < ref_spectrum.rowno])
-
-        for i, rowno in enumerate(list_spectra_part1):
+        for i in range(1, len(list_of_spectra)):
 
             # update dataset
-            current_dataset = dataset
-            current_dataset["rowno"] = rowno
+            current_dataset = copy.deepcopy(self.opt)
+            current_dataset["rowno"] = list_of_spectra[i]
+
+            rp = list_of_spectra[i-1]
 
             # create spectrum object, and build the corresponding model
-            sp = spectrum.Spectrum(data=dataset, window=results[i].window)
-            sp.build_model(signals=signals, available_models=available_models, offset=results[i].offset)
+            sp = spectrum.Spectrum(data=current_dataset, window=self.results[rp].window)
+            sp.build_model(signals=self.signals, available_models=self.models, offset=None)#self.results[rp].offset)
 
-            # update params from previous spectrum
-            sp.params.update(results[i].params)
+            # save spectrum
+            self.results[current_dataset["rowno"]] = sp
+
+            # get params from previous spectrum
+            prev_params = self.results[rp].params.copy(deep=True)
+
             # update bounds
-            # TODO
+            #prev_params = self.update_bounds(from=, to=)
+
+            # update params
+            self.update_params(prev_params, spectrum=list_of_spectra[i])
 
             # fit
             sp.fit()
 
-            # save results
-            results.append(sp)
 
-        return results
+    def fit_from_ref(self, list_of_spectra):
+
+        self.results = {self.ref_spectrum_rowno: self.ref_spectrum}
+
+        list_spectra_upper = [self.ref_spectrum_rowno] + sorted([i for i in list_of_spectra if i > self.ref_spectrum_rowno])
+        print(list_spectra_upper)
+        list_spectra_lower = [self.ref_spectrum_rowno] + sorted([i for i in list_of_spectra if i < self.ref_spectrum_rowno], reverse=True)
+        print(list_spectra_lower)
+        
+        self._fit_batch(list_spectra_upper)
+        self._fit_batch(list_spectra_lower)
+        
+
+            

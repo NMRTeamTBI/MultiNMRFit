@@ -18,44 +18,46 @@ if session.object_space["steps_to_show"]["fit_ref"]:
         parameters = st.data_editor(
             process.ref_spectrum.params,
                 hide_index=True,
-                disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral"],
-                column_config={"opt":None, "opt_sd":None, "integral":None}
+                disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral"]
+                #column_config={"opt":None, "opt_sd":None, "integral":None}
                 )
         
         fit_ok = st.form_submit_button("Fit reference spectrum") 
+
+        if fit_ok:
+
+            # update parameters
+            process.update_params(parameters)
+            # fit reference spectrum
+            process.fit_reference_spectrum()
+
+            # plot fit results
+            fig = process.ref_spectrum.plot(ini=True, fit=True)
+            fig.update_layout(autosize=False, width=800, height=600)
+            fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
+            st.plotly_chart(fig)
+
 else:
 
     st.write("Please define clusters...")
   
 
-if fit_ok:
 
-    # update parameters
-    process.update_params(parameters)
+with st.form("fit all spectra"):
 
-    with st.form("fit all spectra"):
+    list_of_spectra = [2,3]
+    fit_all = st.form_submit_button("Fit all spectra") 
 
-       
-
-        # fit reference spectrum
-        process.fit_reference_spectrum()
-
-        # plot fit results
-        fig = process.ref_spectrum.plot(ini=True, fit=True)
-        fig.update_layout(autosize=False, width=900, height=900)
-        st.plotly_chart(fig)
-
-        p2 = st.data_editor(
-            process.ref_spectrum.params,
-                hide_index=True,
-                column_config={"ini":None, "lb":None, "ub":None},
-                disabled=True
-                )
-
-        fit_all = st.form_submit_button("Fit all spectra") 
-
-        list_of_spectra = [2,3]
-
+    if fit_all:
+        process.fit_from_ref(list_of_spectra)
+        for k, v in process.results.items():
+            st.write(k)
+            fig = v.plot(ini=True, fit=True)
+            fig.update_layout(autosize=False, width=800, height=600)
+            fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
+            st.plotly_chart(fig)
+        
+    
 
     #results = process.fit_from_ref(sp, dataset, signals, list_of_spectra)
 
