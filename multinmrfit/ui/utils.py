@@ -216,7 +216,7 @@ class Process(object):
  
         return models_peak_number
 
-    def update_params(self, params):
+    def update_params(self, params, spectrum=None):
 
         # build dictionary from dataframe to update parameters
         pars = {}
@@ -229,7 +229,8 @@ class Process(object):
                 pars[signal_id]["par"][par][k] = params[k][s]
         
         # update parameters
-        self.ref_spectrum.update_params(pars)
+        if spectrum is None:
+            self.ref_spectrum.update_params(pars)
 
 
     def fit_from_ref(self, ref_spectrum, dataset, signals, list_of_spectra):
