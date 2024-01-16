@@ -34,20 +34,23 @@ if session.object_space["steps_to_show"]["fit_all"]:
                 help="Enter all spectra to process"
                 )
 
-    spectra_list = process.update_spectra_list(spectra_to_process)
-
     with st.expander("Reference spectrum", expanded=False):
         fig = process.results[reference_spectrum].plot(ini=False, fit=True)
         fig.update_layout(autosize=False, width=800, height=600)
         fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
         st.plotly_chart(fig)
+    
+    spectra_list = process.update_spectra_list(spectra_to_process)
+
+    str_list = str(spectra_list) if len(spectra_list) else "None (wrong input)"
+    st.write(f"spectra to process: {str_list}")
 
 else:
 
     st.warning("Please process a spectrum used as reference.")
     
 
-if session.object_space["steps_to_show"]["fit_all"]:
+if session.object_space["steps_to_show"]["fit_all"] and len(spectra_list):
 
     stop = False
 
