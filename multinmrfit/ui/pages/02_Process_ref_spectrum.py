@@ -168,8 +168,8 @@ with st.form("create model"):
                                 'model':model,
                                 "model_idx": options.index(model)}
         
-        offset_def = False if process.ref_spectrum.fit_results is None else (process.ref_spectrum.offset not in [False, None])
-        offset = st.checkbox('offset')
+        offset_def = False if not len(process.ref_spectrum.params) else (process.ref_spectrum.offset not in [False, None])
+        offset = st.checkbox('offset', value=offset_def)
 
         fitting = st.form_submit_button("Build model")
         
