@@ -241,12 +241,12 @@ class Process(object):
     
     @staticmethod
     def update_spectra_list(user_input):
+
         # check for allowed characters
-        #allowed = set(string.digits + ',' + '-')
-        #if not set(user_input) <= allowed:
-        #    # TO BE UPDATED: DISPLAY ERROR MESSAGE & STOPS
-        #    raise ValueError("Wrong format")
-        #    # logging.error("Wrong format for experiments list.")
+        allowed = set(string.digits + ',' + '-')
+        if not set(user_input) <= allowed:
+            return []
+        
         # create list
         experiment_list = []
         try:
@@ -263,6 +263,23 @@ class Process(object):
             return []
         
         return experiment_list
+
+    def update_bounds(self, params):
+
+        # get current interval between bounds
+        interval = (params["ub"] - params["lb"])/2
+
+        # shift upper bound
+        params["ub"] = params["ini"] + interval
+        
+        # shift lower bound (with some fixed at zero)
+        lower_bounds = params["ini"] - interval
+        mask = params['par'].isin(["lw", "gl", "intensity"]) & (lower_bounds < 0)
+        lower_bounds[mask] = 0
+        params["lb"] = lower_bounds
+
+        return params
+
 
     def fit_from_ref(self, rowno, ref):
 
@@ -281,7 +298,7 @@ class Process(object):
         prev_params = self.results[ref].params.copy(deep=True)
 
         # update bounds
-        #prev_params = self.update_bounds(from=, to=)
+        prev_params = self.update_bounds(prev_params)
 
         # update params
         self.update_params(prev_params, spectrum=rowno)

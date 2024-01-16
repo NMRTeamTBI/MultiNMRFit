@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 from sess_i.base.main import SessI
 
 
@@ -37,39 +36,57 @@ if session.object_space["steps_to_show"]["fit_all"]:
 
     spectra_list = process.update_spectra_list(spectra_to_process)
 
+    with st.expander("Reference spectrum", expanded=False):
+        fig = process.results[reference_spectrum].plot(ini=False, fit=True)
+        fig.update_layout(autosize=False, width=800, height=600)
+        fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
+        st.plotly_chart(fig)
+
 else:
 
-    st.write("Please process reference spectrum.")
-
+    st.warning("Please process a spectrum used as reference.")
+    
 
 if session.object_space["steps_to_show"]["fit_all"]:
-    with st.form("fit all spectra"):
+    #with st.form("fit all spectra"):
 
-        fit_all = st.form_submit_button("Fit selected spectra") 
+    #fit_all = st.form_submit_button("Fit selected spectra")
+    if st.session_state.get("start_button", False):
+        st.session_state.disabled = False
 
-        if fit_all:
+    stop = False
 
-            progress_text = "Operation in progress. Please wait."
-            progress_bar = st.progress(0, text=progress_text)
+    col1, col2, col3 = st.columns(3)
 
-            list_spectra_upper = [reference_spectrum] + sorted([i for i in spectra_list if i > reference_spectrum])
-            list_spectra_lower = [reference_spectrum] + sorted([i for i in spectra_list if i < reference_spectrum], reverse=True)
+    with col1:
+        start = st.button("Fit selected spectra", key="start_button")
+    
+    if start and not stop:
+        
+        with col2:
+            stop = st.button("Stop")
+
+        progress_text = "Operation in progress. Please wait."
+        progress_bar = st.progress(0, text=progress_text)
+
+        list_spectra_upper = [reference_spectrum] + sorted([i for i in spectra_list if i > reference_spectrum])
+        list_spectra_lower = [reference_spectrum] + sorted([i for i in spectra_list if i < reference_spectrum], reverse=True)
             
-            for i,j in enumerate(list_spectra_upper[1:]):
-                process.fit_from_ref(rowno=j, ref=list_spectra_upper[i])
-                percent_complete = (i+1)/(len(list_spectra_upper)+len(list_spectra_lower)-2)
-                progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_upper[i]} as reference). Please wait."
-                progress_bar.progress(percent_complete, text=progress_text)
+        for i,j in enumerate(list_spectra_upper[1:]):
+            process.fit_from_ref(rowno=j, ref=list_spectra_upper[i])
+            percent_complete = (i+1)/(len(list_spectra_upper)+len(list_spectra_lower)-2)
+            progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_upper[i]} as reference). Please wait."
+            progress_bar.progress(percent_complete, text=progress_text)
 
-            for i,j in enumerate(list_spectra_lower[1:]):
-                process.fit_from_ref(rowno=j, ref=list_spectra_lower[i])
-                percent_complete = (i+len(list_spectra_upper))/(len(list_spectra_upper)+len(list_spectra_lower)-2)
-                progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_upper[i]} as reference). Please wait."
-                progress_bar.progress(percent_complete, text=progress_text)
+        for i,j in enumerate(list_spectra_lower[1:]):
+            process.fit_from_ref(rowno=j, ref=list_spectra_lower[i])
+            percent_complete = (i+len(list_spectra_upper))/(len(list_spectra_upper)+len(list_spectra_lower)-2)
+            progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_upper[i]} as reference). Please wait."
+            progress_bar.progress(percent_complete, text=progress_text)
 
-            progress_bar.empty()
-            st.success("Done.")
+        progress_bar.empty()
+        st.success("Done.")
 
-            session.object_space["steps_to_show"]["visu"] = True
+        session.object_space["steps_to_show"]["visu"] = True
 
 

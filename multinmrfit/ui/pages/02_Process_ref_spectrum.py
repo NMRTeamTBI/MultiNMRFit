@@ -31,7 +31,7 @@ if session.object_space["steps_to_show"]["clustering"]:
                 key="reference_spectrum",
                 options=process.spectra_list,
                 index=process.spectra_list.index(process.ref_spectrum_rowno),
-                help="Select the number of the spectrum used for peak picking and clustering"
+                help="Select the spectrum used as reference for peak detection and clustering"
                 )
 
     with col2:
@@ -65,7 +65,7 @@ if session.object_space["steps_to_show"]["clustering"]:
 
 else:
 
-    st.write("Please load a dataset to process.")
+    st.warning("Please load a dataset to process.")
 
 
 with st.form("Clustering"):
@@ -73,7 +73,7 @@ with st.form("Clustering"):
         st.write("### Peak picking & Clustering")
         
         peakpicking_threshold = st.number_input(
-            label="Enter peak picking threshold",
+            label="Peak picking threshold",
             key="peakpicking_threshold",
             value=process.peakpicking_threshold,
             step=1e5,
@@ -111,9 +111,11 @@ with st.form("Clustering"):
             column_config={
                     "ppm":"peak position",
                     "intensity":"peak intensity",
-                    "cID":"cluster ID"
+                    "cID":"cluster ID",
+                    "X_LW":None
                 },
-                hide_index=True
+                hide_index=True,
+                disabled=["ppm", "intensity"]
                 )
 
         create_models = st.form_submit_button("Assign peaks") 
@@ -159,7 +161,6 @@ with st.form("create model"):
                     label_visibility='collapsed',
                     options=options,
                     index=0,
-                    #index=user_models[key]["model_idx"] if user_models else 0,
                     key=f"Parameter_value_{key}"
                     )
 
@@ -177,12 +178,13 @@ with st.form("create model"):
 
 if session.object_space["steps_to_show"]["fit_ref"]:
     with st.form("Fit reference spectrum"):
+
         st.write("### Parameters")
+
         parameters = st.data_editor(
             process.ref_spectrum.params,
                 hide_index=True,
                 disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral"]
-                #column_config={"opt":None, "opt_sd":None, "integral":None}
                 )
         
         fit_ok = st.form_submit_button("Fit reference spectrum") 
@@ -191,13 +193,16 @@ if session.object_space["steps_to_show"]["fit_ref"]:
 
             # update parameters
             process.update_params(parameters)
+
             # fit reference spectrum
             process.fit_reference_spectrum()
 
             session.object_space["steps_to_show"]["fit_all"] = True
             session.object_space["steps_to_show"]["visu"] = False
 
+        # show last fit
         if process.ref_spectrum.fit_results is not None:
+
             # plot fit results
             fig = process.ref_spectrum.plot(ini=True, fit=True)
             fig.update_layout(autosize=False, width=800, height=600)
