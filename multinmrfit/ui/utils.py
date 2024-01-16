@@ -289,46 +289,4 @@ class Process(object):
         # fit
         self.results[rowno].fit()
 
-
-    def _fit_batch(self, list_of_spectra):
-
-        for i in range(1, len(list_of_spectra)):
-
-            # update dataset
-            current_dataset = copy.deepcopy(self.opt)
-            current_dataset["rowno"] = list_of_spectra[i]
-
-            rp = list_of_spectra[i-1]
-
-            # create spectrum object, and build the corresponding model
-            sp = spectrum.Spectrum(data=current_dataset, window=self.results[rp].window)
-            sp.build_model(signals=self.signals, available_models=self.models, offset=None)#self.results[rp].offset)
-
-            # save spectrum
-            self.results[current_dataset["rowno"]] = sp
-
-            # get params from previous spectrum
-            prev_params = self.results[rp].params.copy(deep=True)
-
-            # update bounds
-            #prev_params = self.update_bounds(from=, to=)
-
-            # update params
-            self.update_params(prev_params, spectrum=list_of_spectra[i])
-
-            # fit
-            sp.fit()
-
-
-    #def fit_from_ref(self):
-
-    #    self.results = {self.ref_spectrum_rowno: self.ref_spectrum}
-
-    #    list_spectra_upper = [self.ref_spectrum_rowno] + sorted([i for i in self.spectra_list if i > self.ref_spectrum_rowno])
-    #    list_spectra_lower = [self.ref_spectrum_rowno] + sorted([i for i in self.spectra_list if i < self.ref_spectrum_rowno], reverse=True)
-        
-    #    self._fit_batch(list_spectra_upper)
-    #    self._fit_batch(list_spectra_lower)
-        
-
-            
+  

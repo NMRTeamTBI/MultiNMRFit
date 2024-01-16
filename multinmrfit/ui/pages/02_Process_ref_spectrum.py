@@ -2,12 +2,12 @@ import streamlit as st
 from sess_i.base.main import SessI
 import numpy as np
 
-st.set_page_config(page_title="Clustering",layout="wide")
+st.set_page_config(page_title="Process ref spectrum",layout="wide")
 st.title("Process reference spectrum")
 
 session = SessI(
     session_state = st.session_state,
-    page = "clustering"
+    page = "Process ref spectrum"
 )
 
 if session.object_space["steps_to_show"]["clustering"]:
@@ -23,24 +23,25 @@ if session.object_space["steps_to_show"]["clustering"]:
     )
 
     # add widgets
-    reference_spectrum = st.selectbox(
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        reference_spectrum = st.selectbox(
                 label="Select reference spectrum",
                 key="reference_spectrum",
                 options=process.spectra_list,
                 index=process.spectra_list.index(process.ref_spectrum_rowno),
                 help="Select the number of the spectrum used for peak picking and clustering"
                 )
-        
-    col1, col2 = st.columns(2)
 
-    with col1:
+    with col2:
         spec_lim_max = st.number_input(
                 label="Spectral limits (max)",
                 key="spectrum_limit_max",
                 value = session.widget_space["spectrum_limit_max"]
                 )
             
-    with col2:
+    with col3:
         spec_lim_min = st.number_input(
                 label="Spectral limits (min)",
                 key="spectrum_limit_min",
@@ -60,15 +61,17 @@ if session.object_space["steps_to_show"]["clustering"]:
         session.object_space["steps_to_show"]["build_model"] = False
         session.object_space["steps_to_show"]["fit_ref"] = False
         session.object_space["steps_to_show"]["fit_all"] = False
+        session.object_space["steps_to_show"]["visu"] = False
 
 else:
 
-    st.write("Please load a dataset to process...")
+    st.write("Please load a dataset to process.")
 
 
 with st.form("Clustering"):
     if session.object_space["steps_to_show"]["clustering"]:
         st.write("### Peak picking & Clustering")
+        
         peakpicking_threshold = st.number_input(
             label="Enter peak picking threshold",
             key="peakpicking_threshold",
@@ -121,6 +124,7 @@ with st.form("Clustering"):
             session.object_space["steps_to_show"]["build_model"] = True
             session.object_space["steps_to_show"]["fit_ref"] = False
             session.object_space["steps_to_show"]["fit_all"] = False
+            session.object_space["steps_to_show"]["visu"] = False
 
 
 with st.form("create model"):
@@ -169,6 +173,7 @@ with st.form("create model"):
             process.create_signals(process.user_models)
             session.object_space["steps_to_show"]["fit_ref"] = True
             session.object_space["steps_to_show"]["fit_all"] = False
+            session.object_space["steps_to_show"]["visu"] = False
 
 if session.object_space["steps_to_show"]["fit_ref"]:
     with st.form("Fit reference spectrum"):
@@ -190,6 +195,7 @@ if session.object_space["steps_to_show"]["fit_ref"]:
             process.fit_reference_spectrum()
 
             session.object_space["steps_to_show"]["fit_all"] = True
+            session.object_space["steps_to_show"]["visu"] = False
 
         if process.ref_spectrum.fit_results is not None:
             # plot fit results
@@ -198,7 +204,8 @@ if session.object_space["steps_to_show"]["fit_ref"]:
             fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
             st.plotly_chart(fig)
 
-if process.ref_spectrum.fit_results is not None:
-    st.success("Reference spectrum has been fitted.")
+if session.object_space["steps_to_show"]["fit_ref"]:
+    if process.ref_spectrum.fit_results is not None:
+        st.success("Reference spectrum has been fitted.")
 
 

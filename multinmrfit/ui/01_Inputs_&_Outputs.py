@@ -140,7 +140,6 @@ if load_spectrum:
     session.object_space["process"] = process
     st.success("Dataset loaded successfully.")
 
-
     # save as defaults for next run
     save_defaults(options)
 
