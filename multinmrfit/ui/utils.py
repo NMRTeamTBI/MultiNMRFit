@@ -53,6 +53,7 @@ class Process(object):
         self.peakpicking_threshold = pp_threshold
         self.edited_peak_table = self.ref_spectrum.peak_picking(pp_threshold)
 
+
     def set_ref_spectrum(self, rowno, window=None):
 
         # extract reference spectrum
@@ -94,6 +95,7 @@ class Process(object):
 
         return ppm, data
 
+
     def get_dim(self):
         """
         Estimate the number of rows in the experiment
@@ -105,6 +107,7 @@ class Process(object):
         _, data = self.read_topspin_data(self.data_path, self.dataset, self.expno, self.procno)
 
         return data.shape
+
 
     def get_ppm_limits(self):
         """
@@ -119,19 +122,7 @@ class Process(object):
         ppm, _ = self.read_topspin_data(self.data_path, self.dataset, self.expno, self.procno)
         self.ppm_limits = (min(ppm), max(ppm))
 
-    # instead of using this function, call directly self.get_models_peak_number()
-    #def model_cluster_list(self):
-    #    """
-    #    Estimate the number of peaks per model
-    #    
-    #    Returns:
-    #        dict: models_peak_number
-    #    """
-    #
-    #    models_peak_number = self.get_models_peak_number()
-    #
-    #    return models_peak_number
-    
+
     def model_cluster_assignment(self):
         """
         Estimate the number of peaks per model
@@ -163,7 +154,8 @@ class Process(object):
         
         return clusters_and_models
         
-    def create_signals(self, cluster_dict):
+
+    def create_signals(self, cluster_dict, offset=None):
 
         self.signals = {}
  
@@ -172,13 +164,14 @@ class Process(object):
             filtered_peak_table = self.edited_peak_table[self.edited_peak_table.cID==key]
             self.signals[key] = model.pplist2signal(filtered_peak_table)
       
-        self.ref_spectrum.build_model(signals=self.signals, available_models=self.models)
+        self.ref_spectrum.build_model(signals=self.signals, available_models=self.models, offset=offset)
 
-    
+
     def fit_reference_spectrum(self):
 
         self.ref_spectrum.fit()
         self.results = {self.ref_spectrum_rowno: self.ref_spectrum}
+
 
     @staticmethod
     def read_topspin_data(data_path, dataset, expno, procno):
@@ -207,6 +200,7 @@ class Process(object):
 
         return ppm, data
     
+
     def get_models_peak_number(self):
         # """
         # Load signal models.
@@ -221,24 +215,32 @@ class Process(object):
  
         return models_peak_number
 
+
     def update_params(self, params, spectrum=None):
 
         # build dictionary from dataframe to update parameters
         pars = {}
+        offset = None
         for s in params.index:
             signal_id = params['signal_id'][s]
-            par = params['par'][s]
-            pars[signal_id] = pars.get(signal_id, {"par":{}})
-            pars[signal_id]["par"][par] = pars[signal_id]["par"].get(par, {})
-            for k in ["ini", "lb", "ub"]:
-                pars[signal_id]["par"][par][k] = params[k][s]
+            if signal_id == "full_spectrum":
+                offset = {"ini":params["ini"][s], "ub":params["ub"][s], "lb":params["lb"][s]}
+            else:
+                par = params['par'][s]
+                pars[signal_id] = pars.get(signal_id, {"par":{}})
+                pars[signal_id]["par"][par] = pars[signal_id]["par"].get(par, {})
+                for k in ["ini", "lb", "ub"]:
+                    pars[signal_id]["par"][par][k] = params[k][s]
         
         # update parameters
         if spectrum is None:
             self.ref_spectrum.update_params(pars)
+            self.ref_spectrum.update_offset(offset)
         else:
             self.results[spectrum].update_params(pars)
+            self.results[spectrum].update_offset(offset)
     
+
     @staticmethod
     def update_spectra_list(user_input):
 
@@ -264,7 +266,9 @@ class Process(object):
         
         return experiment_list
 
-    def update_bounds(self, params):
+
+    @staticmethod
+    def update_bounds(params):
 
         # get current interval between bounds
         interval = (params["ub"] - params["lb"])/2
@@ -287,9 +291,12 @@ class Process(object):
         current_dataset = copy.deepcopy(self.opt)
         current_dataset["rowno"] = rowno-1
 
-        # create spectrum object, and build the corresponding model
+        # create spectrum object
         sp = spectrum.Spectrum(data=current_dataset, window=self.window)
-        sp.build_model(signals=self.signals, available_models=self.models, offset=None)#self.results[rp].offset)
+
+        # build model
+        offset = {} if self.results[ref].offset else None
+        sp.build_model(signals=self.signals, available_models=self.models, offset=offset)
 
         # save spectrum
         self.results[rowno] = sp
@@ -300,10 +307,8 @@ class Process(object):
         # update bounds
         prev_params = self.update_bounds(prev_params)
 
-        # update params
+        # update params in spectrum
         self.update_params(prev_params, spectrum=rowno)
 
         # fit
         self.results[rowno].fit()
-
-  

@@ -48,11 +48,6 @@ else:
     
 
 if session.object_space["steps_to_show"]["fit_all"]:
-    #with st.form("fit all spectra"):
-
-    #fit_all = st.form_submit_button("Fit selected spectra")
-    if st.session_state.get("start_button", False):
-        st.session_state.disabled = False
 
     stop = False
 

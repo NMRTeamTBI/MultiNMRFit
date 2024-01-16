@@ -167,11 +167,15 @@ with st.form("create model"):
             process.user_models[key] = {'n':clusters_and_models[key]['n'],
                                 'model':model,
                                 "model_idx": options.index(model)}
+        
+        offset_def = False if process.ref_spectrum.fit_results is None else (process.ref_spectrum.offset not in [False, None])
+        offset = st.checkbox('offset')
 
         fitting = st.form_submit_button("Build model")
         
         if fitting:
-            process.create_signals(process.user_models)
+            offs = {} if offset else None
+            process.create_signals(process.user_models, offset=offs)
             session.object_space["steps_to_show"]["fit_ref"] = True
             session.object_space["steps_to_show"]["fit_all"] = False
             session.object_space["steps_to_show"]["visu"] = False

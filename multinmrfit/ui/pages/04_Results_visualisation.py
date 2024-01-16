@@ -10,10 +10,9 @@ session = SessI(
 
 st.title("Results visualization")
 
+process = session.get_object(key="process")
 
-if session.object_space["steps_to_show"]["visu"]:
-    
-    process = session.get_object(key="process")
+if len(process.results):
 
     spectra_list = sorted(list(process.results.keys()))
 
@@ -29,6 +28,13 @@ if session.object_space["steps_to_show"]["visu"]:
     fig.update_layout(autosize=False, width=800, height=600)
     fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
     st.plotly_chart(fig)
+
+    parameters = st.data_editor(
+            process.results[spectrum].params,
+                hide_index=True,
+                disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral", "ini", "ub", "lb"]
+                )
+
     
 else:
 
