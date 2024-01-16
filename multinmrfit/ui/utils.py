@@ -4,6 +4,7 @@ import nmrglue as ng
 import numpy as np
 import logging
 import copy
+import string
 import multinmrfit.base.io as io
 import multinmrfit.base.spectrum as spectrum
 
@@ -177,6 +178,7 @@ class Process(object):
     def fit_reference_spectrum(self):
 
         self.ref_spectrum.fit()
+        self.results = {self.ref_spectrum_rowno: self.ref_spectrum}
 
     @staticmethod
     def read_topspin_data(data_path, dataset, expno, procno):
@@ -236,6 +238,57 @@ class Process(object):
             self.ref_spectrum.update_params(pars)
         else:
             self.results[spectrum].update_params(pars)
+    
+    @staticmethod
+    def update_spectra_list(user_input):
+        # check for allowed characters
+        #allowed = set(string.digits + ',' + '-')
+        #if not set(user_input) <= allowed:
+        #    # TO BE UPDATED: DISPLAY ERROR MESSAGE & STOPS
+        #    raise ValueError("Wrong format")
+        #    # logging.error("Wrong format for experiments list.")
+        # create list
+        experiment_list = []
+        try:
+            for i in user_input.split(','):
+                if "-" in i:
+                    spectra = i.split('-')
+                    if int(spectra[0]) <= int(spectra[1]):
+                        experiment_list += range(int(spectra[0]), int(spectra[1])+1)
+                    else:
+                        experiment_list += range(int(spectra[1]), int(spectra[0])+1)
+                else:
+                    experiment_list.append(int(i))
+        except:
+            return []
+        
+        return experiment_list
+
+    def fit_from_ref(self, rowno, ref):
+
+        # update dataset
+        current_dataset = copy.deepcopy(self.opt)
+        current_dataset["rowno"] = rowno
+
+        # create spectrum object, and build the corresponding model
+        sp = spectrum.Spectrum(data=current_dataset, window=self.window)
+        sp.build_model(signals=self.signals, available_models=self.models, offset=None)#self.results[rp].offset)
+
+        # save spectrum
+        self.results[rowno] = sp
+
+        # get params from previous spectrum
+        prev_params = self.results[ref].params.copy(deep=True)
+
+        # update bounds
+        #prev_params = self.update_bounds(from=, to=)
+
+        # update params
+        self.update_params(prev_params, spectrum=rowno)
+
+        # fit
+        self.results[rowno].fit()
+
 
     def _fit_batch(self, list_of_spectra):
 
@@ -267,17 +320,15 @@ class Process(object):
             sp.fit()
 
 
-    def fit_from_ref(self, list_of_spectra):
+    #def fit_from_ref(self):
 
-        self.results = {self.ref_spectrum_rowno: self.ref_spectrum}
+    #    self.results = {self.ref_spectrum_rowno: self.ref_spectrum}
 
-        list_spectra_upper = [self.ref_spectrum_rowno] + sorted([i for i in list_of_spectra if i > self.ref_spectrum_rowno])
-        print(list_spectra_upper)
-        list_spectra_lower = [self.ref_spectrum_rowno] + sorted([i for i in list_of_spectra if i < self.ref_spectrum_rowno], reverse=True)
-        print(list_spectra_lower)
+    #    list_spectra_upper = [self.ref_spectrum_rowno] + sorted([i for i in self.spectra_list if i > self.ref_spectrum_rowno])
+    #    list_spectra_lower = [self.ref_spectrum_rowno] + sorted([i for i in self.spectra_list if i < self.ref_spectrum_rowno], reverse=True)
         
-        self._fit_batch(list_spectra_upper)
-        self._fit_batch(list_spectra_lower)
+    #    self._fit_batch(list_spectra_upper)
+    #    self._fit_batch(list_spectra_lower)
         
 
             

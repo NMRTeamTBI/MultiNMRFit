@@ -138,7 +138,7 @@ if load_spectrum:
 
     # save in session state
     session.object_space["process"] = process
-    st.write("Dataset loaded successfully.")
+    st.success("Dataset loaded successfully.")
 
 
     # save as defaults for next run
@@ -152,4 +152,4 @@ if load_spectrum:
 
 elif session.object_space["steps_to_show"]["clustering"]:
 
-    st.write("Dataset loaded successfully.")
+    st.success("Dataset loaded successfully.")

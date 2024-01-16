@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from sess_i.base.main import SessI
 
 
@@ -12,97 +13,58 @@ session = SessI(
 
 process = session.get_object(key="process")   
 
-if session.object_space["steps_to_show"]["fit_ref"]:
-    with st.form("Fit reference spectrum"):
-        st.write("### Parameters")
-        parameters = st.data_editor(
-            process.ref_spectrum.params,
-                hide_index=True,
-                disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral"]
-                #column_config={"opt":None, "opt_sd":None, "integral":None}
-                )
-        
-        fit_ok = st.form_submit_button("Fit reference spectrum") 
+if session.object_space["steps_to_show"]["fit_all"]:
+    # set default parameters
 
-        if fit_ok:
+    spectra_to_process = st.text_input(
+            label="Spectra to process",
+            key="spectra_to_process",
+            value="-".join([str(process.spectra_list[0]), str(process.spectra_list[-1])]),
+            help="Enter all spectra to process"
+            )
 
-            # update parameters
-            process.update_params(parameters)
-            # fit reference spectrum
-            process.fit_reference_spectrum()
+    spectra_list = process.update_spectra_list(spectra_to_process)
 
-            # plot fit results
-            fig = process.ref_spectrum.plot(ini=True, fit=True)
-            fig.update_layout(autosize=False, width=800, height=600)
-            fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
-            st.plotly_chart(fig)
+    st.write(f"Spectra to process: {spectra_list}")
+    st.write(f"Reference: {process.ref_spectrum_rowno}")
 
 else:
 
-    st.write("Please define clusters...")
-  
+    st.write("Please process reference spectrum...")
 
 
 with st.form("fit all spectra"):
 
-    list_of_spectra = [2,3]
     fit_all = st.form_submit_button("Fit all spectra") 
 
     if fit_all:
-        process.fit_from_ref(list_of_spectra)
+
+        progress_text = "Operation in progress. Please wait."
+        progress_bar = st.progress(0, text=progress_text)
+
+        process.spectra_list = spectra_list
+
+        list_spectra_upper = [process.ref_spectrum_rowno] + sorted([i for i in spectra_list if i > process.ref_spectrum_rowno])
+        list_spectra_lower = [process.ref_spectrum_rowno] + sorted([i for i in spectra_list if i < process.ref_spectrum_rowno], reverse=True)
+        
+        for i,j in enumerate(list_spectra_upper[1:]):
+            process.fit_from_ref(rowno=j, ref=list_spectra_upper[i])
+            percent_complete = (i+1)/(len(list_spectra_upper)+len(list_spectra_lower)-2)
+            progress_bar.progress(percent_complete, text=progress_text)
+
+        for i,j in enumerate(list_spectra_lower[1:]):
+            process.fit_from_ref(rowno=j, ref=list_spectra_lower[i])
+            percent_complete = (i+len(list_spectra_upper))/(len(list_spectra_upper)+len(list_spectra_lower)-2)
+            progress_bar.progress(percent_complete, text=progress_text)
+
+        progress_bar.empty()
+        st.success("Done.")
+
         for k, v in process.results.items():
-            st.write(k)
+            st.write(f"rowno: {k}")
             fig = v.plot(ini=True, fit=True)
             fig.update_layout(autosize=False, width=800, height=600)
             fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
             st.plotly_chart(fig)
         
     
-
-    #results = process.fit_from_ref(sp, dataset, signals, list_of_spectra)
-
-# with st.expander(label="test", expanded=True):
-# cluster_to_update = st.selectbox(
-#     label='cluster',
-#     options=list(signals.keys())
-#     )
-
-# session.register_widgets({"cluster_to_update":cluster_to_update})
-
-# # st.write(session.widget_space["cluster_to_update"])
-
-# edited_peak_table = st.data_editor(
-#         pd.DataFrame.from_dict(signals[session.widget_space["cluster_to_update"]]['par'],orient='index'),
-#         # column_config={
-#         #     "ppm":"peak position",
-#         #     "intensity":"peak intensity",
-#         #     "cID":"cluster ID"
-#         # },
-#         hide_index=False
-#         )
-# available_models = utils.get_models()
-# st.write(signals)
-# sp.build_model(signals=signals, available_models=available_models)
-# sp.fit()
-# st.write(sp.params)
-# fig = sp.plot(ini=True, fit=True)
-# fig.update_layout(autosize=False, width=900, height=900)
-# st.plotly_chart(fig)
-
-# st.write(signals)
-
-# if fitting:
-#     with st.expander("test", expanded=True):
-#         st.write(session.widget_space['user_models'])
-#         st.write('##')
-#     with st.expander("Fitting the reference spectrum", expanded=True): 
-#         st.write(edited_peak_table)
-#         available_models = io.IoHandler.get_models()
-#         signals = {"singlet_TSP": {"model":"singlet", "par": {"x0": {"ini":0.0, "lb":-0.05, "ub":0.05}}}}
-#         sp.build_model(signals=signals, available_models=available_models)
-
-#         sp.fit()
-#         fig = sp.plot(ini=True, fit=True)
-#         fig.update_layout(autosize=False, width=900, height=900)
-#         st.plotly_chart(fig)
-

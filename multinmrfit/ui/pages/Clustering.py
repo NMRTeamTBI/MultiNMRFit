@@ -17,7 +17,7 @@ if session.object_space["steps_to_show"]["clustering"]:
 
     # set default parameters
     session.set_widget_defaults(
-        reference_spectrum = process.spectra_list[0],
+        reference_spectrum = process.ref_spectrum_rowno,
         spectrum_limit_min = float(process.ppm_limits[0]),
         spectrum_limit_max = float(process.ppm_limits[1])
     )
@@ -26,7 +26,8 @@ if session.object_space["steps_to_show"]["clustering"]:
     reference_spectrum = st.selectbox(
                 label="Select reference spectrum",
                 key="reference_spectrum",
-                options=process.spectra_list, 
+                options=process.spectra_list,
+                index=process.spectra_list.index(process.ref_spectrum_rowno),
                 help="Select the number of the spectrum used for peak picking and clustering"
                 )
         
@@ -56,6 +57,9 @@ if session.object_space["steps_to_show"]["clustering"]:
     ppm_step = 0.01
     if process.ref_spectrum_rowno != reference_spectrum or np.abs(process.ppm_limits[0]-spec_lim_min) > ppm_step or np.abs(process.ppm_limits[1]-spec_lim_max) > ppm_step:
         process.set_ref_spectrum(session.widget_space["reference_spectrum"], window=(spec_lim_min, spec_lim_max))
+        session.object_space["steps_to_show"]["build_model"] = False
+        session.object_space["steps_to_show"]["fit_ref"] = False
+        session.object_space["steps_to_show"]["fit_all"] = False
 
 else:
 
@@ -72,6 +76,7 @@ with st.form("Clustering"):
             step=1e5,
             help="Enter threshold used for peak detection"
             )
+        
 
         if peakpicking_threshold != process.peakpicking_threshold:
             process.update_pp_threshold(peakpicking_threshold)
@@ -164,4 +169,36 @@ with st.form("create model"):
             process.create_signals(process.user_models)
             session.object_space["steps_to_show"]["fit_ref"] = True
             session.object_space["steps_to_show"]["fit_all"] = False
+
+if session.object_space["steps_to_show"]["fit_ref"]:
+    with st.form("Fit reference spectrum"):
+        st.write("### Parameters")
+        parameters = st.data_editor(
+            process.ref_spectrum.params,
+                hide_index=True,
+                disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral"]
+                #column_config={"opt":None, "opt_sd":None, "integral":None}
+                )
+        
+        fit_ok = st.form_submit_button("Fit reference spectrum") 
+
+        if fit_ok:
+
+            # update parameters
+            process.update_params(parameters)
+            # fit reference spectrum
+            process.fit_reference_spectrum()
+
+            session.object_space["steps_to_show"]["fit_all"] = True
+
+        if process.ref_spectrum.fit_results is not None:
+            # plot fit results
+            fig = process.ref_spectrum.plot(ini=True, fit=True)
+            fig.update_layout(autosize=False, width=800, height=600)
+            fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
+            st.plotly_chart(fig)
+
+if process.ref_spectrum.fit_results is not None:
+    st.success("Reference spectrum has been fitted.")
+
 
