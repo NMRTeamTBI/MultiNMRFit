@@ -15,7 +15,6 @@ if session.object_space["steps_to_show"]["visu"]:
     
     process = session.get_object(key="process")   
 
-
     for k, v in process.results.items():
         st.write(f"rowno: {k}")
         fig = v.plot(ini=True, fit=True)

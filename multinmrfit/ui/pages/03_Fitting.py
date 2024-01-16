@@ -58,13 +58,13 @@ if session.object_space["steps_to_show"]["fit_all"]:
             for i,j in enumerate(list_spectra_upper[1:]):
                 process.fit_from_ref(rowno=j, ref=list_spectra_upper[i])
                 percent_complete = (i+1)/(len(list_spectra_upper)+len(list_spectra_lower)-2)
-                progress_text = f"Fitting spectrum {j} (from ref {list_spectra_upper[i]}). Please wait."
+                progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_upper[i]} as reference). Please wait."
                 progress_bar.progress(percent_complete, text=progress_text)
 
             for i,j in enumerate(list_spectra_lower[1:]):
                 process.fit_from_ref(rowno=j, ref=list_spectra_lower[i])
                 percent_complete = (i+len(list_spectra_upper))/(len(list_spectra_upper)+len(list_spectra_lower)-2)
-                progress_text = f"Fitting spectrum {j} (from ref {list_spectra_upper[i]}). Please wait."
+                progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_upper[i]} as reference). Please wait."
                 progress_bar.progress(percent_complete, text=progress_text)
 
             progress_bar.empty()

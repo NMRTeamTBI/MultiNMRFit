@@ -268,7 +268,7 @@ class Process(object):
 
         # update dataset
         current_dataset = copy.deepcopy(self.opt)
-        current_dataset["rowno"] = rowno
+        current_dataset["rowno"] = rowno-1
 
         # create spectrum object, and build the corresponding model
         sp = spectrum.Spectrum(data=current_dataset, window=self.window)
