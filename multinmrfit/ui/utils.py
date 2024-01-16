@@ -18,9 +18,10 @@ class Process(object):
 
         self.models = io.IoHandler.get_models()
 
+        # store raw metadata used for object construction
         self.opt = dataset
 
-        # extract data to process
+        # extract information
         self.data_path = dataset["data_path"]
         self.dataset = dataset["dataset"]
         self.expno = dataset["expno"]
@@ -28,11 +29,15 @@ class Process(object):
         self.ref_spectrum_rowno = dataset.get("rowno", 1)
         self.window = window
         self.ppm = None
-        # initialize peak_table
+
+        # initialize attributes
         self.edited_peak_table = None
         self.user_models = {}
         self.peakpicking_threshold = None
+        self.signals = None
+        self.results = None
 
+        # set rowno (1 by default)
         dataset["rowno"] = dataset.get("rowno", 1)
 
         # get dimensions
@@ -44,9 +49,6 @@ class Process(object):
         # load spectrum
         self.ppm_full, self.data_full = self.load_2D_spectrum()
         self.set_ref_spectrum(self.ref_spectrum_rowno)
-
-        self.signals = None
-        self.results = None
 
 
     def update_pp_threshold(self, pp_threshold):
