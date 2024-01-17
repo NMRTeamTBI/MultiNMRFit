@@ -36,7 +36,7 @@ class Process(object):
         self.user_models = {}
         self.peakpicking_threshold = None
         self.signals = None
-        self.results = None
+        self.results = {}
 
         # get dimensions
         self.exp_dim = self.get_dim()
