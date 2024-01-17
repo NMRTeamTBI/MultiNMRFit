@@ -1,4 +1,5 @@
 import streamlit as st
+import pickle
 from sess_i.base.main import SessI
 
 
@@ -12,7 +13,10 @@ session = SessI(
 
 if session.object_space["steps_to_show"]["fit_all"]:
 
-    process = session.get_object(key="process")   
+    process = session.get_object(key="process")
+
+    str_list = str(list(process.results.keys()))
+    st.info(f"Processed spectra: {str_list}")
 
     col1, col2 = st.columns(2)
 
@@ -43,7 +47,7 @@ if session.object_space["steps_to_show"]["fit_all"]:
     spectra_list = process.build_spectra_list(spectra_to_process)
 
     str_list = str(spectra_list) if len(spectra_list) else "None (wrong input)"
-    st.info(f"spectra to process: {str_list}")
+    st.info(f"Spectra to process: {str_list}")
 
 else:
 
@@ -57,13 +61,14 @@ if session.object_space["steps_to_show"]["fit_all"] and len(spectra_list):
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        start = st.button("Fit selected spectra", key="start_button")
+        start = st.button("Fit selected spectra")
     
     if start and not stop:
         
         with col2:
-            stop = st.button("Stop")
-
+            stop = st.empty()
+            stop.button('Stop')
+                    
         progress_text = "Operation in progress. Please wait."
         progress_bar = st.progress(0, text=progress_text)
 
@@ -83,6 +88,8 @@ if session.object_space["steps_to_show"]["fit_all"] and len(spectra_list):
             progress_bar.progress(percent_complete, text=progress_text)
 
         progress_bar.empty()
+        stop.empty()
+        
         st.success("Done.")
 
 
