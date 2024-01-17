@@ -61,7 +61,6 @@ if session.object_space["steps_to_show"]["clustering"]:
         session.object_space["steps_to_show"]["build_model"] = False
         session.object_space["steps_to_show"]["fit_ref"] = False
         session.object_space["steps_to_show"]["fit_all"] = False
-        session.object_space["steps_to_show"]["visu"] = False
 
 else:
 
@@ -126,7 +125,6 @@ with st.form("Clustering"):
             session.object_space["steps_to_show"]["build_model"] = True
             session.object_space["steps_to_show"]["fit_ref"] = False
             session.object_space["steps_to_show"]["fit_all"] = False
-            session.object_space["steps_to_show"]["visu"] = False
 
 
 with st.form("create model"):
@@ -178,7 +176,6 @@ with st.form("create model"):
             process.create_signals(process.user_models, offset=offs)
             session.object_space["steps_to_show"]["fit_ref"] = True
             session.object_space["steps_to_show"]["fit_all"] = False
-            session.object_space["steps_to_show"]["visu"] = False
 
 if session.object_space["steps_to_show"]["fit_ref"]:
     with st.form("Fit reference spectrum"):
@@ -202,7 +199,6 @@ if session.object_space["steps_to_show"]["fit_ref"]:
             process.fit_reference_spectrum()
 
             session.object_space["steps_to_show"]["fit_all"] = True
-            session.object_space["steps_to_show"]["visu"] = False
 
         # show last fit
         if process.ref_spectrum.fit_results is not None:

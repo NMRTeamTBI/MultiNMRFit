@@ -85,6 +85,5 @@ if session.object_space["steps_to_show"]["fit_all"] and len(spectra_list):
         progress_bar.empty()
         st.success("Done.")
 
-        session.object_space["steps_to_show"]["visu"] = True
 
 
