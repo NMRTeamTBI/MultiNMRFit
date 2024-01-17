@@ -88,21 +88,6 @@ with st.form("Clustering"):
         fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
         st.plotly_chart(fig)
 
-        # Initialize user_models from session state if exists else empty
-        #user_models = {}
-        #if not session.object_space["user_models"]:
-        #    user_models = {}
-        #else:
-        #    user_models = session.object_space["user_models"]
-            # Initialize cluster IDs from previous run on page
-            #peak_table["cID"] = [key for key in user_models.keys()]
-        #if not session.object_space["user_models"]:
-        #    user_models = {}
-        #else:
-        #    user_models = session.object_space["user_models"]
-            # Initialize cluster IDs from previous run on page
-            #peak_table["cID"] = [key for key in user_models.keys()]
-
         st.write("Peak list")
 
         edited_peak_table = st.data_editor(
