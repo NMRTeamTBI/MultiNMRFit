@@ -443,7 +443,7 @@ class Spectrum(object):
         self._check_parameters()
         
         # set scaling factor to stabilize convergence
-        scaling_factor = np.mean(self.intensity)
+        scaling_factor = np.max(self.intensity)/10
 
         # apply scaling factor on parameters (intensity & offset)
         params_scaled = self.params.copy(deep=True)

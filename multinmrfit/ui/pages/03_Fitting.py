@@ -43,7 +43,7 @@ if session.object_space["steps_to_show"]["fit_all"]:
     spectra_list = process.build_spectra_list(spectra_to_process)
 
     str_list = str(spectra_list) if len(spectra_list) else "None (wrong input)"
-    st.write(f"spectra to process: {str_list}")
+    st.info(f"spectra to process: {str_list}")
 
 else:
 

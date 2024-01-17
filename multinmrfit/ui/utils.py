@@ -72,7 +72,7 @@ class Process(object):
             pp_threshold (int | float): threshold value for peak detection.
         """
 
-        if isinstance(pp_threshold, float):
+        if type(pp_threshold) != float:
             raise ValueError(f"Peak picking threshold must be numeric.")
 
         # update threshold
@@ -218,7 +218,7 @@ class Process(object):
         self.ref_spectrum.fit()
 
         # save in results
-        self.results = {self.ref_spectrum_rowno: self.ref_spectrum}
+        self.results[self.ref_spectrum_rowno] = self.ref_spectrum
 
 
     @staticmethod
@@ -376,6 +376,9 @@ class Process(object):
         # build model
         offset = {} if self.results[ref].offset else None
         sp.build_model(signals=self.signals, available_models=self.models, offset=offset)
+
+        # add from_ref attribute
+        sp.from_ref = ref
 
         # save spectrum
         self.results[rowno] = sp
