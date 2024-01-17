@@ -64,6 +64,11 @@ if session.object_space["steps_to_show"] is None:
 # set defaults
 load_defaults()
 
+uploaded_file = st.file_uploader("Open a configuration file.")
+
+if uploaded_file is not None:
+    pass
+
 with st.form('Inputs/Outputs'):
     with st.container():
         st.write("### Inputs")

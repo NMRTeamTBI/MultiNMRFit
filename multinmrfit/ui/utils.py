@@ -70,9 +70,15 @@ class Process(object):
 
         Args:
             pp_threshold (int | float): threshold value for peak detection.
-        """   
+        """
 
+        if type(pp_threshold) != float:
+            raise ValueError(f"Peak picking threshold must be numeric.")
+
+        # update threshold
         self.peakpicking_threshold = pp_threshold
+
+        # detect peaks
         self.edited_peak_table = self.ref_spectrum.peak_picking(pp_threshold)
 
 
@@ -102,7 +108,7 @@ class Process(object):
         # get ppm limits
         self.ppm_limits = (min(self.ppm), max(self.ppm))
 
-
+        # update pp threshold
         self.update_pp_threshold(max(self.ref_spectrum.intensity)/5)
         
 
@@ -117,6 +123,9 @@ class Process(object):
         # get complete data path
         full_path = Path(self.data_path, self.dataset, self.expno, 'pdata', self.procno)
 
+        if not full_path.exists():
+            raise ValueError("Directory '{}' does not exist.".format(full_path))
+        
         # read processed data
         try:
             dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
@@ -125,8 +134,8 @@ class Process(object):
             udic = ng.bruker.guess_udic(dic, data)
             uc_F = ng.fileiobase.uc_from_udic(udic, 1)
             ppm = pd.Series(uc_F.ppm_scale())
-        except Exception:
-            raise ValueError("An unknown error has occurred when opening spectrum '{}'.".format(full_path))
+        except Exception as e:
+            raise ValueError("An unknown error has occurred when opening spectrum: '{}'.".format(e))
 
         return ppm, data
 
@@ -188,13 +197,16 @@ class Process(object):
             offset (dict, optional): add an offset. Defaults to None.
         """
 
+        # initialize signals
         self.signals = {}
  
+        # create signals
         for key in cluster_dict:
             model = self.models[cluster_dict[key]['model']]()
             filtered_peak_table = self.edited_peak_table[self.edited_peak_table.cID==key]
             self.signals[key] = model.pplist2signal(filtered_peak_table)
-      
+
+        # build model
         self.ref_spectrum.build_model(signals=self.signals, available_models=self.models, offset=offset)
 
 
@@ -202,7 +214,10 @@ class Process(object):
         """Fit reference spectrum.
         """
 
+        # fit reference spectrum
         self.ref_spectrum.fit()
+
+        # save in results
         self.results = {self.ref_spectrum_rowno: self.ref_spectrum}
 
 
