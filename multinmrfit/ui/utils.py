@@ -376,3 +376,6 @@ class Process(object):
 
         # fit
         self.results[rowno].fit()
+
+    def export_results(self):
+        pass
