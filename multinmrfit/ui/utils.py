@@ -72,7 +72,7 @@ class Process(object):
             pp_threshold (int | float): threshold value for peak detection.
         """
 
-        if type(pp_threshold) != float:
+        if isinstance(pp_threshold, float):
             raise ValueError(f"Peak picking threshold must be numeric.")
 
         # update threshold
