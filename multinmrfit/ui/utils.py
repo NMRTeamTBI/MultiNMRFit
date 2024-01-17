@@ -13,8 +13,24 @@ import multinmrfit.base.spectrum as spectrum
 logger = logging.getLogger(__name__)
 
 class Process(object):
+    """This class is responsible for interacting with a set of spectra to process:
+
+        * data loading
+        * peak picking
+        * model initialization
+        * spectrum simulation
+        * spectrum fitting
+        * sensitivity analysis
+        * plotting
+    """
 
     def __init__(self, dataset, window=None):
+        """Construct the Process object.
+
+        Args:
+            dataset (dict): input data, a dict to load the data from Topspin files.
+            window (tuple, optional): lower and upper bounds of the window of interest (in ppm) or full spectrum if None. Defaults to None.
+        """
 
         self.models = io.IoHandler.get_models()
 
@@ -46,15 +62,27 @@ class Process(object):
         
         # load spectrum
         self.ppm_full, self.data_full = self.load_2D_spectrum()
-        self.set_ref_spectrum(self.ref_spectrum_rowno)
+        self.set_ref_spectrum(self.ref_spectrum_rowno, window=window)
 
 
     def update_pp_threshold(self, pp_threshold):
+        """Update peak picking threshold, and detect peaks.
+
+        Args:
+            pp_threshold (int | float): threshold value for peak detection.
+        """   
+
         self.peakpicking_threshold = pp_threshold
         self.edited_peak_table = self.ref_spectrum.peak_picking(pp_threshold)
 
 
     def set_ref_spectrum(self, rowno, window=None):
+        """Set reference spectrum.
+
+        Args:
+            rowno (int): rowno of the reference spectrum.
+            window (tuple, optional): lower and upper bounds of the window of interest (in ppm) or full spectrum if None. Defaults to None.
+        """
 
         # extract reference spectrum
         self.ref_spectrum_rowno = int(rowno)
@@ -70,6 +98,7 @@ class Process(object):
 
         # update chemical shifts
         self.ppm = self.ref_spectrum.ppm
+
         # get ppm limits
         self.ppm_limits = (min(self.ppm), max(self.ppm))
 
@@ -78,6 +107,12 @@ class Process(object):
         
 
     def load_2D_spectrum(self):
+        """Load 2D NMR spectra.
+
+        Returns:
+            list: chemical shift
+            list: intensity
+        """
 
         # get complete data path
         full_path = Path(self.data_path, self.dataset, self.expno, 'pdata', self.procno)
@@ -97,11 +132,10 @@ class Process(object):
 
 
     def get_dim(self):
-        """
-        Estimate the number of rows in the experiment
+        """Estimate the number of rows in the experiment.
         
         Returns:
-            tuple: dimensions of the spectrum
+            tuple: dimensions of the spectrum (colno, rowno)
         """
 
         _, data = self.read_topspin_data(self.data_path, self.dataset, self.expno, self.procno)
@@ -110,13 +144,7 @@ class Process(object):
 
 
     def get_ppm_limits(self):
-        """
-        Estimate the ppm limits in the experiment
-        (minimum of ppm scale, maximim of ppm scale)
-
-        Returns:
-            float: ppm_min
-            float: ppm_max
+        """Estimate the ppm limits in the experiment (minimum of ppm scale, maximim of ppm scale).
         """
 
         ppm, _ = self.read_topspin_data(self.data_path, self.dataset, self.expno, self.procno)
@@ -124,11 +152,8 @@ class Process(object):
 
 
     def model_cluster_assignment(self):
-        """
-        Estimate the number of peaks per model
+        """Estimate the number of peaks per model
 
-        Args:
-            edited_peak_table (pd.DataFrame)
         Returns:
             dict: {cluster_id:{'n':number of peaks,'models'=[list of possible models with that number of peaks]}
         """
@@ -156,6 +181,12 @@ class Process(object):
         
 
     def create_signals(self, cluster_dict, offset=None):
+        """Build model for spectrum fitting.
+
+        Args:
+            cluster_dict (dict): dictionary containing peaks assignment.
+            offset (dict, optional): add an offset. Defaults to None.
+        """
 
         self.signals = {}
  
@@ -168,6 +199,8 @@ class Process(object):
 
 
     def fit_reference_spectrum(self):
+        """Fit reference spectrum.
+        """
 
         self.ref_spectrum.fit()
         self.results = {self.ref_spectrum_rowno: self.ref_spectrum}
@@ -175,6 +208,12 @@ class Process(object):
 
     @staticmethod
     def read_topspin_data(data_path, dataset, expno, procno):
+        """Load 2D NMR spectra.
+
+        Returns:
+            list: chemical shift
+            list: intensity
+        """
 
         # Cyril's version ####
         # Complete data path
@@ -202,11 +241,11 @@ class Process(object):
     
 
     def get_models_peak_number(self):
-        # """
-        # Load signal models.
-        #
-        # Returns: dict containing the different model peak numbers, with model.name as keys
-        # """
+        """Load signal models.
+
+        Returns:
+            dict: model peak numbers, with model.name as keys
+        """
         
         models_peak_number = {}
 
@@ -217,6 +256,12 @@ class Process(object):
 
 
     def update_params(self, params, spectrum=None):
+        """Update parameter.
+
+        Args:
+            params (pd.DataFrame): values of new parameters, with same format as Spectrum.params.
+            spectrum (optional, int): rowno of the spectrum to update, reference spectrum if None. Default to None.
+        """
 
         # build dictionary from dataframe to update parameters
         pars = {}
@@ -242,7 +287,15 @@ class Process(object):
     
 
     @staticmethod
-    def update_spectra_list(user_input):
+    def build_spectra_list(user_input):
+        """Build list of spectra.
+
+        Args:
+            user_input (str): string to parse.
+
+        Returns:
+            list: list of spectra
+        """
 
         # check for allowed characters
         allowed = set(string.digits + ',' + '-')
@@ -269,6 +322,11 @@ class Process(object):
 
     @staticmethod
     def update_bounds(params):
+        """Update bounds of parameters.
+
+        Args:
+            params (pd.DataFrame): parameters, with same format as Spectrum.params.
+        """
 
         # get current interval between bounds
         interval = (params["ub"] - params["lb"])/2
@@ -286,6 +344,12 @@ class Process(object):
 
 
     def fit_from_ref(self, rowno, ref):
+        """Fit a spectrum using another spectrum as reference.
+
+        Args:
+            rowno (int): rowno of the spectrum to fit.
+            ref (int): rowno of the spectrum used as reference.
+        """
 
         # update dataset
         current_dataset = copy.deepcopy(self.opt)
