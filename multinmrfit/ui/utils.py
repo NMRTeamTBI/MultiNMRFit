@@ -19,6 +19,7 @@ class Process(object):
         self.models = io.IoHandler.get_models()
 
         # store raw metadata used for object construction
+        dataset["rowno"] = dataset.get("rowno", 1)
         self.opt = dataset
 
         # extract information
@@ -26,7 +27,7 @@ class Process(object):
         self.dataset = dataset["dataset"]
         self.expno = dataset["expno"]
         self.procno = dataset["procno"]
-        self.ref_spectrum_rowno = dataset.get("rowno", 1)
+        self.ref_spectrum_rowno = dataset["rowno"]
         self.window = window
         self.ppm = None
 
@@ -36,9 +37,6 @@ class Process(object):
         self.peakpicking_threshold = None
         self.signals = None
         self.results = None
-
-        # set rowno (1 by default)
-        dataset["rowno"] = dataset.get("rowno", 1)
 
         # get dimensions
         self.exp_dim = self.get_dim()
