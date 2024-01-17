@@ -217,6 +217,9 @@ class Process(object):
         # fit reference spectrum
         self.ref_spectrum.fit()
 
+        # add from_ref attribute
+        self.ref_spectrum.from_ref = None
+
         # save in results
         self.results[self.ref_spectrum_rowno] = self.ref_spectrum
 
