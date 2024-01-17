@@ -398,5 +398,6 @@ class Process(object):
     def save_config(self):
         pass
 
+    @staticmethod
     def load_config(self):
         pass
