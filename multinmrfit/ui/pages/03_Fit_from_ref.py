@@ -2,8 +2,8 @@ import streamlit as st
 from sess_i.base.main import SessI
 
 
-st.set_page_config(page_title="Fitting",layout="wide")
-st.title("Fitting")
+st.set_page_config(page_title="Fit from a spectrum of reference", layout="wide")
+st.title("Fit from a spectrum of reference")
 
 session = SessI(
     session_state = st.session_state,
