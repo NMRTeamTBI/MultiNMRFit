@@ -59,7 +59,7 @@ load_defaults()
 
 if session.object_space["loaded_file"] is not None:
     st.info(f"Process file loaded: {session.object_space['loaded_file']}")
-    st.warning("Warning: Remember to update paths below, otherwise the process file loaded will be silently overwritten.")
+    st.warning("Warning: Remember to update paths below, otherwise the process file and the processing results will be silently overwritten.")
 
 uploaded_file = st.sidebar.file_uploader("Load a processing file.")
 
