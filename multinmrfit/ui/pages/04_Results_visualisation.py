@@ -12,7 +12,12 @@ st.title("Results visualization")
 
 process = session.get_object(key="process")
 
-if process is not None:
+if process is None:
+
+    st.warning("No results to display, please process some spectra first.")
+
+else:
+
     if len(process.results):
 
         spectra_list = sorted(list(process.results.keys()))
@@ -38,7 +43,3 @@ if process is not None:
 
     else:
         st.warning("No results to display, please process some spectra first.")
-
-else:
-    st.warning("No results to display, please process some spectra first.")
-    

@@ -10,7 +10,7 @@ import multinmrfit
 import pickle
 import pathlib
 from sess_i.base.main import SessI
-import multinmrfit.ui.utils as utils
+from multinmrfit.ui.utils import Process
 
 
 session = SessI(
@@ -35,8 +35,7 @@ def load_defaults():
             input_expno = options["input_expno"],
             input_procno = options["input_procno"],
             output_res_path = options["output_res_path"],
-            output_res_folder = options["output_res_folder"],
-            output_res_filename = options["output_res_filename"]
+            output_res_folder = options["output_res_folder"]
         )
     except:
         session.set_widget_defaults(
@@ -45,29 +44,47 @@ def load_defaults():
             input_expno = 1,
             input_procno = 1,
             output_res_path = "path/to/output/data",
-            output_res_folder = 'results_folder',
-            output_res_filename = 'results_filename'
+            output_res_folder = 'results_folder'
         )
 
 # set page title with multinmrfit version
 st.set_page_config(page_title=f"multiNMRFit (v{multinmrfit.__version__})", layout="wide")
 st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 
-# processing steps to show
-if session.object_space["steps_to_show"] is None:
-    steps_to_show = {"clustering":False,
-                     "build_model":False,
-                     "fit_ref":False,
-                     "fit_all":False}
-    session.register_object(obj=steps_to_show, key="steps_to_show")
+# # processing steps to show
+# if session.object_space["steps_to_show"] is None:
+#     steps_to_show = {"clustering":False,
+#                      "build_model":False,
+#                      "fit_ref":False,
+#                      "fit_all":False}
+#     session.register_object(obj=steps_to_show, key="steps_to_show")
 
 # set defaults
 load_defaults()
 
-uploaded_file = st.file_uploader("Open a configuration file.")
+uploaded_file = st.file_uploader("Load a processing file.")
 
 if uploaded_file is not None:
-    pass
+    
+    # load process object
+    with uploaded_file as file:
+        process = pickle.load(file)
+    
+    # save in session state
+    session.object_space["process"] = process
+
+    # set wisgets defaults
+    session.set_widget_defaults(
+            input_exp_data_path = process.data_path,
+            input_exp_data_folder = process.dataset,
+            input_expno = process.expno,
+            input_procno = process.procno,
+            output_res_path = process.output_res_path,
+            output_res_folder = process.output_res_folder
+        )
+    
+    # show warning
+    st.warning("Warning: Remember to update paths below, otherwise process file will be silently overwritten.")
 
 with st.form('Inputs/Outputs'):
     with st.container():
@@ -107,13 +124,12 @@ with st.form('Inputs/Outputs'):
             key="output_res_folder",
             value = session.widget_space["output_res_folder"],
         )
-        output_res_filename = st.text_input(
-            label="Enter output path",
-            key="output_res_filename",
-            value = session.widget_space["output_res_filename"],
-        )
 
-    load_spectrum = st.form_submit_button('Load spectrum')
+    if uploaded_file is None:
+        load_spectrum = st.form_submit_button('Load spectrum')
+    else:
+        load_spectrum = st.form_submit_button('Update process')
+       
 
 if load_spectrum:
 
@@ -124,8 +140,7 @@ if load_spectrum:
         "input_expno": input_expno,
         "input_procno": input_procno,
         "output_res_path": output_res_path,
-        "output_res_folder": output_res_folder,
-        "output_res_filename": output_res_filename
+        "output_res_folder": output_res_folder
     }
 
     # update inputs & outputs
@@ -135,25 +150,35 @@ if load_spectrum:
     dataset = {"data_path": str(options["input_exp_data_path"]),
             "dataset": str(options["input_exp_data_folder"]),
             "expno": str(options["input_expno"]),
-            "procno": str(options["input_procno"])
+            "procno": str(options["input_procno"]),
+            "output_res_path": output_res_path,
+            "output_res_folder": output_res_folder
             }
 
-    # initialize process
-    process = utils.Process(dataset, window=None)
+    if uploaded_file is None:
+        # initialize process
+        process = Process(dataset, window=None)
+        # save in session state
+        session.object_space["process"] = process
+    else:
+        # update process
+        process.data_path = dataset["data_path"]
+        process.dataset = dataset["dataset"]
+        process.expno = dataset["expno"]
+        process.procno = dataset["procno"]
 
-    # save in session state
-    session.object_space["process"] = process
+    # show message
     st.success("Dataset loaded successfully.")
 
     # save as defaults for next run
     save_defaults(options)
 
     # reset processing steps to show
-    session.object_space["steps_to_show"]["clustering"] = True
-    session.object_space["steps_to_show"]["build_model"] = False
-    session.object_space["steps_to_show"]["fit_ref"] = False
-    session.object_space["steps_to_show"]["fit_all"] = False
+    #session.object_space["steps_to_show"]["clustering"] = True
+    #session.object_space["steps_to_show"]["build_model"] = False
+    #session.object_space["steps_to_show"]["fit_ref"] = False
+    #session.object_space["steps_to_show"]["fit_all"] = False
 
-elif session.object_space["steps_to_show"]["clustering"]:
+#elif session.object_space["steps_to_show"]["clustering"]:
 
-    st.success("Dataset loaded successfully.")
+#    st.success("Dataset loaded successfully.")

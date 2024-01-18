@@ -7,6 +7,7 @@ import copy
 import string
 import multinmrfit.base.io as io
 import multinmrfit.base.spectrum as spectrum
+import pickle
 
 
 # create logger
@@ -46,6 +47,10 @@ class Process(object):
         self.ref_spectrum_rowno = dataset["rowno"]
         self.window = window
         self.ppm = None
+
+        # outputs
+        self.output_res_path = dataset["output_res_path"]
+        self.output_res_folder = dataset["output_res_folder"]
 
         # initialize attributes
         self.edited_peak_table = None
@@ -207,13 +212,15 @@ class Process(object):
         """
 
         # initialize signals
-        self.signals = {}
+        signals = {}
  
         # create signals
         for key in cluster_dict:
             model = self.models[cluster_dict[key]['model']]()
             filtered_peak_table = self.edited_peak_table[self.edited_peak_table.cID==key]
-            self.signals[key] = model.pplist2signal(filtered_peak_table)
+            signals[key] = model.pplist2signal(filtered_peak_table)
+
+        self.signals = signals
 
         # build model
         self.ref_spectrum.build_model(signals=self.signals, available_models=self.models, offset=offset)
@@ -407,12 +414,17 @@ class Process(object):
         # fit
         self.results[rowno].fit()
 
+
     def export_results(self):
         pass
 
-    def save_config(self):
-        pass
 
-    @staticmethod
-    def load_config(self):
-        pass
+    def save_process_to_file(self):
+
+        output_folder = Path(self.output_res_path, self.output_res_folder, "process.pkl")
+        print(output_folder)
+
+        with open(output_folder, 'wb') as file:
+            #pickle.dump(self, file)
+            pd.to_pickle(self, file)
+

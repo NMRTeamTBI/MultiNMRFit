@@ -1,5 +1,4 @@
 import streamlit as st
-import pickle
 from sess_i.base.main import SessI
 
 
@@ -11,22 +10,33 @@ session = SessI(
     page="Fitting"
 )
 
-if session.object_space["steps_to_show"]["fit_all"]:
+process = session.get_object(key="process")
 
-    process = session.get_object(key="process")
+if process is None or len(process.results) == 0:
+
+    st.warning("Please process a spectrum used as reference.")
+
+else:
 
     str_list = str(list(process.results.keys()))
     st.info(f"Processed spectra: {str_list}")
+
+    # set default parameters
+    session.set_widget_defaults(
+        spectra_to_process = "-".join([str(process.spectra_list[0]), str(process.spectra_list[-1])])
+    )
+
 
     col1, col2 = st.columns(2)
 
     with col1:
         already_processed = sorted(process.results.keys())
+        index = already_processed.index(process.ref_spectrum_rowno) if process.ref_spectrum_rowno in already_processed else 0
         reference_spectrum = st.selectbox(
                     label="Select reference spectrum",
                     key="reference_spectrum",
                     options=already_processed,
-                    index=already_processed.index(process.ref_spectrum_rowno),
+                    index=index,
                     help="Select the number of the spectrum used for peak picking and clustering"
                     )
             
@@ -34,10 +44,14 @@ if session.object_space["steps_to_show"]["fit_all"]:
         spectra_to_process = st.text_input(
                 label="Spectra to process",
                 key="spectra_to_process",
-                value="-".join([str(process.spectra_list[0]), str(process.spectra_list[-1])]),
+                value=session.widget_space["spectra_to_process"],
                 help="Enter all spectra to process"
                 )
 
+    session.register_widgets({
+            "spectra_to_process": spectra_to_process
+        })
+    
     with st.expander("Reference spectrum", expanded=False):
         fig = process.results[reference_spectrum].plot(ini=False, fit=True)
         fig.update_layout(autosize=False, width=800, height=600)
@@ -49,12 +63,8 @@ if session.object_space["steps_to_show"]["fit_all"]:
     str_list = str(spectra_list) if len(spectra_list) else "None (wrong input)"
     st.info(f"Spectra to process: {str_list}")
 
-else:
 
-    st.warning("Please process a spectrum used as reference.")
-    
-
-if session.object_space["steps_to_show"]["fit_all"] and len(spectra_list):
+if (process is not None and len(process.results) > 0) and len(spectra_list):
 
     stop = False
 
@@ -90,7 +100,7 @@ if session.object_space["steps_to_show"]["fit_all"] and len(spectra_list):
         progress_bar.empty()
         stop.empty()
         
-        st.success("Done.")
+        process.save_process_to_file()
 
 
 
