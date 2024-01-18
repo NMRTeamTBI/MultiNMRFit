@@ -38,14 +38,18 @@ if session.object_space["steps_to_show"]["clustering"]:
         spec_lim_max = st.number_input(
                 label="Spectral limits (max)",
                 key="spectrum_limit_max",
-                value = session.widget_space["spectrum_limit_max"]
+                value = session.widget_space["spectrum_limit_max"],
+                min_value = min(process.ppm_full) + 0.1,
+                max_value = max(process.ppm_full)
                 )
             
     with col3:
         spec_lim_min = st.number_input(
                 label="Spectral limits (min)",
                 key="spectrum_limit_min",
-                value = session.widget_space["spectrum_limit_min"]
+                value = session.widget_space["spectrum_limit_min"],
+                min_value = min(process.ppm_full),
+                max_value = max(process.ppm_full) - 0.1
                 )
 
     session.register_widgets({
@@ -57,10 +61,17 @@ if session.object_space["steps_to_show"]["clustering"]:
     # update reference spectrum when widgets' values are changed
     ppm_step = 0.01
     if process.ref_spectrum_rowno != reference_spectrum or np.abs(process.ppm_limits[0]-spec_lim_min) > ppm_step or np.abs(process.ppm_limits[1]-spec_lim_max) > ppm_step:
-        process.set_ref_spectrum(session.widget_space["reference_spectrum"], window=(spec_lim_min, spec_lim_max))
-        session.object_space["steps_to_show"]["build_model"] = False
-        session.object_space["steps_to_show"]["fit_ref"] = False
-        session.object_space["steps_to_show"]["fit_all"] = False
+
+        if (spec_lim_max-spec_lim_min) < 0.1:
+
+            st.error("Error: ppm max must be higher than ppm min.")
+
+        else:                
+
+            process.set_ref_spectrum(session.widget_space["reference_spectrum"], window=(spec_lim_min, spec_lim_max))
+            session.object_space["steps_to_show"]["build_model"] = False
+            session.object_space["steps_to_show"]["fit_ref"] = False
+            session.object_space["steps_to_show"]["fit_all"] = False
 
 else:
 
@@ -105,11 +116,18 @@ with st.form("Clustering"):
         create_models = st.form_submit_button("Assign peaks") 
 
         if create_models:
-            process.edited_peak_table = edited_peak_table
-            process.user_models = {}
-            session.object_space["steps_to_show"]["build_model"] = True
-            session.object_space["steps_to_show"]["fit_ref"] = False
-            session.object_space["steps_to_show"]["fit_all"] = False
+            
+            clusters = set(list(filter(None, edited_peak_table.cID.values.tolist())))
+
+            if len(clusters):
+                process.edited_peak_table = edited_peak_table
+                process.user_models = {}
+                session.object_space["steps_to_show"]["build_model"] = True
+                session.object_space["steps_to_show"]["fit_ref"] = False
+                session.object_space["steps_to_show"]["fit_all"] = False
+            else:
+                st.error("Error: no cluster defined.")
+
 
 
 with st.form("create model"):
