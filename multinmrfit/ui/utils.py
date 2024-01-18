@@ -7,7 +7,6 @@ import copy
 import string
 import multinmrfit.base.io as io
 import multinmrfit.base.spectrum as spectrum
-import pickle
 
 
 # create logger

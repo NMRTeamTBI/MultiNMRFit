@@ -11,6 +11,7 @@ import pickle
 import pathlib
 from sess_i.base.main import SessI
 from multinmrfit.ui.utils import Process
+import pandas as pd
 
 
 session = SessI(
@@ -66,7 +67,7 @@ if uploaded_file is not None:
     
     # load process object
     with uploaded_file as file:
-        process = pickle.load(file)
+        process = pd.read_pickle(file)
     
     # save in session state
     session.object_space["process"] = process
@@ -152,10 +153,8 @@ if load_spectrum:
         "output_filename": output_filename
     }
 
-    st.write(options)
     # save as defaults for next run
     save_defaults(options)
-
 
     # update inputs & outputs
     session.register_widgets(options)
