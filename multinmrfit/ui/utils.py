@@ -65,6 +65,18 @@ class Process(object):
         self.set_ref_spectrum(self.ref_spectrum_rowno, window=window)
 
 
+    def check_dataset(self):
+
+        if not Path(self.data_path).exists():
+            raise ValueError("Directory '{}' does not exist.".format(self.data_path))
+
+
+        full_path = Path(self.data_path, self.dataset, self.expno, 'pdata', self.procno)
+
+        if not full_path.exists():
+            raise ValueError("Directory '{}' does not exist.".format(full_path))
+
+
     def update_pp_threshold(self, pp_threshold):
         """Update peak picking threshold, and detect peaks.
 
@@ -122,9 +134,6 @@ class Process(object):
 
         # get complete data path
         full_path = Path(self.data_path, self.dataset, self.expno, 'pdata', self.procno)
-
-        if not full_path.exists():
-            raise ValueError("Directory '{}' does not exist.".format(full_path))
         
         # read processed data
         try:
