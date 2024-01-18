@@ -8,7 +8,7 @@ st.title("Process reference spectrum")
 
 session = SessI(
     session_state = st.session_state,
-    page = "Process ref spectrum"
+    page = "Process ref. spectrum"
 )
 
 # get process
@@ -209,6 +209,9 @@ else:
                     fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
                     st.plotly_chart(fig)
 
+                    # save as pickle file
+                    process.save_process_to_file()
+                    
                     st.success("Reference spectrum has been fitted.")
 
 

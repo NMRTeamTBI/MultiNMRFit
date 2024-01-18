@@ -35,7 +35,8 @@ def load_defaults():
             input_expno = options["input_expno"],
             input_procno = options["input_procno"],
             output_res_path = options["output_res_path"],
-            output_res_folder = options["output_res_folder"]
+            output_res_folder = options["output_res_folder"],
+            output_filename = options["output_filename"]
         )
     except:
         session.set_widget_defaults(
@@ -44,7 +45,8 @@ def load_defaults():
             input_expno = 1,
             input_procno = 1,
             output_res_path = "path/to/output/data",
-            output_res_folder = 'results_folder'
+            output_res_folder = 'results_folder',
+            output_filename = "filename"
         )
 
 # set page title with multinmrfit version
@@ -54,7 +56,11 @@ st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 
 load_defaults()
 
-uploaded_file = st.file_uploader("Load a processing file.")
+if session.object_space["loaded_file"] is not None:
+    st.info(f"Process file loaded: {session.object_space['loaded_file']}")
+    st.warning("Warning: Remember to update paths below, otherwise the process file loaded will be silently overwritten.")
+
+uploaded_file = st.sidebar.file_uploader("Load a processing file.")
 
 if uploaded_file is not None:
     
@@ -72,11 +78,16 @@ if uploaded_file is not None:
             input_expno = process.expno,
             input_procno = process.procno,
             output_res_path = process.output_res_path,
-            output_res_folder = process.output_res_folder
+            output_res_folder = process.output_res_folder,
+            filename = process.filename
         )
     
+    # save state
+    session.object_space["loaded_file"] = pathlib.Path(process.output_res_path, process.output_res_folder, process.filename + ".pkl")
+    
     # show warning
-    st.warning("Warning: Remember to update paths below, otherwise process file will be silently overwritten.")
+    st.info(f"Process file loaded: {session.object_space['loaded_file']}")
+    st.warning("Warning: Remember to update paths below, otherwise the process file loaded will be silently overwritten.")
 
 with st.form('Inputs/Outputs'):
     with st.container():
@@ -116,8 +127,13 @@ with st.form('Inputs/Outputs'):
             key="output_res_folder",
             value = session.widget_space["output_res_folder"],
         )
+        output_filename = st.text_input(
+            label="Enter filename",
+            key="output_filename",
+            value = session.widget_space["output_filename"],
+        )
 
-    if uploaded_file is None:
+    if session.object_space["loaded_file"] is None:
         load_spectrum = st.form_submit_button('Load spectrum')
     else:
         load_spectrum = st.form_submit_button('Update process')
@@ -132,8 +148,14 @@ if load_spectrum:
         "input_expno": input_expno,
         "input_procno": input_procno,
         "output_res_path": output_res_path,
-        "output_res_folder": output_res_folder
+        "output_res_folder": output_res_folder,
+        "output_filename": output_filename
     }
+
+    st.write(options)
+    # save as defaults for next run
+    save_defaults(options)
+
 
     # update inputs & outputs
     session.register_widgets(options)
@@ -144,7 +166,8 @@ if load_spectrum:
             "expno": str(options["input_expno"]),
             "procno": str(options["input_procno"]),
             "output_res_path": output_res_path,
-            "output_res_folder": output_res_folder
+            "output_res_folder": output_res_folder,
+            "output_filename": output_filename
             }
 
     if uploaded_file is None:
@@ -158,9 +181,12 @@ if load_spectrum:
         process.dataset = dataset["dataset"]
         process.expno = dataset["expno"]
         process.procno = dataset["procno"]
+        process.filename = dataset["output_filename"]
+    
+    # save as pickle file
+    process.save_process_to_file()
 
+
+if session.object_space["process"] is not None:
     # show message
     st.success("Dataset loaded successfully.")
-
-    # save as defaults for next run
-    save_defaults(options)

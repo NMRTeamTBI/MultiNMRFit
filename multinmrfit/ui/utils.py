@@ -51,6 +51,7 @@ class Process(object):
         # outputs
         self.output_res_path = dataset["output_res_path"]
         self.output_res_folder = dataset["output_res_folder"]
+        self.filename = dataset["output_filename"]
 
         # initialize attributes
         self.edited_peak_table = None
@@ -421,10 +422,9 @@ class Process(object):
 
     def save_process_to_file(self):
 
-        output_folder = Path(self.output_res_path, self.output_res_folder, "process.pkl")
-        print(output_folder)
-
-        with open(output_folder, 'wb') as file:
+        output_file = Path(self.output_res_path, self.output_res_folder, self.filename + ".pkl")
+        
+        with open(output_file, 'wb') as file:
             #pickle.dump(self, file)
             pd.to_pickle(self, file)
 
