@@ -85,7 +85,6 @@ else:
                 step=1e5,
                 help="Enter threshold used for peak detection"
                 )
-            
 
             if peakpicking_threshold != process.peakpicking_threshold:
                 process.update_pp_threshold(peakpicking_threshold)
