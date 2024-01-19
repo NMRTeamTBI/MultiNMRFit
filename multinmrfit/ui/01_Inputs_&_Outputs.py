@@ -167,12 +167,14 @@ if load_spectrum:
             "output_filename": output_filename
             }
 
-    if uploaded_file is None:
+    if session.object_space["loaded_file"] is None:
         # initialize process
         process = Process(dataset, window=None)
         # save in session state
         session.object_space["process"] = process
     else:
+        # get process
+        process = session.object_space["process"]
         # update process
         process.data_path = dataset["data_path"]
         process.dataset = dataset["dataset"]
