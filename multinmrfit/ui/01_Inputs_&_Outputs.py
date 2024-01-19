@@ -57,10 +57,6 @@ st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 
 load_defaults()
 
-if session.object_space["loaded_file"] is not None:
-    st.info(f"Process file loaded: {session.object_space['loaded_file']}")
-    st.warning("Warning: Remember to update paths below, otherwise the process file and the processing results will be silently overwritten.")
-
 uploaded_file = st.sidebar.file_uploader("Load a processing file.")
 
 if uploaded_file is not None:
@@ -86,10 +82,11 @@ if uploaded_file is not None:
     
     # save state
     session.object_space["loaded_file"] = pathlib.Path(process.output_res_path, process.output_res_folder, process.filename + ".pkl")
-    
-    # show warning
+
+# show warning
+if session.object_space["loaded_file"] is not None:
     st.info(f"Process file loaded: {session.object_space['loaded_file']}")
-    st.warning("Warning: Remember to update paths below, otherwise the process file loaded will be silently overwritten.")
+    st.warning("Warning: Remember to update paths below, otherwise the process file and the processing results will be silently overwritten.")
 
 with st.form('Inputs/Outputs'):
     with st.container():
