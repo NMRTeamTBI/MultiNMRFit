@@ -9,3 +9,4 @@ __pycache__/
 /.idea/*
 example/.ipynb_checkpoints/
 example/.ipynb_checkpoints/*
+multinmrfit/ui/filename.pkl

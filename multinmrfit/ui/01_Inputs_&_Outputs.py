@@ -67,7 +67,8 @@ if uploaded_file is not None:
     
     # load process object
     with uploaded_file as file:
-        process = pd.read_pickle(file)
+        #process = pd.read_pickle(file)
+        process = pickle.load(file)
     
     # save in session state
     session.object_space["process"] = process

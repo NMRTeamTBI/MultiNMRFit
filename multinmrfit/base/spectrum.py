@@ -97,7 +97,7 @@ class Spectrum(object):
             self.models[id]._par_idx = [i for i in range(len(self.params), len(_params.index)+len(self.params))]
 
             # add model parameters to global parameters
-            self.params = pd.concat([self.params, _params])
+            self.params = _params if self.params.empty else pd.concat([self.params, _params])
 
         # reset index
         self.params.reset_index(inplace=True, drop=True)

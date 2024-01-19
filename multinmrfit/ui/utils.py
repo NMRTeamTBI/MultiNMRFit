@@ -5,6 +5,7 @@ import numpy as np
 import logging
 import copy
 import string
+import pickle
 import multinmrfit.base.io as io
 import multinmrfit.base.spectrum as spectrum
 
@@ -63,6 +64,7 @@ class Process(object):
         self.exp_dim = self.get_dim()
 
         # get list of spectra
+        self.reprocess = True
         self.spectra_list = list(range(1, self.exp_dim[0]+1))
         
         # load spectrum
@@ -198,7 +200,7 @@ class Process(object):
         
         clusters_and_models = {}
         for c in range(len(n_cID)):    
-            clusters_and_models[cluster_names[c]] = {'n':int(n_cID[c]), 'models':list(d[int(n_cID[c])])}
+            clusters_and_models[cluster_names[c]] = {'n':int(n_cID.iloc[c]), 'models':list(d[int(n_cID.iloc[c])])}
         
         return clusters_and_models
         
@@ -320,8 +322,7 @@ class Process(object):
             self.results[spectrum].update_offset(offset)
     
 
-    @staticmethod
-    def build_spectra_list(user_input):
+    def build_spectra_list(self, user_input, ref, reprocess=True):
         """Build list of spectra.
 
         Args:
@@ -351,6 +352,10 @@ class Process(object):
         except:
             return []
         
+        self.reprocess = reprocess
+        exclude = [ref] if reprocess else list(self.results.keys()) + [ref]
+        experiment_list = [i for i in experiment_list if i not in exclude]
+
         return experiment_list
 
 
@@ -421,9 +426,15 @@ class Process(object):
 
     def save_process_to_file(self):
 
-        output_file = Path(self.output_res_path, self.output_res_folder, self.filename + ".pkl")
+        saved = False
+        output_file = Path(self.output_res_path, self.output_res_folder, self.filename + "_tmp.pkl")
         
         with open(output_file, 'wb') as file:
-            #pickle.dump(self, file)
-            pd.to_pickle(self, file)
+            pickle.dump(self, file)
+            #pd.to_pickle(self, file)
+            saved = True
+        
+        if saved:
+            Path(self.output_res_path, self.output_res_folder, self.filename + ".pkl").unlink(missing_ok=True)
+            output_file.rename(Path(self.output_res_path, self.output_res_folder, self.filename + ".pkl"))
 

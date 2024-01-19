@@ -23,9 +23,9 @@ else:
 
     # set default parameters
     session.set_widget_defaults(
-        spectra_to_process = "-".join([str(process.spectra_list[0]), str(process.spectra_list[-1])])
+        spectra_to_process = "-".join([str(process.spectra_list[0]), str(process.spectra_list[-1])]),
+        reprocess = process.reprocess
     )
-
 
     col1, col2 = st.columns(2)
 
@@ -47,9 +47,12 @@ else:
                 value=session.widget_space["spectra_to_process"],
                 help="Enter all spectra to process"
                 )
+    
+    reprocess = st.checkbox('Reprocess spectra already processed', value=session.widget_space["reprocess"], key="reprocess")
 
     session.register_widgets({
-            "spectra_to_process": spectra_to_process
+            "spectra_to_process": spectra_to_process,
+            "reprocess":reprocess
         })
     
     with st.expander("Reference spectrum", expanded=False):
@@ -58,7 +61,7 @@ else:
         fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
         st.plotly_chart(fig)
     
-    spectra_list = process.build_spectra_list(spectra_to_process)
+    spectra_list = process.build_spectra_list(spectra_to_process, ref=reference_spectrum, reprocess=reprocess)
 
     str_list = str(spectra_list) if len(spectra_list) else "None (wrong input)"
     st.info(f"Spectra to process: {str_list}")
@@ -94,11 +97,13 @@ if (process is not None and len(process.results) > 0) and len(spectra_list):
         for i,j in enumerate(list_spectra_lower[1:]):
             process.fit_from_ref(rowno=j, ref=list_spectra_lower[i])
             percent_complete = (i+len(list_spectra_upper))/(len(list_spectra_upper)+len(list_spectra_lower)-2)
-            progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_upper[i]} as reference). Please wait."
+            progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_lower[i]} as reference). Please wait."
             progress_bar.progress(percent_complete, text=progress_text)
 
         progress_bar.empty()
         stop.empty()
+
+        st.success("All spectra have been fitted.")
         
         process.save_process_to_file()
 
