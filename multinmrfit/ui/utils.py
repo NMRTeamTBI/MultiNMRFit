@@ -6,6 +6,8 @@ import logging
 import copy
 import string
 import pickle
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import multinmrfit.base.io as io
 import multinmrfit.base.spectrum as spectrum
 
@@ -423,7 +425,31 @@ class Process(object):
     def export_results(self):
         pass
 
+    def select_params(self, signal, param, spectra_list):
+        params_all = []
+       
+        [params_all.append([
+            i,
+            self.results[i].params.loc[
+                (self.results[i].params.par==param) &
+                (self.results[i].params.signal_id==signal)].opt.values[0],
+            self.results[i].params.loc[
+                (self.results[i].params.par==param) &
+                (self.results[i].params.signal_id==signal)].opt_sd.values[0]
+                
+        ])
+              for i in range(1,len(spectra_list)+1)]
+        
+        params_all = pd.DataFrame(params_all,columns=['idx',param+'_opt',param+'_opt_sd'])
+        return params_all
 
+    def plot(self, params) -> go.Figure:
+        fig_full = make_subplots(rows=1, cols=1)
+        fig_exp = go.Scatter(x=params.iloc[:,0],y=params.iloc[:,1], error_y=dict(type='data',array=params.iloc[:,2]),mode='markers', name='exp. spectrum', marker_color="#386CB0")
+        fig_full.add_trace(fig_exp, row=1, col=1)
+        fig_full.update_layout(plot_bgcolor="white", xaxis=dict(linecolor="black", mirror=True, showline=True), yaxis=dict(linecolor="black", mirror=True, showline=True, title='intensity'),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
+
+        return fig_full
     def save_process_to_file(self):
 
         saved = False

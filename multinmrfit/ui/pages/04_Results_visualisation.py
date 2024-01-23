@@ -40,6 +40,34 @@ else:
                     hide_index=True,
                     disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral", "ini", "ub", "lb"]
                     )
+        
+        signal_list = list(process.results[1].params.signal_id.unique())
+        signal = st.selectbox(
+                    label="Select signal",
+                    key="signal_to_show",
+                    options = signal_list,
+                    index=0,
+                    help="Select the signal id to show as function of index"
+        )
+        parameter_list = process.results[1].params.par.loc[process.results[1].params.signal_id==signal]
+        parameter = st.selectbox(
+                    label="Select parameter",
+                    key="parameter_to_show",
+                    options=parameter_list,
+                    index=0,
+                    help="Select the parameter to show as function of index"
+        )
 
+        # st.write(
+        #     process.results[1].params.loc[
+        #         (process.results[1].params.par==parameter) &
+        #         (process.results[1].params.signal_id==signal)].opt #.par.loc[process.results[1].params.signal_id==signal]
+        #     )
+        params_all = process.select_params(signal,parameter,spectra_list)
+        
+        fig = process.plot(params=params_all)
+        st.plotly_chart(fig)
+
+        st.write(params_all)
     else:
         st.warning("No results to display, please process some spectra first.")
