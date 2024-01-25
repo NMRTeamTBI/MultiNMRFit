@@ -83,6 +83,13 @@ if uploaded_file is not None:
     # save state
     session.object_space["loaded_file"] = pathlib.Path(process.output_res_path, process.output_res_folder, process.filename + ".pkl")
 
+reset_process = st.sidebar.button("Reset current process")
+
+if reset_process:
+    session.object_space["loaded_file"] = None
+    process = None
+    load_defaults()
+
 # show warning
 if session.object_space["loaded_file"] is not None:
     st.info(f"Process file loaded: {session.object_space['loaded_file']}")

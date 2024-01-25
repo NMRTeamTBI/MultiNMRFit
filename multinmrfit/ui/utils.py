@@ -372,6 +372,7 @@ class Process(object):
         # get current interval between bounds
         interval = (params["ub"] - params["lb"])/2
 
+        
         # shift upper bound
         params["ub"] = params["ini"] + interval
         
@@ -413,7 +414,7 @@ class Process(object):
         prev_params = self.results[ref].params.copy(deep=True)
 
         # update bounds
-        prev_params = self.update_bounds(prev_params)
+        #prev_params = self.update_bounds(prev_params)
 
         # update params in spectrum
         self.update_params(prev_params, spectrum=rowno)
@@ -440,27 +441,31 @@ class Process(object):
         ])
               for i in range(1,len(spectra_list)+1)]
         
-        params_all = pd.DataFrame(params_all,columns=['idx',param+'_opt',param+'_opt_sd'])
+        params_all = pd.DataFrame(params_all, columns=['idx', param+'_opt', param+'_opt_sd'])
         return params_all
 
     def plot(self, params) -> go.Figure:
         fig_full = make_subplots(rows=1, cols=1)
-        fig_exp = go.Scatter(x=params.iloc[:,0],y=params.iloc[:,1], error_y=dict(type='data',array=params.iloc[:,2]),mode='markers', name='exp. spectrum', marker_color="#386CB0")
+        fig_exp = go.Scatter(x=params.iloc[:,0], y=params.iloc[:,1], error_y=dict(type='data',array=params.iloc[:,2]),mode='markers', name='exp. spectrum', marker_color="#386CB0")
         fig_full.add_trace(fig_exp, row=1, col=1)
         fig_full.update_layout(plot_bgcolor="white", xaxis=dict(linecolor="black", mirror=True, showline=True), yaxis=dict(linecolor="black", mirror=True, showline=True, title='intensity'),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
 
         return fig_full
+    
     def save_process_to_file(self):
 
         saved = False
-        output_file = Path(self.output_res_path, self.output_res_folder, self.filename + "_tmp.pkl")
+        output_path = Path(self.output_res_path, self.output_res_folder)
+        output_file_tmp = Path(output_path, self.filename + "_tmp.pkl")
+        output_file = Path(output_path, self.filename + ".pkl")
+
+        Path(output_path).mkdir(parents=True, exist_ok=True)
         
-        with open(output_file, 'wb') as file:
+        with open(output_file_tmp, 'wb') as file:
             pickle.dump(self, file)
-            #pd.to_pickle(self, file)
             saved = True
         
         if saved:
-            Path(self.output_res_path, self.output_res_folder, self.filename + ".pkl").unlink(missing_ok=True)
-            output_file.rename(Path(self.output_res_path, self.output_res_folder, self.filename + ".pkl"))
+            output_file.unlink(missing_ok=True)
+            output_file_tmp.rename(output_file)
 
