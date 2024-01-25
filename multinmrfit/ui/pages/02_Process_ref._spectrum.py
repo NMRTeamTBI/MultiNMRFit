@@ -198,7 +198,8 @@ else:
                     process.update_params(parameters)
 
                     # fit reference spectrum
-                    process.fit_reference_spectrum()
+                    with st.spinner('Fitting in progress, please wait...'):
+                        process.fit_reference_spectrum()
 
                 # show last fit
                 if process.ref_spectrum.fit_results is not None:
