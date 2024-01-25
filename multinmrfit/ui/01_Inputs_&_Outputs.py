@@ -88,6 +88,7 @@ reset_process = st.sidebar.button("Reset current process")
 if reset_process:
     session.object_space["loaded_file"] = None
     process = None
+    session.object_space["process"] = process
     load_defaults()
 
 # show warning
