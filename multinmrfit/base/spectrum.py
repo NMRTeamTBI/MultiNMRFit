@@ -479,7 +479,7 @@ class Spectrum(object):
                 args=(self._simulate, self.models, self.ppm, data_scaled, self.offset),
                 method="L-BFGS-B",
                 bounds=bounds,
-                options={'maxcor': 30}
+                options={'maxcor': 30, 'maxls': 30}
             )
 
         else:

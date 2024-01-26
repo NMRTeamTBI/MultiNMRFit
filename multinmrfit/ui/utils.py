@@ -374,12 +374,17 @@ class Process(object):
 
         
         # shift upper bound
-        params["ub"] = params["ini"] + interval
+        upper_bounds = params["ini"] + interval
+        mask = params['par'].isin(["gl"]) & (upper_bounds > 1.0)
+        upper_bounds[mask] = 1.0
+        params["ub"] = upper_bounds
         
         # shift lower bound (with some fixed at zero)
         lower_bounds = params["ini"] - interval
-        mask = params['par'].isin(["lw", "gl", "intensity"]) & (lower_bounds < 0)
+        mask = params['par'].isin(["gl"]) & (lower_bounds < 0.0)
         lower_bounds[mask] = 0
+        #mask = params['par'].isin(["lw"]) & (lower_bounds < 0.0)
+        #lower_bounds[mask] = 0
         params["lb"] = lower_bounds
 
         return params
@@ -414,7 +419,7 @@ class Process(object):
         prev_params = self.results[ref].params.copy(deep=True)
 
         # update bounds
-        #prev_params = self.update_bounds(prev_params)
+        prev_params = self.update_bounds(prev_params)
 
         # update params in spectrum
         self.update_params(prev_params, spectrum=rowno)
@@ -468,4 +473,14 @@ class Process(object):
         if saved:
             output_file.unlink(missing_ok=True)
             output_file_tmp.rename(output_file)
+
+    @staticmethod
+    def highlighter(x):
+        # initialize default colors
+        color_codes = pd.DataFrame('', index=x.index, columns=x.columns)
+        # set Check color to red if consumption exceeds threshold None otherwise
+        color_codes['opt'] = np.where((x['opt'] < x['lb']*1.05) | (x['opt'] > x['ub']*0.95), 'color:red', None)
+        return color_codes
+
+
 

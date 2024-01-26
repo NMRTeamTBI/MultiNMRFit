@@ -77,7 +77,7 @@ if uploaded_file is not None:
             input_procno = process.procno,
             output_res_path = process.output_res_path,
             output_res_folder = process.output_res_folder,
-            filename = process.filename
+            output_filename = process.filename
         )
     
     # save state

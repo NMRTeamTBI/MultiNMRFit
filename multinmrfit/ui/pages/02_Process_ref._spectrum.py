@@ -184,8 +184,13 @@ else:
 
                 st.write("Parameters")
 
+                if 'opt' in process.ref_spectrum.params.columns:
+                    tmp = process.ref_spectrum.params.style.apply(process.highlighter, axis=None)
+                else:
+                    tmp = process.ref_spectrum.params
+
                 parameters = st.data_editor(
-                    process.ref_spectrum.params,
+                    tmp,
                         hide_index=True,
                         disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral"]
                         )

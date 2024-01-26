@@ -1,5 +1,7 @@
 import streamlit as st
 import multinmrfit
+import pandas as pd
+import numpy as np
 from sess_i.base.main import SessI
 
 
@@ -11,6 +13,8 @@ session = SessI(
 st.title("Results visualization")
 
 process = session.get_object(key="process")
+
+
 
 if process is None:
 
@@ -35,12 +39,20 @@ else:
         fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
         st.plotly_chart(fig)
 
-        parameters = st.data_editor(
-                process.results[spectrum].params,
+       #parameters = st.data_editor(
+       #         process.results[spectrum].params,
+       #             hide_index=True,
+       #             disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral", "ini", "ub", "lb"]
+       #             )
+        
+        tmp = process.results[spectrum].params.style.apply(process.highlighter, axis=None)
+
+        st.data_editor(
+                    tmp,
                     hide_index=True,
                     disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral", "ini", "ub", "lb"]
                     )
-        
+
         signal_list = list(process.results[1].params.signal_id.unique())
         signal = st.selectbox(
                     label="Select signal",
