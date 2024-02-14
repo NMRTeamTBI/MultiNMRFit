@@ -65,6 +65,10 @@ else:
                     help="Select the signal id to show as function of index"
         )
         parameter_list = process.results[1].params.par.loc[process.results[1].params.signal_id==signal]
+        
+        # add integral to the list of parameters
+        parameter_list = pd.concat([parameter_list, pd.DataFrame(['integral'])], ignore_index = True) 
+
         parameter = st.selectbox(
                     label="Select parameter",
                     key="parameter_to_show",
