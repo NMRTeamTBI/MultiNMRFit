@@ -36,7 +36,7 @@ else:
 
         show_ini = st.checkbox('Show initial values', value=session.widget_space["show_ini"], key="show_ini")
         show_colored_area = st.checkbox('Show colored area', value=session.widget_space["colored_area"], key="colored_area")
-
+            
         fig = process.results[spectrum].plot(ini=show_ini, fit=True, colored_area=show_colored_area)
         fig.update_layout(autosize=False, width=800, height=600)
         fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
