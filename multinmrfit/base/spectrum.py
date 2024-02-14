@@ -559,24 +559,7 @@ class Spectrum(object):
             residuum = self.fit_results.best_fit - self.intensity
             fig_resid = go.Scatter(x=self.ppm, y=residuum, mode='lines', name='residuum', marker_color="#AB63FA")
             fig_full.add_trace(fig_resid, row=2, col=1)
-
-
-            # print(self.params[self.params.signal_id=='1'].opt.values.tolist())
-            # model_intensity = self.simulate(params = self.params[self.params.signal_id=='1'].opt.values.tolist())
-            # model_intensity
-            # fig_colored_area = go.Scatter(x=self.ppm, y=model_intensity, mode='lines', name='initial values', marker_color="k")
-
-            # self.simulate(params = self.params['ini'].values.tolist())
-            # print(area)
-            # for name, model in self.models.items():
-            #     print(name)
-
-                # area[name] = model.integrate([params[i] for i in model._par_idx], from_to)
-
-            # print(self.models.items())
-            # print(self.params.signal_id.unique())
-            print('##')
-
+            
         if isinstance(pp, pd.DataFrame):
             x = pp['ppm'].values
             offset_plot = 0.05 * np.max(self.intensity)
