@@ -34,7 +34,9 @@ else:
                     help="Select the spectrum to show"
                     )
 
-        fig = process.results[spectrum].plot(ini=True, fit=True)
+        show_ini = st.checkbox('Show initial values', value=session.widget_space["show_ini"], key="show_ini")
+
+        fig = process.results[spectrum].plot(ini=show_ini, fit=True)
         fig.update_layout(autosize=False, width=800, height=600)
         fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
         st.plotly_chart(fig)
