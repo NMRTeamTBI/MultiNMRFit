@@ -451,9 +451,19 @@ class Process(object):
 
     def plot(self, params) -> go.Figure:
         fig_full = make_subplots(rows=1, cols=1)
-        fig_exp = go.Scatter(x=params.iloc[:,0], y=params.iloc[:,1], error_y=dict(type='data',array=params.iloc[:,2]),mode='markers', name='exp. spectrum', marker_color="#386CB0")
+        fig_exp = go.Scatter(
+            x=params.iloc[:,0], 
+            y=params.iloc[:,1], 
+            error_y=dict(type='data',array=params.iloc[:,2]),
+            mode='markers', 
+            name='exp. spectrum', 
+            marker_color="#386CB0")
         fig_full.add_trace(fig_exp, row=1, col=1)
-        fig_full.update_layout(plot_bgcolor="white", xaxis=dict(linecolor="black", mirror=True, showline=True), yaxis=dict(linecolor="black", mirror=True, showline=True, title='intensity'),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
+        fig_full.update_layout(
+            plot_bgcolor="white", 
+            xaxis=dict(linecolor="black", mirror=True, showline=True), 
+            yaxis=dict(linecolor="black", mirror=True, showline=True, title=params.columns[1].split('_')[0]),
+            legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
 
         return fig_full
     
