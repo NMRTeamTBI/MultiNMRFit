@@ -432,7 +432,7 @@ class Process(object):
         pass
 
     def select_params(self, signal, param, spectra_list):
-        
+
         params_all = []
         if param != 'integral':
             [params_all.append([
@@ -495,6 +495,31 @@ class Process(object):
             output_file.unlink(missing_ok=True)
             output_file_tmp.rename(output_file)
 
+    def save_results_to_file(self, spectra_list): 
+        res_to_export = pd.DataFrame()
+        for i in range(1,len(spectra_list)+1):        
+            tmp_to_export = self.results[i].params
+            tmp_to_export.insert(0, "rowno", [i]*len(tmp_to_export), allow_duplicates=True)
+            tmp_to_export.drop(['ini','lb','model','ub'], axis=1,inplace=True)
+            res_to_export = pd.concat([res_to_export, tmp_to_export], ignore_index=True)
+        
+        signal_id = list(res_to_export.signal_id.unique())
+
+        for s in signal_id:
+            res_signal_to_export = res_to_export[res_to_export.signal_id==s]
+            par_list = list(res_signal_to_export.par.unique())
+
+            tmp_opt = []
+            tmp_opt_sd = []
+
+            for p in par_list:
+                tmp_opt.append(list(res_signal_to_export[res_signal_to_export.par==p].opt))
+                tmp_opt_sd.append(list(res_signal_to_export[res_signal_to_export.par==p].opt_sd))
+
+            df_opt_to_export = pd.DataFrame(np.array(tmp_opt).T,columns=par_list)
+            df_opt_sd_to_export = pd.DataFrame(np.array(tmp_opt_sd).T,columns=par_list)
+
+            
     @staticmethod
     def highlighter(x):
         # initialize default colors

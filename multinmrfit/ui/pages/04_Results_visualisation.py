@@ -82,17 +82,12 @@ else:
                     help="Select the parameter to show as function of index"
         )
 
-        # st.write(
-        #     process.results[1].params.loc[
-        #         (process.results[1].params.par==parameter) &
-        #         (process.results[1].params.signal_id==signal)].opt #.par.loc[process.results[1].params.signal_id==signal]
-        #     )
-
         params_all = process.select_params(signal,parameter,spectra_list)
         
         fig = process.plot(params=params_all)
         st.plotly_chart(fig)
-
-        st.write(params_all)
+        
+        process.save_results_to_file(spectra_list)
+        
     else:
         st.warning("No results to display, please process some spectra first.")
