@@ -71,6 +71,9 @@ else:
                     help="Select the signal id to show as function of index"
         )
         parameter_list = process.results[1].params.par.loc[process.results[1].params.signal_id==signal]
+        # add integral as choice for the menu        
+        parameter_list.loc[len(parameter_list)] = 'integral'
+
         parameter = st.selectbox(
                     label="Select parameter",
                     key="parameter_to_show",
@@ -84,6 +87,7 @@ else:
         #         (process.results[1].params.par==parameter) &
         #         (process.results[1].params.signal_id==signal)].opt #.par.loc[process.results[1].params.signal_id==signal]
         #     )
+
         params_all = process.select_params(signal,parameter,spectra_list)
         
         fig = process.plot(params=params_all)

@@ -432,6 +432,8 @@ class Process(object):
         pass
 
     def select_params(self, signal, param, spectra_list):
+        
+        params_all = []
         if param != 'integral':
             [params_all.append([
                 i,
