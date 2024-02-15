@@ -34,12 +34,16 @@ else:
                     help="Select the spectrum to show"
                     )
 
-        show_ini = st.checkbox('Show initial values', value=session.widget_space["show_ini"], key="show_ini")
-        show_colored_area = st.checkbox('Show colored area', value=session.widget_space["colored_area"], key="colored_area")
+        show_ini = st.checkbox('Show spectrum for initial values', value=session.widget_space["show_ini"], key="show_ini")
+        show_colored_area = st.checkbox('Show individual signals', value=session.widget_space["colored_area"], key="colored_area")
 
-        fig = process.results[spectrum].plot(ini=show_ini, fit=True, colored_area=show_colored_area)
+        fig = process.results[spectrum].plot(ini=True, fit=True, colored_area=True)
         fig.update_layout(autosize=False, width=800, height=600)
-        fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
+        fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15))
+        if not show_ini:
+            fig.for_each_trace(lambda trace: trace.update(visible="legendonly") if trace.name in ["initial values"] else ())
+        if not show_colored_area:
+            fig.for_each_trace(lambda trace: trace.update(visible="legendonly") if "signal" in trace.name else ())
         st.plotly_chart(fig)
 
        #parameters = st.data_editor(
