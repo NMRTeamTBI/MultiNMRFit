@@ -432,20 +432,29 @@ class Process(object):
         pass
 
     def select_params(self, signal, param, spectra_list):
-        params_all = []
-       
-        [params_all.append([
-            i,
-            self.results[i].params.loc[
-                (self.results[i].params.par==param) &
-                (self.results[i].params.signal_id==signal)].opt.values[0],
-            self.results[i].params.loc[
-                (self.results[i].params.par==param) &
-                (self.results[i].params.signal_id==signal)].opt_sd.values[0]
-                
-        ])
-              for i in range(1,len(spectra_list)+1)]
-        
+        if param != 'integral':
+            [params_all.append([
+                i,
+                self.results[i].params.loc[
+                    (self.results[i].params.par==param) &
+                    (self.results[i].params.signal_id==signal)].opt.values[0],
+                self.results[i].params.loc[
+                    (self.results[i].params.par==param) &
+                    (self.results[i].params.signal_id==signal)].opt_sd.values[0]
+
+            ])
+                for i in range(1,len(spectra_list)+1)]
+
+
+        else:
+
+            [params_all.append([
+                i,
+                self.results[i].params.loc[self.results[i].params.signal_id==signal].integral.iloc[0],
+                0                
+            ])
+                for i in range(1,len(spectra_list)+1)]
+
         params_all = pd.DataFrame(params_all, columns=['idx', param+'_opt', param+'_opt_sd'])
         return params_all
 
