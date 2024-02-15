@@ -496,6 +496,8 @@ class Process(object):
             output_file_tmp.rename(output_file)
 
     def save_results_to_file(self, spectra_list): 
+        output_path = Path(self.output_res_path, self.output_res_folder)
+
         res_to_export = pd.DataFrame()
         for i in range(1,len(spectra_list)+1):        
             tmp_to_export = self.results[i].params
@@ -518,8 +520,13 @@ class Process(object):
 
             df_opt_to_export = pd.DataFrame(np.array(tmp_opt).T,columns=par_list)
             df_opt_sd_to_export = pd.DataFrame(np.array(tmp_opt_sd).T,columns=par_list)
-
             
+            output_file_opt = Path(output_path, 'signal_'+str(s)+ "_opt.csv")
+            df_opt_to_export.to_csv(output_file_opt,sep='\t')
+
+            output_file_opt_sd = Path(output_path, 'signal_'+str(s)+ "_opt_sd.csv")
+            df_opt_sd_to_export.to_csv(output_file_opt_sd,sep='\t')
+
     @staticmethod
     def highlighter(x):
         # initialize default colors
