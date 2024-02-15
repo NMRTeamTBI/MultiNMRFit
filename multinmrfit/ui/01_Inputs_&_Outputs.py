@@ -11,7 +11,6 @@ import pickle
 import pathlib
 from sess_i.base.main import SessI
 from multinmrfit.ui.utils import Process
-import pandas as pd
 
 
 session = SessI(

@@ -117,8 +117,8 @@ else:
                 if len(clusters):
                     process.edited_peak_table = edited_peak_table
                     process.user_models = {}
-                else:
-                    st.error("Error: no cluster defined.")
+                #else:
+                #    st.error("Error: no cluster defined.")
 
 
     with st.form("create model"):

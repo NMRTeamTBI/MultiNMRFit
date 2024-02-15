@@ -20,7 +20,7 @@ setuptools.setup(
     url="https://github.com/NMRTeamTBI/NMRFit",
     packages=setuptools.find_packages(),
     python_requires='>=3.5',
-    install_requires=['pandas>=0.17.1', 'scipy>=0.12.1', 'nmrglue>=0.6', 'numpy>=1.14.0', 'plotly', 'streamlit'],
+    install_requires=['pandas>=0.17.1', 'scipy>=0.12.1', 'nmrglue>=0.6', 'numpy>=1.14.0', 'plotly', 'streamlit', 'sess-i'],
     package_data={'': ['data/*.png', ], },
     include_package_data=True,
     classifiers=[
@@ -29,6 +29,9 @@ setuptools.setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",
         "Intended Audience :: Science/Research",

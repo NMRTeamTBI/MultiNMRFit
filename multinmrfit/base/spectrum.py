@@ -548,7 +548,7 @@ class Spectrum(object):
                     y=model_intensity,
                     fill="tozeroy",
                     mode='lines', 
-                    name='area '+'model '+str(name))
+                    name='area '+'model '+str(name))#, marker_color="k")
                 fig_full.add_trace(fig_colored_area, row=1, col=1)
 
         if fit:
