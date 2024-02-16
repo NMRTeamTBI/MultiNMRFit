@@ -49,6 +49,7 @@ else:
                 )
     
     reprocess = st.checkbox('Reprocess spectra already processed', value=session.widget_space["reprocess"], key="reprocess")
+    process.reprocess = reprocess
 
     session.register_widgets({
             "spectra_to_process": spectra_to_process,
