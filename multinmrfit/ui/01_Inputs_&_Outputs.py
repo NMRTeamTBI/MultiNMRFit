@@ -2,7 +2,7 @@
 First page of the streamlit GUI for NmrFit. Contains logic for handling inputs, analysis, outputs and extra options.#
 
 To launch streamlit:
-    streamlit run "..\Inputs_&_Outputs.py"
+    streamlit run "../Inputs_&_Outputs.py"
 """
 
 import streamlit as st
