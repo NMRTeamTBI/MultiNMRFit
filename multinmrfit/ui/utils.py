@@ -500,10 +500,10 @@ class Process(object):
 
         res_to_export = pd.DataFrame()
         for i in range(1,len(spectra_list)+1):        
-            tmp_to_export = self.results[i].params
+            tmp_to_export = self.results[i].params.copy(deep=True)
             tmp_to_export.insert(0, "rowno", [i]*len(tmp_to_export), allow_duplicates=True)
             tmp_to_export.drop(['ini','lb','model','ub'], axis=1,inplace=True)
-            res_to_export = pd.concat([res_to_export, tmp_to_export], ignore_index=True)
+            res_to_export = tmp_to_export if res_to_export.empty else pd.concat([res_to_export, tmp_to_export], ignore_index=True)
         
         signal_id = list(res_to_export.signal_id.unique())
 
