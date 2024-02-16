@@ -87,7 +87,10 @@ else:
         fig = process.plot(params=params_all)
         st.plotly_chart(fig)
         
-        process.save_results_to_file(spectra_list)
+        save_txt = st.checkbox('Save text files', value=session.widget_space["save_txt"], key="save_txt")
+        if save_txt:
+            process.save_results_to_file(spectra_list)
+            st.info(f"Results text files have been saved")
         
     else:
         st.warning("No results to display, please process some spectra first.")
