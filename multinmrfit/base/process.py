@@ -58,6 +58,7 @@ class Process(object):
         self.peakpicking_threshold = None
         self.signals = None
         self.results = {}
+        self.consolidated_results = None
 
         # get dimensions
         self.exp_dim = self.get_dim()
@@ -420,54 +421,6 @@ class Process(object):
 
         # fit
         self.results[rowno].fit()
-
-    def select_params(self, signal, param, spectra_list):
-
-        params_all = []
-        if param != 'integral':
-            [params_all.append([
-                i,
-                self.results[i].params.loc[
-                    (self.results[i].params.par==param) &
-                    (self.results[i].params.signal_id==signal)].opt.values[0],
-                self.results[i].params.loc[
-                    (self.results[i].params.par==param) &
-                    (self.results[i].params.signal_id==signal)].opt_sd.values[0]
-
-            ])
-                for i in range(1,len(spectra_list)+1)]
-
-
-        else:
-
-            [params_all.append([
-                i,
-                self.results[i].params.loc[self.results[i].params.signal_id==signal].integral.iloc[0],
-                0                
-            ])
-                for i in range(1,len(spectra_list)+1)]
-
-        params_all = pd.DataFrame(params_all, columns=['idx', param+'_opt', param+'_opt_sd'])
-        return params_all
-
-    def plot(self, params) -> go.Figure:
-        fig_full = make_subplots(rows=1, cols=1)
-        fig_exp = go.Scatter(
-            x=params.iloc[:,0], 
-            y=params.iloc[:,1], 
-            error_y=dict(type='data',array=params.iloc[:,2]),
-            mode='markers', 
-            name='exp. spectrum', 
-            marker_color="#386CB0")
-        fig_full.add_trace(fig_exp, row=1, col=1)
-        fig_full.update_layout(
-            plot_bgcolor="white", 
-            xaxis=dict(linecolor="black", mirror=True, showline=True), 
-            yaxis=dict(linecolor="black", mirror=True, showline=True, title=params.columns[1].split('_')[0]),
-            legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
-
-        return fig_full
-
         
     def save_process_to_file(self):
 
@@ -491,49 +444,43 @@ class Process(object):
             for i in range(len(self.results[j].params)):
                 tmp = [
                     j,
-                    self.results[1].params.iloc[i].loc['signal_id'],
-                    self.results[1].params.iloc[i].loc['model'],
-                    self.results[1].params.iloc[i].loc['par'],
-                    self.results[1].params.iloc[i].loc['opt'],
-                    self.results[1].params.iloc[i].loc['opt_sd'],
+                    self.results[j].params.iloc[i].loc['signal_id'],
+                    self.results[j].params.iloc[i].loc['model'],
+                    self.results[j].params.iloc[i].loc['par'],
+                    self.results[j].params.iloc[i].loc['opt'],
+                    self.results[j].params.iloc[i].loc['opt_sd'],
                 ]
                 consolidated_results.append(tmp)
             
-        consolidated_results = pd.DataFrame(consolidated_results,columns = ['spectra','signal_id','model','par','opt','opt_sd'])
-        print(consolidated_results)
+        self.consolidated_results = consolidated_results = pd.DataFrame(consolidated_results,columns = ['rowno','signal_id','model','par','opt','opt_sd'])
 
-    def save_results_to_file(self, spectra_list): 
+    def select_params(self,signal,parameter):
+        selected_params = self.consolidated_results[(self.consolidated_results.signal_id==signal)&(self.consolidated_results.par==parameter)]
+        return selected_params 
+    
+    def save_consolidated_data(self):
         output_path = Path(self.output_res_path, self.output_res_folder)
+        output_file = Path(output_path, self.filename + ".txt")
+        self.consolidated_results.to_csv(output_file,sep='\t')
 
-        res_to_export = pd.DataFrame()
-        for i in range(1,len(spectra_list)+1):        
-            tmp_to_export = self.results[i].params.copy(deep=True)
-            tmp_to_export.insert(0, "rowno", [i]*len(tmp_to_export), allow_duplicates=True)
-            tmp_to_export.drop(['ini','lb','model','ub'], axis=1,inplace=True)
-            res_to_export = tmp_to_export if res_to_export.empty else pd.concat([res_to_export, tmp_to_export], ignore_index=True)
-        
-        signal_id = list(res_to_export.signal_id.unique())
+    def plot(self, signal, parameter) -> go.Figure:
+        selected_params = self.select_params(signal, parameter)
+        fig_full = make_subplots(rows=1, cols=1)
+        fig_exp = go.Scatter(
+            x=selected_params.rowno, 
+            y=selected_params.opt, 
+            error_y=dict(type='data',array=selected_params.opt_sd),
+            mode='markers', 
+            name='exp. spectrum', 
+            marker_color="#386CB0")
+        fig_full.add_trace(fig_exp, row=1, col=1)
+        fig_full.update_layout(
+            plot_bgcolor="white", 
+            xaxis=dict(linecolor="black", mirror=True, showline=True), 
+            yaxis=dict(linecolor="black", mirror=True, showline=True, title=parameter),
+            legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
 
-        for s in signal_id:
-            res_signal_to_export = res_to_export[res_to_export.signal_id==s]
-            par_list = list(res_signal_to_export.par.unique())
-
-            tmp_opt = []
-            tmp_opt_sd = []
-
-            for p in par_list:
-                tmp_opt.append(list(res_signal_to_export[res_signal_to_export.par==p].opt))
-                tmp_opt_sd.append(list(res_signal_to_export[res_signal_to_export.par==p].opt_sd))
-
-            df_opt_to_export = pd.DataFrame(np.array(tmp_opt).T,columns=par_list)
-            df_opt_sd_to_export = pd.DataFrame(np.array(tmp_opt_sd).T,columns=par_list)
-            
-            output_file_opt = Path(output_path, 'signal_'+str(s)+ "_opt.csv")
-            df_opt_to_export.to_csv(output_file_opt,sep='\t')
-
-            output_file_opt_sd = Path(output_path, 'signal_'+str(s)+ "_opt_sd.csv")
-            df_opt_sd_to_export.to_csv(output_file_opt_sd,sep='\t')
-
+        return fig_full
     @staticmethod
     def highlighter(x):
         # initialize default colors
