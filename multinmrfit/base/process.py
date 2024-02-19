@@ -394,11 +394,6 @@ class Process(object):
             ref (int): rowno of the spectrum used as reference.
         """
 
-        # update dataset
-        #current_dataset = copy.deepcopy(self.opt)
-        #current_dataset["rowno"] = rowno-1
-        #sp = spectrum.Spectrum(data=current_dataset, window=self.window)
-
         # create spectrum
         tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[int(rowno)-1])], axis=1)
         tmp_data.columns = ["ppm", "intensity"]
@@ -475,20 +470,19 @@ class Process(object):
     
     def save_process_to_file(self):
 
-        saved = False
         output_path = Path(self.output_res_path, self.output_res_folder)
         output_file_tmp = Path(output_path, self.filename + "_tmp.pkl")
         output_file = Path(output_path, self.filename + ".pkl")
 
         Path(output_path).mkdir(parents=True, exist_ok=True)
         
-        with open(output_file_tmp, 'wb') as file:
-            pickle.dump(self, file)
-            saved = True
-        
-        if saved:
+        try:
+            with open(output_file_tmp, 'wb') as file:
+                pickle.dump(self, file)
             output_file.unlink(missing_ok=True)
             output_file_tmp.rename(output_file)
+        except Exception as e:
+            raise ValueError(f"An unknown error has occured when saving the process file: {e}")
 
     def save_results_to_file(self, spectra_list): 
         output_path = Path(self.output_res_path, self.output_res_folder)
