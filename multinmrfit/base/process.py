@@ -441,6 +441,7 @@ class Process(object):
     def consolidate_results(self):
         consolidated_results = []
         for j in self.results.keys():
+            # all params except integral
             for i in range(len(self.results[j].params)):
                 tmp = [
                     j,
@@ -452,16 +453,34 @@ class Process(object):
                 ]
                 consolidated_results.append(tmp)
             
+            # add integral rows
+            df_integral = self.results[j].params.loc[:,['signal_id','model','integral']].drop_duplicates()
+            for i in range(len(df_integral)):
+                tmp = [
+                    j,
+                    df_integral.signal_id.iloc[i],
+                    df_integral.model.iloc[i],
+                    'integral',
+                    df_integral.integral.iloc[i],
+                    0
+                ]
+                consolidated_results.append(tmp)
         self.consolidated_results = consolidated_results = pd.DataFrame(consolidated_results,columns = ['rowno','signal_id','model','par','opt','opt_sd'])
 
     def select_params(self,signal,parameter):
         selected_params = self.consolidated_results[(self.consolidated_results.signal_id==signal)&(self.consolidated_results.par==parameter)]
         return selected_params 
     
-    def save_consolidated_data(self):
+    def save_consolidated_data(self,data=False,partial_filename=False):
         output_path = Path(self.output_res_path, self.output_res_folder)
         output_file = Path(output_path, self.filename + ".txt")
-        self.consolidated_results.to_csv(output_file,sep='\t')
+        if partial_filename:
+             output_file = Path(output_path, partial_filename + ".txt")
+        
+        if data is not False:
+            data.to_csv(output_file,sep='\t', index=False)
+        else:
+            self.consolidated_results.to_csv(output_file,sep='\t', index=False)
 
     def plot(self, signal, parameter) -> go.Figure:
         selected_params = self.select_params(signal, parameter)

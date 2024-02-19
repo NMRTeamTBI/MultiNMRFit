@@ -72,7 +72,7 @@ else:
 
         with st.container():
             st.write("### Parameter Plot")
-        
+            st.write(process.results[1].params.loc[:,['signal_id','integral']].drop_duplicates())
             # signal selection to visualize
             signal_list = list(process.consolidated_results.signal_id.unique())        
             signal = st.selectbox(
@@ -106,6 +106,33 @@ else:
             if save_complete_txt:
                 process.save_consolidated_data()
                 st.info(f"Results text files have been saved")
-        
+
+            save_partial_txt = st.checkbox('Save partial data to text file')
+            if save_partial_txt:
+                signal = st.selectbox(
+                    label="Select signal",
+                    key="signal_to_save",
+                    options = signal_list,
+                    index=0,
+                    help="Select the signal id to save"
+            )
+
+                # parameter selection to save
+                parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
+
+                parameter = st.selectbox(
+                            label="Select parameter",
+                            key="parameter_to_save",
+                            options=parameter_list,
+                            index=0,
+                            help="Select the parameter to save"
+                        )   
+                
+                filename = st.text_input(
+                            label="Enter specific filename",
+                            )
+                
+                process.save_consolidated_data(data=process.select_params(signal,parameter),partial_filename=filename)
+                
     else:
         st.warning("No results to display, please process some spectra first.")
