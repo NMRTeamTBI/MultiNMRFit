@@ -428,9 +428,6 @@ class Process(object):
         # fit
         self.results[rowno].fit()
 
-    def export_results(self):
-        pass
-
     def select_params(self, signal, param, spectra_list):
 
         params_all = []
