@@ -44,7 +44,7 @@ else:
                 label="Spectral limits (max)",
                 key="spectrum_limit_max",
                 value = session.widget_space["spectrum_limit_max"],
-                min_value = min(process.ppm_full) + 0.1,
+                min_value = min(process.ppm_full) + 0.05,
                 max_value = max(process.ppm_full)
                 )
             
@@ -54,7 +54,7 @@ else:
                 key="spectrum_limit_min",
                 value = session.widget_space["spectrum_limit_min"],
                 min_value = min(process.ppm_full),
-                max_value = max(process.ppm_full) - 0.1
+                max_value = max(process.ppm_full) - 0.05
                 )
 
     session.register_widgets({
