@@ -23,8 +23,7 @@ else:
 
     # set default parameters
     session.set_widget_defaults(
-        spectra_to_process = "-".join([str(process.spectra_list[0]), str(process.spectra_list[-1])]),
-        reprocess = process.reprocess
+        spectra_to_process = "-".join([str(process.spectra_list[0]), str(process.spectra_list[-1])])
     )
 
     col1, col2 = st.columns(2)
@@ -49,7 +48,6 @@ else:
                 )
     
     reprocess = st.checkbox('Reprocess spectra already processed', value=session.widget_space["reprocess"], key="reprocess")
-    process.reprocess = reprocess
 
     session.register_widgets({
             "spectra_to_process": spectra_to_process,

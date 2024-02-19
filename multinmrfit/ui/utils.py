@@ -3,7 +3,6 @@ import pandas as pd
 import nmrglue as ng
 import numpy as np
 import logging
-import copy
 import string
 import pickle
 import plotly.graph_objects as go
@@ -37,16 +36,12 @@ class Process(object):
 
         self.models = io.IoHandler.get_models()
 
-        # store raw metadata used for object construction
-        dataset["rowno"] = dataset.get("rowno", 1)
-        self.opt = dataset
-
         # extract information
         self.data_path = dataset["data_path"]
         self.dataset = dataset["dataset"]
         self.expno = dataset["expno"]
         self.procno = dataset["procno"]
-        self.ref_spectrum_rowno = dataset["rowno"]
+        self.ref_spectrum_rowno = dataset.get("rowno", 1)
         self.window = window
         self.ppm = None
 
@@ -66,7 +61,6 @@ class Process(object):
         self.exp_dim = self.get_dim()
 
         # get list of spectra
-        self.reprocess = True
         self.spectra_list = list(range(1, self.exp_dim[0]+1))
         
         # load spectrum
@@ -354,7 +348,6 @@ class Process(object):
         except:
             return []
         
-        self.reprocess = reprocess
         exclude = [ref] if reprocess else list(self.results.keys()) + [ref]
         experiment_list = [i for i in experiment_list if i not in exclude]
 
