@@ -520,7 +520,7 @@ class Process(object):
     def highlighter(x):
         # initialize default colors
         color_codes = pd.DataFrame('', index=x.index, columns=x.columns)
-        # set Check color to red if consumption exceeds threshold None otherwise
+        # set Check color to red if opt is close to bounds
         color_codes['opt'] = np.where((x['opt'] < x['lb']*1.05) | (x['opt'] > x['ub']*0.95), 'color:red', None)
         return color_codes
 
