@@ -51,6 +51,8 @@ class Process(object):
         self.filename = dataset["output_filename"]
 
         # initialize attributes
+        self.ref_spectrum = None
+        self.ppm_limits = None
         self.edited_peak_table = None
         self.user_models = {}
         self.peakpicking_threshold = None
@@ -72,7 +74,6 @@ class Process(object):
 
         if not Path(self.data_path).exists():
             raise ValueError("Directory '{}' does not exist.".format(self.data_path))
-
 
         full_path = Path(self.data_path, self.dataset, self.expno, 'pdata', self.procno)
 
