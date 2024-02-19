@@ -373,7 +373,7 @@ class Process(object):
         interval = (params["ub"] - params["lb"])/2
 
         params["ini"] = params['opt']
-        
+
         # shift upper bound
         upper_bounds = params["opt"] + interval
         mask = params['par'].isin(["gl"]) & (upper_bounds > 1.0)
@@ -420,17 +420,13 @@ class Process(object):
         prev_params = self.results[ref].params.copy(deep=True)
 
         # update bounds
-        print(prev_params)
         prev_params = self.update_bounds(prev_params)
-        print(prev_params)
 
         # update params in spectrum
         self.update_params(prev_params, spectrum=rowno)
 
         # fit
-        print(self.results[rowno].params)
         self.results[rowno].fit()
-
 
     def export_results(self):
         pass
