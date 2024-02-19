@@ -372,6 +372,7 @@ class Process(object):
         # get current interval between bounds
         interval = (params["ub"] - params["lb"])/2
 
+        # set initial values from best fit of ref spectrum
         params["ini"] = params['opt']
 
         # shift upper bound
@@ -400,11 +401,14 @@ class Process(object):
         """
 
         # update dataset
-        current_dataset = copy.deepcopy(self.opt)
-        current_dataset["rowno"] = rowno-1
+        #current_dataset = copy.deepcopy(self.opt)
+        #current_dataset["rowno"] = rowno-1
+        #sp = spectrum.Spectrum(data=current_dataset, window=self.window)
 
-        # create spectrum object
-        sp = spectrum.Spectrum(data=current_dataset, window=self.window)
+        # create spectrum
+        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[int(rowno)-1])], axis=1)
+        tmp_data.columns = ["ppm", "intensity"]
+        sp = spectrum.Spectrum(data=tmp_data, window=self.window)
 
         # build model
         offset = {} if self.results[ref].offset else None
