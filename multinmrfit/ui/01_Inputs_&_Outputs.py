@@ -30,6 +30,7 @@ def load_defaults():
         with open(load_path, 'rb') as handle:
             options = pickle.load(handle)
         session.set_widget_defaults(
+            analysis_type = options['analysis_type'],
             input_exp_data_path = options["input_exp_data_path"],
             input_exp_data_folder = options["input_exp_data_folder"],
             input_expno = options["input_expno"],
@@ -40,6 +41,7 @@ def load_defaults():
         )
     except:
         session.set_widget_defaults(
+            analysis_type = 'pseudo2D',
             input_exp_data_path = "path/to/topspin/data/folder/",
             input_exp_data_folder = "dataset_name",
             input_expno = 1,
@@ -70,6 +72,7 @@ if uploaded_file is not None:
 
     # set wisgets defaults
     session.set_widget_defaults(
+            analysis_type = process.analysis_type,
             input_exp_data_path = process.data_path,
             input_exp_data_folder = process.dataset,
             input_expno = process.expno,
@@ -95,15 +98,35 @@ if session.object_space["loaded_file"] is not None:
     st.info(f"Process file loaded: {session.object_space['loaded_file']}")
     st.warning("Warning: Remember to update paths below, otherwise the process file and the processing results will be silently overwritten.")
 
+
 with st.form('Inputs/Outputs'):
+    
+    # with st.container():
+    #     st.write('Analysis type')
+
+    #     analysis_type = st.selectbox(
+    #         label='Select type of analysis',
+    #         key = 'analysis_type',
+    #         index=0,
+    #         options = ['pseudo2D','list of 1Ds','txt data']
+    #         )
+
+    # session.register_widgets({
+    #     "analysis_type": analysis_type,
+    # })
+
+    # st.write(session.widget_space["analysis_type"])
+
     with st.container():
         st.write("### Inputs")
+
+
         input_exp_data_path = st.text_input(
             label="Enter data path",
             key = "input_exp_data_path",
             value = session.widget_space["input_exp_data_path"],
-            help="Select NMR experiment data path"
-        )
+            help="Select NMR experiment data path",
+            )
         input_exp_data_folder = st.text_input(
             label="Enter data folder",
             key = "input_exp_data_folder",
