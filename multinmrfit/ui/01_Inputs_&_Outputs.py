@@ -10,7 +10,7 @@ import multinmrfit
 import pickle
 import pathlib
 from sess_i.base.main import SessI
-from multinmrfit.ui.utils import Process
+from multinmrfit.base.process import Process
 
 
 session = SessI(

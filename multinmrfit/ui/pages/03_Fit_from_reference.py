@@ -23,8 +23,7 @@ else:
 
     # set default parameters
     session.set_widget_defaults(
-        spectra_to_process = "-".join([str(process.spectra_list[0]), str(process.spectra_list[-1])]),
-        reprocess = process.reprocess
+        spectra_to_process = "-".join([str(process.spectra_list[0]), str(process.spectra_list[-1])])
     )
 
     col1, col2 = st.columns(2)
@@ -49,7 +48,6 @@ else:
                 )
     
     reprocess = st.checkbox('Reprocess spectra already processed', value=session.widget_space["reprocess"], key="reprocess")
-    process.reprocess = reprocess
 
     session.register_widgets({
             "spectra_to_process": spectra_to_process,
@@ -90,16 +88,16 @@ if (process is not None and len(process.results) > 0) and len(spectra_list):
         list_spectra_lower = [reference_spectrum] + sorted([i for i in spectra_list if i < reference_spectrum], reverse=True)
             
         for i,j in enumerate(list_spectra_upper[1:]):
-            process.fit_from_ref(rowno=j, ref=list_spectra_upper[i])
             percent_complete = (i+1)/(len(list_spectra_upper)+len(list_spectra_lower)-2)
             progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_upper[i]} as reference). Please wait."
             progress_bar.progress(percent_complete, text=progress_text)
+            process.fit_from_ref(rowno=j, ref=list_spectra_upper[i])
 
         for i,j in enumerate(list_spectra_lower[1:]):
-            process.fit_from_ref(rowno=j, ref=list_spectra_lower[i])
             percent_complete = (i+len(list_spectra_upper))/(len(list_spectra_upper)+len(list_spectra_lower)-2)
             progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_lower[i]} as reference). Please wait."
             progress_bar.progress(percent_complete, text=progress_text)
+            process.fit_from_ref(rowno=j, ref=list_spectra_lower[i])
 
         progress_bar.empty()
         stop.empty()

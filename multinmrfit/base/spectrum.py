@@ -53,7 +53,6 @@ class Spectrum(object):
         self.window = dataset["window"]
         self.ppm = dataset["ppm"]
         self.intensity = dataset["intensity"]
-        self.filename = None
         self.from_ref = None
 
         # initialize model-related attributes (models, params, offset and fit_results) at default values

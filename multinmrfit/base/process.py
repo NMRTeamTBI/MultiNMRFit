@@ -3,7 +3,6 @@ import pandas as pd
 import nmrglue as ng
 import numpy as np
 import logging
-import copy
 import string
 import pickle
 import plotly.graph_objects as go
@@ -37,16 +36,12 @@ class Process(object):
 
         self.models = io.IoHandler.get_models()
 
-        # store raw metadata used for object construction
-        dataset["rowno"] = dataset.get("rowno", 1)
-        self.opt = dataset
-
         # extract information
         self.data_path = dataset["data_path"]
         self.dataset = dataset["dataset"]
         self.expno = dataset["expno"]
         self.procno = dataset["procno"]
-        self.ref_spectrum_rowno = dataset["rowno"]
+        self.ref_spectrum_rowno = dataset.get("rowno", 1)
         self.window = window
         self.ppm = None
 
@@ -56,6 +51,8 @@ class Process(object):
         self.filename = dataset["output_filename"]
 
         # initialize attributes
+        self.ref_spectrum = None
+        self.ppm_limits = None
         self.edited_peak_table = None
         self.user_models = {}
         self.peakpicking_threshold = None
@@ -66,7 +63,6 @@ class Process(object):
         self.exp_dim = self.get_dim()
 
         # get list of spectra
-        self.reprocess = True
         self.spectra_list = list(range(1, self.exp_dim[0]+1))
         
         # load spectrum
@@ -78,7 +74,6 @@ class Process(object):
 
         if not Path(self.data_path).exists():
             raise ValueError("Directory '{}' does not exist.".format(self.data_path))
-
 
         full_path = Path(self.data_path, self.dataset, self.expno, 'pdata', self.procno)
 
@@ -354,7 +349,6 @@ class Process(object):
         except:
             return []
         
-        self.reprocess = reprocess
         exclude = [ref] if reprocess else list(self.results.keys()) + [ref]
         experiment_list = [i for i in experiment_list if i not in exclude]
 
@@ -399,11 +393,6 @@ class Process(object):
             rowno (int): rowno of the spectrum to fit.
             ref (int): rowno of the spectrum used as reference.
         """
-
-        # update dataset
-        #current_dataset = copy.deepcopy(self.opt)
-        #current_dataset["rowno"] = rowno-1
-        #sp = spectrum.Spectrum(data=current_dataset, window=self.window)
 
         # create spectrum
         tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[int(rowno)-1])], axis=1)
@@ -481,20 +470,19 @@ class Process(object):
     
     def save_process_to_file(self):
 
-        saved = False
         output_path = Path(self.output_res_path, self.output_res_folder)
         output_file_tmp = Path(output_path, self.filename + "_tmp.pkl")
         output_file = Path(output_path, self.filename + ".pkl")
 
         Path(output_path).mkdir(parents=True, exist_ok=True)
         
-        with open(output_file_tmp, 'wb') as file:
-            pickle.dump(self, file)
-            saved = True
-        
-        if saved:
+        try:
+            with open(output_file_tmp, 'wb') as file:
+                pickle.dump(self, file)
             output_file.unlink(missing_ok=True)
             output_file_tmp.rename(output_file)
+        except Exception as e:
+            raise ValueError(f"An unknown error has occured when saving the process file: {e}")
 
     def save_results_to_file(self, spectra_list): 
         output_path = Path(self.output_res_path, self.output_res_folder)
@@ -532,7 +520,7 @@ class Process(object):
     def highlighter(x):
         # initialize default colors
         color_codes = pd.DataFrame('', index=x.index, columns=x.columns)
-        # set Check color to red if consumption exceeds threshold None otherwise
+        # set Check color to red if opt is close to bounds
         color_codes['opt'] = np.where((x['opt'] < x['lb']*1.05) | (x['opt'] > x['ub']*0.95), 'color:red', None)
         return color_codes
 
