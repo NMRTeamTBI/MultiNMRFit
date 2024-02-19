@@ -30,7 +30,7 @@ def load_defaults():
         with open(load_path, 'rb') as handle:
             options = pickle.load(handle)
         session.set_widget_defaults(
-            analysis_type = options['analysis_type'],
+            #analysis_type = options['analysis_type'],
             input_exp_data_path = options["input_exp_data_path"],
             input_exp_data_folder = options["input_exp_data_folder"],
             input_expno = options["input_expno"],
@@ -41,7 +41,7 @@ def load_defaults():
         )
     except:
         session.set_widget_defaults(
-            analysis_type = 'pseudo2D',
+            #analysis_type = 'pseudo2D',
             input_exp_data_path = "path/to/topspin/data/folder/",
             input_exp_data_folder = "dataset_name",
             input_expno = 1,
@@ -72,7 +72,7 @@ if uploaded_file is not None:
 
     # set wisgets defaults
     session.set_widget_defaults(
-            analysis_type = process.analysis_type,
+            #analysis_type = process.analysis_type,
             input_exp_data_path = process.data_path,
             input_exp_data_folder = process.dataset,
             input_expno = process.expno,

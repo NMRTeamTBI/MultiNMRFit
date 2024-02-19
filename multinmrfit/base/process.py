@@ -467,7 +467,8 @@ class Process(object):
             legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
 
         return fig_full
-    
+
+        
     def save_process_to_file(self):
 
         output_path = Path(self.output_res_path, self.output_res_folder)
@@ -483,6 +484,23 @@ class Process(object):
             output_file_tmp.rename(output_file)
         except Exception as e:
             raise ValueError(f"An unknown error has occured when saving the process file: {e}")
+
+    def consolidate_results(self):
+        consolidated_results = []
+        for j in self.results.keys():
+            for i in range(len(self.results[j].params)):
+                tmp = [
+                    j,
+                    self.results[1].params.iloc[i].loc['signal_id'],
+                    self.results[1].params.iloc[i].loc['model'],
+                    self.results[1].params.iloc[i].loc['par'],
+                    self.results[1].params.iloc[i].loc['opt'],
+                    self.results[1].params.iloc[i].loc['opt_sd'],
+                ]
+                consolidated_results.append(tmp)
+            
+        consolidated_results = pd.DataFrame(consolidated_results,columns = ['spectra','signal_id','model','par','opt','opt_sd'])
+        print(consolidated_results)
 
     def save_results_to_file(self, spectra_list): 
         output_path = Path(self.output_res_path, self.output_res_folder)

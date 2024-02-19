@@ -68,35 +68,36 @@ else:
                     disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral", "ini", "ub", "lb"]
                     )
 
-        signal_list = list(process.results[1].params.signal_id.unique())
-        signal = st.selectbox(
-                    label="Select signal",
-                    key="signal_to_show",
-                    options = signal_list,
-                    index=0,
-                    help="Select the signal id to show as function of index"
-        )
-        parameter_list = process.results[1].params.par.loc[process.results[1].params.signal_id==signal]
-        # add integral as choice for the menu        
-        parameter_list.loc[len(parameter_list)] = 'integral'
+        process.consolidate_results()
+        # signal_list = list(process.results[1].params.signal_id.unique())
+        # signal = st.selectbox(
+        #             label="Select signal",
+        #             key="signal_to_show",
+        #             options = signal_list,
+        #             index=0,
+        #             help="Select the signal id to show as function of index"
+        # )
+        # parameter_list = process.results[1].params.par.loc[process.results[1].params.signal_id==signal]
+        # # add integral as choice for the menu        
+        # parameter_list.loc[len(parameter_list)] = 'integral'
 
-        parameter = st.selectbox(
-                    label="Select parameter",
-                    key="parameter_to_show",
-                    options=parameter_list,
-                    index=0,
-                    help="Select the parameter to show as function of index"
-        )
+        # parameter = st.selectbox(
+        #             label="Select parameter",
+        #             key="parameter_to_show",
+        #             options=parameter_list,
+        #             index=0,
+        #             help="Select the parameter to show as function of index"
+        # )
 
-        params_all = process.select_params(signal,parameter,spectra_list)
+        # params_all = process.select_params(signal,parameter,spectra_list)
         
-        fig = process.plot(params=params_all)
-        st.plotly_chart(fig)
+        # fig = process.plot(params=params_all)
+        # st.plotly_chart(fig)
         
-        save_txt = st.checkbox('Save text files', value=session.widget_space["save_txt"], key="save_txt")
-        if save_txt:
-            process.save_results_to_file(spectra_list)
-            st.info(f"Results text files have been saved")
+        # save_txt = st.checkbox('Save text files', value=session.widget_space["save_txt"], key="save_txt")
+        # if save_txt:
+        #     process.save_results_to_file(spectra_list)
+        #     st.info(f"Results text files have been saved")
         
     else:
         st.warning("No results to display, please process some spectra first.")
