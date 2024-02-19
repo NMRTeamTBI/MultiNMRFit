@@ -31,6 +31,12 @@ else:
                     help="Select the spectrum to show"
                     )
 
+        # start_time = st.slider(
+        #             label="Select spectrum",
+        #             key="plot_spectrum",
+        #             value=datetime(2020, 1, 1, 9, 30),
+        #             format="MM/DD/YY - hh:mm")
+        
         show_ini = st.checkbox('Show spectrum for initial values', value=session.widget_space["show_ini"], key="show_ini")
         show_ind_signals = st.checkbox('Show individual signals', value=session.widget_space["show_ind_signals"], key="show_ind_signals")
 
