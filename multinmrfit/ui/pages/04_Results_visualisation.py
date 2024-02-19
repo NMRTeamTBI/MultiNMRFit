@@ -25,19 +25,19 @@ else:
 
             spectra_list = sorted(list(process.results.keys()))
 
-            spectrum = st.selectbox(
+            # spectrum = st.selectbox(
+            #             label="Select spectrum",
+            #             key="plot_spectrum",
+            #             options=spectra_list,
+            #             index=0,
+            #             help="Select the spectrum to show"
+            #             )
+
+            spectrum = st.select_slider(
                         label="Select spectrum",
                         key="plot_spectrum",
                         options=spectra_list,
-                        index=0,
-                        help="Select the spectrum to show"
                         )
-
-            # start_time = st.slider(
-            #             label="Select spectrum",
-            #             key="plot_spectrum",
-            #             value=datetime(2020, 1, 1, 9, 30),
-            #             format="MM/DD/YY - hh:mm")
             
             show_ini = st.checkbox('Show spectrum for initial values', value=session.widget_space["show_ini"], key="show_ini")
             show_ind_signals = st.checkbox('Show individual signals', value=session.widget_space["show_ind_signals"], key="show_ind_signals")
@@ -85,9 +85,6 @@ else:
 
             # parameter selection to visualize
             parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
-
-            # # add integral as choice for the menu        
-            # parameter_list.loc[len(parameter_list)] = 'integral'
 
             parameter = st.selectbox(
                         label="Select parameter",
