@@ -30,7 +30,7 @@ class SignalModel(Model):
         signal = {
             "model":self.name ,
             'par':{'x0':{'ini':detected_peak_position,'lb':detected_peak_position-1,'ub':detected_peak_position+1},
-                  'intensity':{'ini':detected_peak_intensity,'ub':1.1*detected_peak_intensity} ,
+                  'intensity':{'ini':detected_peak_intensity,'ub':1.3*detected_peak_intensity} ,
                    'J':{'ini':detected_coupling_constant,'lb':0.8*detected_coupling_constant,'ub':1.2*detected_coupling_constant} ,    
                           }
             }

@@ -372,16 +372,17 @@ class Process(object):
         # get current interval between bounds
         interval = (params["ub"] - params["lb"])/2
 
+        params["ini"] = params['opt']
         
         # shift upper bound
-        upper_bounds = params["ini"] + interval
+        upper_bounds = params["opt"] + interval
         mask = params['par'].isin(["gl"]) & (upper_bounds > 1.0)
         upper_bounds[mask] = 1.0
         params["ub"] = upper_bounds
         
         # shift lower bound (with some fixed at zero)
-        lower_bounds = params["ini"] - interval
-        mask = params['par'].isin(["gl"]) & (lower_bounds < 0.0)
+        lower_bounds = params["opt"] - interval
+        mask = params['par'].isin(["gl",'lw']) & (lower_bounds < 0.0)
         lower_bounds[mask] = 0
         #mask = params['par'].isin(["lw"]) & (lower_bounds < 0.0)
         #lower_bounds[mask] = 0
@@ -419,12 +420,15 @@ class Process(object):
         prev_params = self.results[ref].params.copy(deep=True)
 
         # update bounds
+        print(prev_params)
         prev_params = self.update_bounds(prev_params)
+        print(prev_params)
 
         # update params in spectrum
         self.update_params(prev_params, spectrum=rowno)
 
         # fit
+        print(self.results[rowno].params)
         self.results[rowno].fit()
 
 
