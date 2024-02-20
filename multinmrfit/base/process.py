@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import multinmrfit.base.io as io
 import multinmrfit.base.spectrum as spectrum
+import copy
 
 
 # create logger
@@ -41,8 +42,6 @@ class Process(object):
         self.dataset = dataset["dataset"]
         self.expno = dataset["expno"]
         self.procno = dataset["procno"]
-        self.ref_spectrum_rowno = dataset.get("rowno", 1)
-        self.window = window
         self.ppm = None
 
         # outputs
@@ -51,12 +50,8 @@ class Process(object):
         self.filename = dataset["output_filename"]
 
         # initialize attributes
-        self.ref_spectrum = None
-        self.ppm_limits = None
-        self.edited_peak_table = None
-        self.user_models = {}
-        self.peakpicking_threshold = None
-        self.signals = None
+        self.current_spectrum = None
+
         self.results = {}
         self.consolidated_results = None
 
@@ -68,7 +63,15 @@ class Process(object):
         
         # load spectrum
         self.ppm_full, self.data_full = self.load_2D_spectrum()
-        self.set_ref_spectrum(self.ref_spectrum_rowno, window=window)
+        if window is None:
+            window = (min(self.ppm_full), max(self.ppm_full))
+        self.window = window
+        self.set_current_spectrum(dataset.get("rowno", 1), window)
+
+
+    def add_region(self):
+        self.results[self.current_spectrum.rowno] = self.results.get(self.current_spectrum.rowno, {})
+        self.results[self.current_spectrum.rowno][self.current_spectrum.region] = copy.deepcopy(self.current_spectrum)
 
 
     def check_dataset(self):
@@ -81,6 +84,10 @@ class Process(object):
         if not full_path.exists():
             raise ValueError("Directory '{}' does not exist.".format(full_path))
 
+    def delete_region(self, rowno, region):
+        del self.results[rowno][region]
+        if not len(self.results[rowno]):
+            del self.results[rowno]
 
     def update_pp_threshold(self, pp_threshold):
         """Update peak picking threshold, and detect peaks.
@@ -93,13 +100,13 @@ class Process(object):
             raise ValueError(f"Peak picking threshold must be numeric.")
 
         # update threshold
-        self.peakpicking_threshold = pp_threshold
+        self.current_spectrum.peakpicking_threshold = pp_threshold
 
         # detect peaks
-        self.edited_peak_table = self.ref_spectrum.peak_picking(pp_threshold)
+        self.current_spectrum.edited_peak_table = self.current_spectrum.peak_picking(pp_threshold)
 
 
-    def set_ref_spectrum(self, rowno, window=None):
+    def set_current_spectrum(self, rowno, window):
         """Set reference spectrum.
 
         Args:
@@ -107,27 +114,25 @@ class Process(object):
             window (tuple, optional): lower and upper bounds of the window of interest (in ppm) or full spectrum if None. Defaults to None.
         """
 
-        # extract reference spectrum
-        self.ref_spectrum_rowno = int(rowno)
-        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[int(self.ref_spectrum_rowno)-1])], axis=1)
-        tmp_data.columns = ["ppm", "intensity"]
+        region = str(round(window[0], 2)) + " | " + str(round(window[1], 2))
 
-        # update window
-        if window is not None:
-            self.window = window
+        if self.results.get(rowno,{}).get(region, None) is None:
+
+            # extract reference spectrum
+            tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[int(rowno)-1])], axis=1)
+            tmp_data.columns = ["ppm", "intensity"]
+
+            # create spectrum
+            self.current_spectrum = spectrum.Spectrum(data=tmp_data, window=window)
+
+            self.current_spectrum.rowno = rowno
+
+            # update pp threshold
+            self.update_pp_threshold(max(self.current_spectrum.intensity)/5)
         
-        # create spectrum
-        self.ref_spectrum = spectrum.Spectrum(data=tmp_data, window=window)
+        else:
 
-        # update chemical shifts
-        self.ppm = self.ref_spectrum.ppm
-
-        # get ppm limits
-        self.ppm_limits = (min(self.ppm), max(self.ppm))
-
-        # update pp threshold
-        self.update_pp_threshold(max(self.ref_spectrum.intensity)/5)
-        
+            self.current_spectrum = copy.deepcopy(self.results[rowno][region])
 
     def load_2D_spectrum(self):
         """Load 2D NMR spectra.
@@ -182,7 +187,7 @@ class Process(object):
         """
 
         # filtering and removing none assigned rows
-        edited_peak_table = self.edited_peak_table.replace(r'^\s*$', np.nan, regex=True)
+        edited_peak_table = self.current_spectrum.edited_peak_table.replace(r'^\s*$', np.nan, regex=True)
         edited_peak_table.dropna(axis=0, inplace=True)
 
         model_list = self.get_models_peak_number()
@@ -217,13 +222,13 @@ class Process(object):
         # create signals
         for key in cluster_dict:
             model = self.models[cluster_dict[key]['model']]()
-            filtered_peak_table = self.edited_peak_table[self.edited_peak_table.cID==key]
+            filtered_peak_table = self.current_spectrum.edited_peak_table[self.current_spectrum.edited_peak_table.cID==key]
             signals[key] = model.pplist2signal(filtered_peak_table)
 
         self.signals = signals
 
         # build model
-        self.ref_spectrum.build_model(signals=self.signals, available_models=self.models, offset=offset)
+        self.current_spectrum.build_model(signals=self.signals, available_models=self.models, offset=offset)
 
 
     def fit_reference_spectrum(self):
@@ -231,13 +236,13 @@ class Process(object):
         """
 
         # fit reference spectrum
-        self.ref_spectrum.fit()
+        self.current_spectrum.fit()
 
         # add from_ref attribute
-        self.ref_spectrum.from_ref = None
+        self.current_spectrum.from_ref = None
 
         # save in results
-        self.results[self.ref_spectrum_rowno] = self.ref_spectrum
+        #self.results[self.ref_spectrum_rowno] = self.ref_spectrum
 
 
     @staticmethod
@@ -313,8 +318,8 @@ class Process(object):
         
         # update parameters
         if spectrum is None:
-            self.ref_spectrum.update_params(pars)
-            self.ref_spectrum.update_offset(offset)
+            self.current_spectrum.update_params(pars)
+            self.current_spectrum.update_offset(offset)
         else:
             self.results[spectrum].update_params(pars)
             self.results[spectrum].update_offset(offset)
@@ -354,6 +359,10 @@ class Process(object):
         experiment_list = [i for i in experiment_list if i not in exclude]
 
         return experiment_list
+    
+    def regions(self, rowno):
+        regions = list(self.results.get(rowno, {}).keys())
+        return regions
 
 
     @staticmethod
@@ -465,7 +474,7 @@ class Process(object):
                     0
                 ]
                 consolidated_results.append(tmp)
-        self.consolidated_results =  pd.DataFrame(consolidated_results,columns = ['rowno','signal_id','model','par','opt','opt_sd'])
+        self.consolidated_results = pd.DataFrame(consolidated_results,columns = ['rowno','signal_id','model','par','opt','opt_sd'])
 
     def select_params(self,signal,parameter):
         selected_params = self.consolidated_results[(self.consolidated_results.signal_id==signal)&(self.consolidated_results.par==parameter)]
@@ -507,6 +516,5 @@ class Process(object):
         # set Check color to red if opt is close to bounds
         color_codes['opt'] = np.where((x['opt'] < x['lb']*1.05) | (x['opt'] > x['ub']*0.95), 'color:red', None)
         return color_codes
-
 
 

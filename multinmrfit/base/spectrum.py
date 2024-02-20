@@ -52,8 +52,14 @@ class Spectrum(object):
         self.rowno = dataset["rowno"]
         self.window = dataset["window"]
         self.ppm = dataset["ppm"]
+        self.ppm_limits = (min(self.ppm), max(self.ppm))
+        self.region = str(round(self.ppm_limits[0], 2)) + " | " + str(round(self.ppm_limits[1], 2))
         self.intensity = dataset["intensity"]
+        self.peakpicking_threshold = None
         self.from_ref = None
+        self.edited_peak_table = None
+        self.user_models = None
+
 
         # initialize model-related attributes (models, params, offset and fit_results) at default values
         self._set_default_model_attributes()
@@ -67,8 +73,6 @@ class Spectrum(object):
         self.params = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'ini', 'lb', 'ub'])
         self.offset = False
         self.fit_results = None
-        self.user_models = None
-        self.edited_peak_table = None
 
 
     def _initialize_models(self, signals: dict, available_models: dict) -> None:

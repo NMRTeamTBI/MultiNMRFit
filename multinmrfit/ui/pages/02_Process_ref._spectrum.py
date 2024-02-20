@@ -21,55 +21,86 @@ if process is None:
 else:
 
     # set default parameters
+
     session.set_widget_defaults(
-        reference_spectrum = process.ref_spectrum_rowno,
-        spectrum_limit_min = float(process.ppm_limits[0]),
-        spectrum_limit_max = float(process.ppm_limits[1])
+        reference_spectrum = process.current_spectrum.rowno,
+        spectrum_limit_min = round(float(process.current_spectrum.ppm_limits[0]), 2),
+        spectrum_limit_max = round(float(process.current_spectrum.ppm_limits[1]), 2)
     )
 
+    #test = ["Add new region"] + process.regions(process.current_spectrum.rowno)
+
+    #if 'region' not in st.session_state:
+    #       st.session_state['selection'] = 0
+
     # add widgets
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
 
     with col1:
         reference_spectrum = st.selectbox(
-                label="Select reference spectrum",
+                label="Select spectrum to process",
                 key="reference_spectrum",
                 options=process.spectra_list,
-                index=process.spectra_list.index(process.ref_spectrum_rowno),
+                index=process.spectra_list.index(process.current_spectrum.rowno),
                 help="Select the spectrum used as reference for peak detection and clustering"
                 )
 
     with col2:
+        region = st.selectbox(
+                label="Select region to (re)process",
+                key="regions",
+                options=["Add new region"] + process.regions(process.current_spectrum.rowno),
+                help="Select the region"
+                )
+        
+    col1, col2 = st.columns(2)
+
+    with col2:
+
+        exist = process.results.get(reference_spectrum, {}).get(region, False)
+
+        if exist:
+
+            delete = st.button("Delete results for selected region", on_click=process.delete_region, args=[reference_spectrum, region])
+
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        
+        val = session.widget_space["spectrum_limit_max"] if process.results.get(reference_spectrum, {}).get(region, True) else process.results[reference_spectrum][region].ppm_limits[1]
         spec_lim_max = st.number_input(
                 label="Spectral limits (max)",
                 key="spectrum_limit_max",
-                value = session.widget_space["spectrum_limit_max"],
-                min_value = min(process.ppm_full) + 0.05,
-                max_value = max(process.ppm_full)
+                value = round(val, 2),
+                min_value = round(min(process.ppm_full) + 0.05, 2),
+                max_value = round(max(process.ppm_full), 2)
                 )
             
-    with col3:
+    with col2:
+        val = session.widget_space["spectrum_limit_min"] if process.results.get(reference_spectrum, {}).get(region, True) else process.results[reference_spectrum][region].ppm_limits[0]
         spec_lim_min = st.number_input(
                 label="Spectral limits (min)",
                 key="spectrum_limit_min",
-                value = session.widget_space["spectrum_limit_min"],
-                min_value = min(process.ppm_full),
-                max_value = max(process.ppm_full) - 0.05
+                value = round(val, 2),
+                min_value = round(min(process.ppm_full), 2),
+                max_value = round(max(process.ppm_full) - 0.05, 2)
                 )
 
     session.register_widgets({
             "reference_spectrum": reference_spectrum,
-            "spectrum_limit_max": spec_lim_max,
-            "spectrum_limit_min": spec_lim_min,
+            "spectrum_limit_max": round(spec_lim_max, 2),
+            "spectrum_limit_min": round(spec_lim_min, 2),
         })
     
     # update reference spectrum when widgets' values are changed
     ppm_step = 0.01
-    if process.ref_spectrum_rowno != reference_spectrum or np.abs(process.ppm_limits[0]-spec_lim_min) > ppm_step or np.abs(process.ppm_limits[1]-spec_lim_max) > ppm_step:
+    if process.current_spectrum.rowno != reference_spectrum or np.abs(process.current_spectrum.ppm_limits[0]-spec_lim_min) > ppm_step or np.abs(process.current_spectrum.ppm_limits[1]-spec_lim_max) > ppm_step:
         if (spec_lim_max-spec_lim_min) < 0.1:
             st.error("Error: ppm max must be higher than ppm min.")
-        else:                
-            process.set_ref_spectrum(session.widget_space["reference_spectrum"], window=(spec_lim_min, spec_lim_max))
+        else:  
+            cur_lim = str(round(spec_lim_min, 2)) + " | " + str(round(spec_lim_max, 2))  
+            process.set_current_spectrum(session.widget_space["reference_spectrum"], window=(round(spec_lim_min, 2), round(spec_lim_max, 2)))
 
 
     with st.form("Clustering"):
@@ -77,19 +108,20 @@ else:
         if process is not None:
 
             st.write("### Peak picking & Clustering")
-            
-            peakpicking_threshold = st.number_input(
-                label="Peak picking threshold",
-                key="peakpicking_threshold",
-                value=process.peakpicking_threshold,
-                step=1e5,
-                help="Enter threshold used for peak detection"
-                )
 
-            if peakpicking_threshold != process.peakpicking_threshold:
+
+            peakpicking_threshold = st.number_input(
+                    label="Peak picking threshold",
+                    key="peakpicking_threshold",
+                    value=process.current_spectrum.peakpicking_threshold,
+                    step=1e5,
+                    help="Enter threshold used for peak detection"
+                    )
+
+            if peakpicking_threshold != process.current_spectrum.peakpicking_threshold:
                 process.update_pp_threshold(peakpicking_threshold)
 
-            fig = process.ref_spectrum.plot(pp=process.edited_peak_table, threshold=process.peakpicking_threshold)
+            fig = process.current_spectrum.plot(pp=process.current_spectrum.edited_peak_table, threshold=process.current_spectrum.peakpicking_threshold)
             fig.update_layout(autosize=False, width=800, height=500)
             fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
             st.plotly_chart(fig)
@@ -97,17 +129,17 @@ else:
             st.write("Peak list")
 
             edited_peak_table = st.data_editor(
-                process.edited_peak_table,
-                column_config={
-                        "ppm":"peak position",
-                        "intensity":"peak intensity",
-                        "cID":"cluster ID",
-                        "X_LW":None
-                    },
-                    hide_index=True,
-                    disabled=["ppm", "intensity"]
-                    )
-
+                    process.current_spectrum.edited_peak_table,
+                    column_config={
+                            "ppm":"peak position",
+                            "intensity":"peak intensity",
+                            "cID":"cluster ID",
+                            "X_LW":None
+                        },
+                        hide_index=True,
+                        disabled=["ppm", "intensity"]
+                        )
+                
             create_models = st.form_submit_button("Assign peaks") 
 
             if create_models:
@@ -115,17 +147,17 @@ else:
                 clusters = set(list(filter(None, edited_peak_table.cID.values.tolist())))
 
                 if len(clusters):
-                    process.edited_peak_table = edited_peak_table
-                    process.user_models = {}
+                    process.current_spectrum.edited_peak_table = edited_peak_table
+                    process.current_spectrum.user_models = {}
                 #else:
                 #    st.error("Error: no cluster defined.")
 
 
     with st.form("create model"):
 
-        if isinstance(process.edited_peak_table, pd.DataFrame):
+        if isinstance(process.current_spectrum.edited_peak_table, pd.DataFrame):
 
-            if len(set(list(filter(None, process.edited_peak_table.cID.values.tolist())))):
+            if len(set(list(filter(None, process.current_spectrum.edited_peak_table.cID.values.tolist())))):
 
                 st.write("### Model construction")
 
@@ -160,23 +192,23 @@ else:
                             key=f"Parameter_value_{key}"
                             )
 
-                    process.user_models[key] = {'n':clusters_and_models[key]['n'],
+                    process.current_spectrum.user_models[key] = {'n':clusters_and_models[key]['n'],
                                         'model':model,
                                         "model_idx": options.index(model)}
                 
-                offset_def = False if not len(process.ref_spectrum.params) else (process.ref_spectrum.offset not in [False, None])
+                offset_def = False if not len(process.current_spectrum.params) else (process.current_spectrum.offset not in [False, None])
                 offset = st.checkbox('offset', value=offset_def)
 
                 fitting = st.form_submit_button("Build model")
                 
                 if fitting:
                     offs = {} if offset else None
-                    process.create_signals(process.user_models, offset=offs)
+                    process.create_signals(process.current_spectrum.user_models, offset=offs)
 
 
-    if isinstance(process.ref_spectrum.params, pd.DataFrame):
+    if isinstance(process.current_spectrum.params, pd.DataFrame):
 
-        if len(process.ref_spectrum.params):
+        if len(process.current_spectrum.params):
 
             with st.form("Fit reference spectrum"):
 
@@ -184,10 +216,10 @@ else:
 
                 st.write("Parameters")
 
-                if 'opt' in process.ref_spectrum.params.columns:
-                    tmp = process.ref_spectrum.params.style.apply(process.highlighter, axis=None)
+                if 'opt' in process.current_spectrum.params.columns:
+                    tmp = process.current_spectrum.params.style.apply(process.highlighter, axis=None)
                 else:
-                    tmp = process.ref_spectrum.params
+                    tmp = process.current_spectrum.params
 
                 parameters = st.data_editor(
                     tmp,
@@ -207,17 +239,26 @@ else:
                         process.fit_reference_spectrum()
 
                 # show last fit
-                if process.ref_spectrum.fit_results is not None:
+                if process.current_spectrum.fit_results is not None:
 
                     # plot fit results
-                    fig = process.ref_spectrum.plot(ini=True, fit=True)
+                    fig = process.current_spectrum.plot(ini=True, fit=True)
                     fig.update_layout(autosize=False, width=800, height=600)
                     fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
                     st.plotly_chart(fig)
 
                     # save as pickle file
-                    process.save_process_to_file()
+                    #process.save_process_to_file()
                     
-                    st.success("Reference spectrum has been fitted.")
+                    #st.success("Reference spectrum has been fitted.")
+
+    if process.current_spectrum.fit_results is not None:
+        save = st.button("Save current region", on_click=process.add_region)
+
+        if save:
+
+            #process.add_region()
+            #st.session_state.regions = ["Add new region"] + process.regions(process.current_spectrum.rowno)
+            st.success("Saved")
 
 
