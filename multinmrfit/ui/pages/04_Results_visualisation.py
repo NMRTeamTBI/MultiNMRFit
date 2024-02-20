@@ -72,7 +72,7 @@ else:
 
         with st.container():
             st.write("### Parameter Plot")
-            st.write(process.results[1].params.loc[:,['signal_id','integral']].drop_duplicates())
+
             # signal selection to visualize
             signal_list = list(process.consolidated_results.signal_id.unique())        
             signal = st.selectbox(
@@ -100,11 +100,17 @@ else:
         with st.container():
             st.write("### Export")
             save_complete_txt = st.checkbox('Save all data to text file')
-            if save_complete_txt:
-                process.save_consolidated_data()
-                st.info(f"Results text files have been saved")
 
-            save_partial_txt = st.checkbox('Save partial data to text file')
+            if save_complete_txt:
+                    filename = st.text_input(
+                            label="Enter specific filename",
+                            value=process.filename
+                            )
+
+            save_partial_txt = st.checkbox(
+                'Save partial data to text file',
+                disabled = True if save_complete_txt else False)
+
             if save_partial_txt:
                 signal = st.selectbox(
                     label="Select signal",
@@ -112,7 +118,8 @@ else:
                     options = signal_list,
                     index=0,
                     help="Select the signal id to save"
-            )
+                    
+                    )
 
                 # parameter selection to save
                 parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
@@ -129,7 +136,13 @@ else:
                             label="Enter specific filename",
                             )
                 
-                process.save_consolidated_data(data=process.select_params(signal,parameter),partial_filename=filename)
-                
+            save_button = st.button('Save')
+
+            if save_button:
+                if save_complete_txt:
+                    process.save_consolidated_results()
+                if save_partial_txt:
+                    process.save_consolidated_results(data=process.select_params(signal,parameter),partial_filename=filename)
+                st.info(f"Results text files have been saved")
     else:
         st.warning("No results to display, please process some spectra first.")

@@ -63,15 +63,7 @@ class Process(object):
         
         # load spectrum
         self.ppm_full, self.data_full = self.load_2D_spectrum()
-        if window is None:
-            window = (min(self.ppm_full), max(self.ppm_full))
-        self.window = window
-        self.set_current_spectrum(dataset.get("rowno", 1), window)
-
-
-    def add_region(self):
-        self.results[self.current_spectrum.rowno] = self.results.get(self.current_spectrum.rowno, {})
-        self.results[self.current_spectrum.rowno][self.current_spectrum.region] = copy.deepcopy(self.current_spectrum)
+        self.set_ref_spectrum(self.ref_spectrum_rowno, window=window)
 
 
     def check_dataset(self):
@@ -480,7 +472,7 @@ class Process(object):
         selected_params = self.consolidated_results[(self.consolidated_results.signal_id==signal)&(self.consolidated_results.par==parameter)]
         return selected_params 
     
-    def save_consolidated_data(self,data=False,partial_filename=False):
+    def save_consolidated_results(self,data=False,partial_filename=False):
         output_path = Path(self.output_res_path, self.output_res_folder)
         output_file = Path(output_path, self.filename + ".txt")
         if partial_filename:
