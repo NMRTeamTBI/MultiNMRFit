@@ -200,7 +200,7 @@ if load_spectrum:
 
     if session.object_space["loaded_file"] is None:
         # initialize process
-        process = Process(dataset, window=None)
+        process = Process(dataset)
         # save in session state
         session.object_space["process"] = process
     else:

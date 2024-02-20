@@ -67,24 +67,35 @@ else:
     col1, col2 = st.columns(2)
 
     with col1:
-        
-        val = session.widget_space["spectrum_limit_max"] if process.results.get(reference_spectrum, {}).get(region, True) else process.results[reference_spectrum][region].ppm_limits[1]
+        try:
+            val = process.results[reference_spectrum][region].ppm_limits[1]
+            disabled = True
+        except:
+            val = session.widget_space["spectrum_limit_max"]
+            disabled = False
         spec_lim_max = st.number_input(
                 label="Spectral limits (max)",
                 key="spectrum_limit_max",
                 value = round(val, 2),
                 min_value = round(min(process.ppm_full) + 0.05, 2),
-                max_value = round(max(process.ppm_full), 2)
+                max_value = round(max(process.ppm_full), 2),
+                disabled = disabled
                 )
             
     with col2:
-        val = session.widget_space["spectrum_limit_min"] if process.results.get(reference_spectrum, {}).get(region, True) else process.results[reference_spectrum][region].ppm_limits[0]
+        try:
+            val = process.results[reference_spectrum][region].ppm_limits[0]
+            disabled = True
+        except:
+            val = session.widget_space["spectrum_limit_min"]
+            disabled = False
         spec_lim_min = st.number_input(
                 label="Spectral limits (min)",
                 key="spectrum_limit_min",
                 value = round(val, 2),
                 min_value = round(min(process.ppm_full), 2),
-                max_value = round(max(process.ppm_full) - 0.05, 2)
+                max_value = round(max(process.ppm_full) - 0.05, 2),
+                disabled = disabled
                 )
 
     session.register_widgets({

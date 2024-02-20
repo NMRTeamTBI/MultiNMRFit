@@ -63,7 +63,15 @@ class Process(object):
         
         # load spectrum
         self.ppm_full, self.data_full = self.load_2D_spectrum()
-        self.set_ref_spectrum(self.ref_spectrum_rowno, window=window)
+        if window is None:
+            window = (min(self.ppm_full), max(self.ppm_full))
+        self.window = window
+
+        self.set_current_spectrum(dataset.get("rowno", 1), window=window)
+
+    def add_region(self):
+        self.results[self.current_spectrum.rowno] = self.results.get(self.current_spectrum.rowno, {})
+        self.results[self.current_spectrum.rowno][self.current_spectrum.region] = copy.deepcopy(self.current_spectrum)
 
 
     def check_dataset(self):
