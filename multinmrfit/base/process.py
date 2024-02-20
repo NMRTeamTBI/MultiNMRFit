@@ -471,7 +471,7 @@ class Process(object):
         selected_params = self.consolidated_results[(self.consolidated_results.signal_id==signal)&(self.consolidated_results.par==parameter)]
         return selected_params 
     
-    def save_consolidated_data(self,data=False,partial_filename=False):
+    def save_consolidated_results(self,data=False,partial_filename=False):
         output_path = Path(self.output_res_path, self.output_res_folder)
         output_file = Path(output_path, self.filename + ".txt")
         if partial_filename:

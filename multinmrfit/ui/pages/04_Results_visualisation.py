@@ -129,7 +129,7 @@ else:
                             label="Enter specific filename",
                             )
                 
-                process.save_consolidated_data(data=process.select_params(signal,parameter),partial_filename=filename)
+                process.save_consolidated_results(data=process.select_params(signal,parameter),partial_filename=filename)
                 
     else:
         st.warning("No results to display, please process some spectra first.")
