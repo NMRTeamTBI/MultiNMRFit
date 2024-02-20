@@ -52,7 +52,6 @@ class Process(object):
 
         # initialize attributes
         self.current_spectrum = None
-
         self.results = {}
         self.consolidated_results = None
 
@@ -63,15 +62,21 @@ class Process(object):
         self.spectra_list = list(range(1, self.exp_dim[0]+1))
         
         # load spectrum
-        self.ppm_full, self.data_full = self.load_2D_spectrum()
+        match self.analysis_type:
+            case "pseudo2D":
+                self.ppm_full, self.data_full = self.load_2D_spectrum()
+            case _:
+                raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
+            
+        # set default window (full spectrum)
         window = (min(self.ppm_full), max(self.ppm_full))
 
+        # create default spectrum
         self.set_current_spectrum(dataset.get("rowno", 1), window=window)
 
     def add_region(self):
         self.results[self.current_spectrum.rowno] = self.results.get(self.current_spectrum.rowno, {})
         self.results[self.current_spectrum.rowno][self.current_spectrum.region] = copy.deepcopy(self.current_spectrum)
-
 
     def check_dataset(self):
 
@@ -373,6 +378,30 @@ class Process(object):
         regions = list(set(regions))
 
         return regions
+
+    def compounds(self, rowno=None, region=None):
+
+        # get regions
+        compounds = []
+        if rowno is None:
+            for r in self.results.values():
+                if region is None:
+                    for s in r.values():
+                        compounds += s.params.signal_id.values.tolist()
+                else:
+                    if region in r.keys():
+                        compounds += r[region].params.signal_id.values.tolist()
+        else:
+            if region is None:
+                for s in self.results[rowno].values():
+                    compounds += s.params.signal_id.values.tolist() 
+            else:
+                compounds = self.results[rowno][region].params.signal_id.values.tolist()
+
+        # remove duplicates
+        compounds = list(set(compounds))
+
+        return compounds
 
     def spectra(self, region=None):
         if region is None:

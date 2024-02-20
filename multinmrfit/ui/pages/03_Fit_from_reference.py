@@ -32,6 +32,8 @@ else:
                         help="Select the number of the spectrum used for peak picking and clustering"
                         )
         spectra = process.spectra(region)
+        compounds = process.compounds(rowno=None, region=region)
+        st.info(f"Compounds: {compounds}")
         st.info(f"Processed in spectra: {spectra}")
 
     with col2:
