@@ -65,6 +65,10 @@ class Process(object):
         match self.analysis_type:
             case "pseudo2D":
                 self.ppm_full, self.data_full = self.load_2D_spectrum()
+            case "list of 1Ds":
+                self.ppm_full, self.data_full = self.load_1D_spectrum()
+            case "txt data":
+                self.ppm_full, self.data_full = self.load_txt_spectrum()
             case _:
                 raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
             
@@ -137,6 +141,12 @@ class Process(object):
         else:
 
             self.current_spectrum = copy.deepcopy(self.results[rowno][region])
+
+    def load_1D_spectrum(self):
+        raise ValueError("Not implemented yet.")
+
+    def load_txt_spectrum(self):
+        raise ValueError("Not implemented yet.")
 
     def load_2D_spectrum(self):
         """Load 2D NMR spectra.

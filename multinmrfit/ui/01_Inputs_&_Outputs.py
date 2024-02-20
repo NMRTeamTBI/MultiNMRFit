@@ -192,19 +192,18 @@ if load_spectrum:
     # update inputs & outputs
     session.register_widgets(options)
 
-    # get dataset
-    dataset = {
-            "analysis_type": str(options["analysis_type"]),
-            "data_path": str(options["input_exp_data_path"]),
-            "dataset": str(options["input_exp_data_folder"]),
-            "expno": str(options["input_expno"]),
-            "procno": str(options["input_procno"]),
-            "output_res_path": output_res_path,
-            "output_res_folder": output_res_folder,
-            "output_filename": output_filename
-            }
-
-    if session.object_space["loaded_file"] is None:
+    if session.object_space["process"] is None:
+        # get dataset
+        dataset = {
+                "analysis_type": str(options["analysis_type"]),
+                "data_path": str(options["input_exp_data_path"]),
+                "dataset": str(options["input_exp_data_folder"]),
+                "expno": str(options["input_expno"]),
+                "procno": str(options["input_procno"]),
+                "output_res_path": output_res_path,
+                "output_res_folder": output_res_folder,
+                "output_filename": output_filename
+                }
         # initialize process
         process = Process(dataset)
         # save in session state
@@ -213,15 +212,12 @@ if load_spectrum:
         # get process
         process = session.object_space["process"]
         # update process
-        process.analysis_type = dataset["analysis_type"]
-        process.data_path = dataset["data_path"]
-        process.dataset = dataset["dataset"]
-        process.expno = dataset["expno"]
-        process.procno = dataset["procno"]
-        process.filename = dataset["output_filename"]
+        process.output_res_path = output_res_path
+        process.output_res_folder = output_res_folder
+        process.filename = output_filename
     
     # save as pickle file
-    #process.save_process_to_file()
+    process.save_process_to_file()
 
 
 if session.object_space["process"] is not None:
