@@ -458,17 +458,18 @@ class Process(object):
                 consolidated_results.append(tmp)
             
             # add integral rows
-            df_integral = self.results[j].params.loc[:,['signal_id','model','integral']].drop_duplicates()
-            for i in range(len(df_integral)):
-                tmp = [
-                    j,
-                    df_integral.signal_id.iloc[i],
-                    df_integral.model.iloc[i],
-                    'integral',
-                    df_integral.integral.iloc[i],
-                    0
-                ]
-                consolidated_results.append(tmp)
+            if 'signal_id' != 'full_spectrum':
+                df_integral = self.results[j].params.loc[:,['signal_id','model','integral']].drop_duplicates()
+                for i in range(len(df_integral)):
+                    tmp = [
+                        j,
+                        df_integral.signal_id.iloc[i],
+                        df_integral.model.iloc[i],
+                        'integral',
+                        df_integral.integral.iloc[i],
+                        0
+                    ]
+                    consolidated_results.append(tmp)
         self.consolidated_results =  pd.DataFrame(consolidated_results,columns = ['rowno','signal_id','model','par','opt','opt_sd'])
 
     def select_params(self,signal,parameter):

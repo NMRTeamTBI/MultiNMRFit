@@ -112,13 +112,13 @@ with st.container():
 with st.form('Inputs/Outputs'):
     with st.container():
         st.write("### Inputs")
+        st.write(session.widget_space["analysis_type"])
         if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds']:
             input_exp_data_path = st.text_input(
                 label="Enter data path",
                 key = "input_exp_data_path",
                 value = session.widget_space["input_exp_data_path"],
                 help="Select NMR experiment data path",
-                disabled=False if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds'] else True
                 )
             input_exp_data_folder = st.text_input(
                 label="Enter data folder",
@@ -172,10 +172,10 @@ if load_spectrum:
     # get input & output fields
     options = {
         "analysis_type" : analysis_type,
-        "input_exp_data_path": input_exp_data_path, #if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds'] else None,
-        "input_exp_data_folder": input_exp_data_folder, #if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds'] else None,
-        "input_expno": input_expno, #if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds'] else None,
-        "input_procno": input_procno, #if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds'] else None,
+        "input_exp_data_path": input_exp_data_path, 
+        "input_exp_data_folder": input_exp_data_folder, 
+        "input_expno": int(input_expno), 
+        "input_procno": int(input_procno), 
         "output_res_path": output_res_path,
         "output_res_folder": output_res_folder,
         "output_filename": output_filename
@@ -188,7 +188,8 @@ if load_spectrum:
     session.register_widgets(options)
 
     # get dataset
-    dataset = {analysis_type: str(options["analysis_type"]),
+    dataset = {
+            "analysis_type": str(options["analysis_type"]),
             "data_path": str(options["input_exp_data_path"]),
             "dataset": str(options["input_exp_data_folder"]),
             "expno": str(options["input_expno"]),
