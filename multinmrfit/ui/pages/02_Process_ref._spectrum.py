@@ -21,7 +21,6 @@ if process is None:
 else:
 
     # set default parameters
-
     session.set_widget_defaults(
         reference_spectrum = process.current_spectrum.rowno,
         spectrum_limit_min = round(float(process.current_spectrum.ppm_limits[0]), 2),
@@ -39,8 +38,7 @@ else:
                 index=0,
                 help="Select the spectrum used as reference for peak detection and clustering"
                 )
-#index=process.spectra_list.index(process.current_spectrum.rowno),
-                
+
     with col2:
         cur_lim = str(round(session.widget_space["spectrum_limit_min"], 2)) + " | " + str(round(session.widget_space["spectrum_limit_max"], 2))
         regs = ["Add new region"] + process.regions(process.current_spectrum.rowno)
@@ -123,11 +121,11 @@ else:
 
             st.write("### Peak picking & Clustering")
 
-
+            val = max(process.current_spectrum.intensity)/5 if process.current_spectrum.peakpicking_threshold is None else process.current_spectrum.peakpicking_threshold
             peakpicking_threshold = st.number_input(
                     label="Peak picking threshold",
                     key="peakpicking_threshold",
-                    value=process.current_spectrum.peakpicking_threshold,
+                    value=val,
                     step=1e5,
                     help="Enter threshold used for peak detection"
                     )
@@ -262,12 +260,17 @@ else:
                     st.plotly_chart(fig)
 
                     # save as pickle file
-                    #process.save_process_to_file()
-                    
-                    #st.success("Reference spectrum has been fitted.")
+                    process.save_process_to_file()
+                    st.success("Reference spectrum has been fitted.")
 
     if process.current_spectrum.fit_results is not None:
-        save = st.button("Save current region", on_click=process.add_region)
+
+        txt = "Save current region"
+        if process.current_spectrum.rowno in process.results.keys():
+            if process.current_spectrum.region in process.results[process.current_spectrum.rowno].keys():
+                txt = "Update current region"
+
+        save = st.button(txt, on_click=process.add_region)
 
         if save:
 

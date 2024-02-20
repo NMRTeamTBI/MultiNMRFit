@@ -33,7 +33,7 @@ else:
                         )
         spectra = process.spectra(region)
         compounds = process.compounds(rowno=None, region=region)
-        st.info(f"Compounds: {compounds}")
+        st.info(f"Signal IDs: {compounds}")
         st.info(f"Processed in spectra: {spectra}")
 
     with col2:
