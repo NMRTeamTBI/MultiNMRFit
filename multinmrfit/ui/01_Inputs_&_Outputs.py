@@ -217,7 +217,7 @@ if load_spectrum:
         process.filename = output_filename
     
     # save as pickle file
-    process.save_process_to_file()
+    #process.save_process_to_file()
 
 
 if session.object_space["process"] is not None:
