@@ -29,8 +29,9 @@ def load_defaults():
         load_path = pathlib.Path(multinmrfit.__file__).resolve().parent / "ui" / "conf" / 'default_conf.pickle'
         with open(load_path, 'rb') as handle:
             options = pickle.load(handle)
+
         session.set_widget_defaults(
-            #analysis_type = options['analysis_type'],
+            analysis_type = options['analysis_type'],
             input_exp_data_path = options["input_exp_data_path"],
             input_exp_data_folder = options["input_exp_data_folder"],
             input_expno = options["input_expno"],
@@ -41,7 +42,7 @@ def load_defaults():
         )
     except:
         session.set_widget_defaults(
-            #analysis_type = 'pseudo2D',
+            analysis_type = 'pseudo2D',
             input_exp_data_path = "path/to/topspin/data/folder/",
             input_exp_data_folder = "dataset_name",
             input_expno = 1,
@@ -73,6 +74,7 @@ if uploaded_file is not None:
     # set wisgets defaults
     session.set_widget_defaults(
             #analysis_type = process.analysis_type,
+            analysis_type = process.analysis_type,
             input_exp_data_path = process.data_path,
             input_exp_data_folder = process.dataset,
             input_expno = process.expno,
@@ -98,52 +100,49 @@ if session.object_space["loaded_file"] is not None:
     st.info(f"Process file loaded: {session.object_space['loaded_file']}")
     st.warning("Warning: Remember to update paths below, otherwise the process file and the processing results will be silently overwritten.")
 
+with st.container():
+    st.write("### Analysis type")
+    analysis_type = st.selectbox(
+            label='Select type of analysis',
+            key = 'analysis_type',
+            options = ['pseudo2D','list of 1Ds','txt data']
+            )
+    session.register_widgets({"analysis_type": analysis_type})
 
 with st.form('Inputs/Outputs'):
-    
-    # with st.container():
-    #     st.write('Analysis type')
-
-    #     analysis_type = st.selectbox(
-    #         label='Select type of analysis',
-    #         key = 'analysis_type',
-    #         index=0,
-    #         options = ['pseudo2D','list of 1Ds','txt data']
-    #         )
-
-    # session.register_widgets({
-    #     "analysis_type": analysis_type,
-    # })
-
-    # st.write(session.widget_space["analysis_type"])
-
     with st.container():
         st.write("### Inputs")
-
-
-        input_exp_data_path = st.text_input(
-            label="Enter data path",
-            key = "input_exp_data_path",
-            value = session.widget_space["input_exp_data_path"],
-            help="Select NMR experiment data path",
+        if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds']:
+            input_exp_data_path = st.text_input(
+                label="Enter data path",
+                key = "input_exp_data_path",
+                value = session.widget_space["input_exp_data_path"],
+                help="Select NMR experiment data path",
+                disabled=False if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds'] else True
+                )
+            input_exp_data_folder = st.text_input(
+                label="Enter data folder",
+                key = "input_exp_data_folder",
+                value = session.widget_space["input_exp_data_folder"],
             )
-        input_exp_data_folder = st.text_input(
-            label="Enter data folder",
-            key = "input_exp_data_folder",
-            value = session.widget_space["input_exp_data_folder"],
-        )
-        input_expno = st.number_input(
-            label="Enter Expno",
-            key="input_expno",  
-            value = session.widget_space["input_expno"],
-            help='Enter the expno(s) use in the analysis. If multiple numbers (separated with "," ) are provided it will automatically turned them into a list'
-        )
-        input_procno = st.number_input(
-            label="Enter Procno",
-            key="input_procno",  
-            value = session.widget_space["input_procno"],
-            help='Enter the procno. (Must be the same for all the experiments)'
-        )
+            input_expno = st.number_input(
+                label="Enter Expno",
+                key="input_expno",  
+                value = session.widget_space["input_expno"],
+                help='Enter the expno(s) use in the analysis. If multiple numbers (separated with "," ) are provided it will automatically turned them into a list'
+            )
+            input_procno = st.number_input(
+                label="Enter Procno",
+                key="input_procno",  
+                value = session.widget_space["input_procno"],
+                help='Enter the procno. (Must be the same for all the experiments)'
+            )
+        
+        if session.widget_space["analysis_type"] in ['txt data']:
+            uploaded_file = st.file_uploader("Load a txt file containing data.")
+            
+            st.write()
+
     with st.container():
         st.write("### Outputs")
         output_res_path = st.text_input(
@@ -166,16 +165,17 @@ with st.form('Inputs/Outputs'):
         load_spectrum = st.form_submit_button('Load spectrum')
     else:
         load_spectrum = st.form_submit_button('Update process')
-       
+    
 
 if load_spectrum:
 
     # get input & output fields
     options = {
-        "input_exp_data_path": input_exp_data_path,
-        "input_exp_data_folder": input_exp_data_folder,
-        "input_expno": input_expno,
-        "input_procno": input_procno,
+        "analysis_type" : analysis_type,
+        "input_exp_data_path": input_exp_data_path, #if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds'] else None,
+        "input_exp_data_folder": input_exp_data_folder, #if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds'] else None,
+        "input_expno": input_expno, #if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds'] else None,
+        "input_procno": input_procno, #if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds'] else None,
         "output_res_path": output_res_path,
         "output_res_folder": output_res_folder,
         "output_filename": output_filename
@@ -188,7 +188,8 @@ if load_spectrum:
     session.register_widgets(options)
 
     # get dataset
-    dataset = {"data_path": str(options["input_exp_data_path"]),
+    dataset = {analysis_type: str(options["analysis_type"]),
+            "data_path": str(options["input_exp_data_path"]),
             "dataset": str(options["input_exp_data_folder"]),
             "expno": str(options["input_expno"]),
             "procno": str(options["input_procno"]),
@@ -206,6 +207,7 @@ if load_spectrum:
         # get process
         process = session.object_space["process"]
         # update process
+        process.analysis_type = dataset["analysis_type"]
         process.data_path = dataset["data_path"]
         process.dataset = dataset["dataset"]
         process.expno = dataset["expno"]

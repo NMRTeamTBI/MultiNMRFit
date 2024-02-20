@@ -41,6 +41,7 @@ class Process(object):
         self.dataset = dataset["dataset"]
         self.expno = dataset["expno"]
         self.procno = dataset["procno"]
+        self.analysis_type = dataset["analysis_type"]
         self.ref_spectrum_rowno = dataset.get("rowno", 1)
         self.window = window
         self.ppm = None
@@ -66,9 +67,12 @@ class Process(object):
         # get list of spectra
         self.spectra_list = list(range(1, self.exp_dim[0]+1))
         
-        # load spectrum
-        self.ppm_full, self.data_full = self.load_2D_spectrum()
-        self.set_ref_spectrum(self.ref_spectrum_rowno, window=window)
+        if self.analysis_type == 'txt data':
+            print(self.analysis_type)
+        else:
+            # load spectrum
+            self.ppm_full, self.data_full = self.load_2D_spectrum()
+            self.set_ref_spectrum(self.ref_spectrum_rowno, window=window)
 
 
     def check_dataset(self):
