@@ -27,7 +27,7 @@ class Process(object):
         * plotting
     """
 
-    def __init__(self, dataset, window=None):
+    def __init__(self, dataset):
         """Construct the Process object.
 
         Args:
@@ -63,9 +63,7 @@ class Process(object):
         
         # load spectrum
         self.ppm_full, self.data_full = self.load_2D_spectrum()
-        if window is None:
-            window = (min(self.ppm_full), max(self.ppm_full))
-        self.window = window
+        window = (min(self.ppm_full), max(self.ppm_full))
 
         self.set_current_spectrum(dataset.get("rowno", 1), window=window)
 
@@ -239,7 +237,7 @@ class Process(object):
         self.current_spectrum.fit()
 
         # add from_ref attribute
-        self.current_spectrum.from_ref = None
+        #self.current_spectrum.from_ref = None
 
         # save in results
         #self.results[self.ref_spectrum_rowno] = self.ref_spectrum
@@ -294,7 +292,7 @@ class Process(object):
         return models_peak_number
 
 
-    def update_params(self, params, spectrum=None):
+    def update_params(self, params, spectrum=None, region=None):
         """Update parameter.
 
         Args:
@@ -321,8 +319,8 @@ class Process(object):
             self.current_spectrum.update_params(pars)
             self.current_spectrum.update_offset(offset)
         else:
-            self.results[spectrum].update_params(pars)
-            self.results[spectrum].update_offset(offset)
+            self.results[spectrum][region].update_params(pars)
+            self.results[spectrum][region].update_offset(offset)
     
 
     def build_spectra_list(self, user_input, ref, region, reprocess=True):
@@ -362,13 +360,17 @@ class Process(object):
     
     def regions(self, rowno=None):
 
+        # get regions
         if rowno is None:
             regions = []
             for _, r in self.results.items():
                 regions += list(r.keys())
         else:
             regions = list(self.results.get(rowno, {}).keys())
-        regions=list(set(regions))
+        
+        # remove duplicates
+        regions = list(set(regions))
+
         return regions
 
     def spectra(self, region=None):
@@ -410,7 +412,7 @@ class Process(object):
         return params
 
 
-    def fit_from_ref(self, rowno, ref):
+    def fit_from_ref(self, rowno, region, ref):
         """Fit a spectrum using another spectrum as reference.
 
         Args:
@@ -421,29 +423,29 @@ class Process(object):
         # create spectrum
         tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[int(rowno)-1])], axis=1)
         tmp_data.columns = ["ppm", "intensity"]
-        sp = spectrum.Spectrum(data=tmp_data, window=self.window)
+        sp = spectrum.Spectrum(data=tmp_data, window=self.results[ref][region].window, from_ref=ref)
 
         # build model
-        offset = {} if self.results[ref].offset else None
-        sp.build_model(signals=self.signals, available_models=self.models, offset=offset)
-
-        # add from_ref attribute
-        sp.from_ref = ref
+        offset = {} if self.results[ref][region].offset else None
+        sp.build_model(signals=self.results[ref][region].signals,
+                       available_models=self.models,
+                       offset=offset)
 
         # save spectrum
-        self.results[rowno] = sp
+        self.results[rowno] = self.results.get(rowno, {})
+        self.results[rowno][region] = sp
 
         # get params from previous spectrum
-        prev_params = self.results[ref].params.copy(deep=True)
+        prev_params = self.results[ref][region].params.copy(deep=True)
 
         # update bounds
         prev_params = self.update_bounds(prev_params)
 
         # update params in spectrum
-        self.update_params(prev_params, spectrum=rowno)
+        self.update_params(prev_params, spectrum=rowno, region=region)
 
         # fit
-        self.results[rowno].fit()
+        self.results[rowno][region].fit()
         
     def save_process_to_file(self):
 

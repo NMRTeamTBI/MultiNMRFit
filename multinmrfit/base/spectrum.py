@@ -29,7 +29,7 @@ class Spectrum(object):
         * plotting
     """
 
-    def __init__(self, data, window: tuple = None) -> None:
+    def __init__(self, data, window: tuple = None, from_ref: int = None) -> None:
         """Construct the Spectrum object.
 
         Args:
@@ -56,10 +56,10 @@ class Spectrum(object):
         self.region = str(round(self.ppm_limits[0], 2)) + " | " + str(round(self.ppm_limits[1], 2))
         self.intensity = dataset["intensity"]
         self.peakpicking_threshold = None
-        self.from_ref = None
+        self.from_ref = from_ref
         self.edited_peak_table = None
         self.user_models = None
-
+        self.signals = None
 
         # initialize model-related attributes (models, params, offset and fit_results) at default values
         self._set_default_model_attributes()
@@ -274,6 +274,7 @@ class Spectrum(object):
             logger.debug("No peak found.")
             peak_table = pd.DataFrame(columns = ['X_AXIS', 'cID', 'X_LW', 'VOL'])
 
+        self.peakpicking_threshold = threshold
 
         # add chemical shifts in ppm
         peak_table.insert(0, 'ppm', [self.ppm[int(i)] for i in peak_table['X_AXIS'].values])
@@ -315,6 +316,9 @@ class Spectrum(object):
         # initialize models
         self._initialize_models(signals, available_models)
 
+        # set signals
+        self.signals = signals
+
         # update parameters
         self.update_params(signals)
 
@@ -340,6 +344,7 @@ class Spectrum(object):
             for par, val in signal.get("par", {}).items():
                 for k, v in val.items():
                     self._set_param(id, par, k, v)
+                    #self.signals[id]["par"][k] = v
 
 
     def update_offset(self, offset: dict) -> None:

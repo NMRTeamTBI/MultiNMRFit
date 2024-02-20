@@ -28,11 +28,6 @@ else:
         spectrum_limit_max = round(float(process.current_spectrum.ppm_limits[1]), 2)
     )
 
-    #test = ["Add new region"] + process.regions(process.current_spectrum.rowno)
-
-    #if 'region' not in st.session_state:
-    #       st.session_state['selection'] = 0
-
     # add widgets
     col1, col2 = st.columns(2)
 
@@ -41,10 +36,11 @@ else:
                 label="Select spectrum to process",
                 key="reference_spectrum",
                 options=process.spectra_list,
-                index=process.spectra_list.index(process.current_spectrum.rowno),
+                index=0,
                 help="Select the spectrum used as reference for peak detection and clustering"
                 )
-
+#index=process.spectra_list.index(process.current_spectrum.rowno),
+                
     with col2:
         region = st.selectbox(
                 label="Select region to (re)process",
@@ -52,7 +48,7 @@ else:
                 options=["Add new region"] + process.regions(process.current_spectrum.rowno),
                 help="Select the region"
                 )
-        
+        #process.regions.index()
     col1, col2 = st.columns(2)
 
     with col2:

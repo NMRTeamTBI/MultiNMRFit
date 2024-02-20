@@ -12,6 +12,8 @@ session = SessI(
 
 process = session.get_object(key="process")
 
+spectra_list = []
+
 if process is None or len(process.results) == 0:
 
     st.warning("Please process a spectrum used as reference.")
@@ -73,7 +75,7 @@ else:
     st.info(f"Spectra to process: {str_list}")
 
 
-if (process is not None and len(process.results) > 0) and len(spectra_list):
+if process is not None and len(spectra_list):
 
     stop = False
 
@@ -98,13 +100,13 @@ if (process is not None and len(process.results) > 0) and len(spectra_list):
             percent_complete = (i+1)/(len(list_spectra_upper)+len(list_spectra_lower)-2)
             progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_upper[i]} as reference). Please wait."
             progress_bar.progress(percent_complete, text=progress_text)
-            process.fit_from_ref(rowno=j, ref=list_spectra_upper[i])
+            process.fit_from_ref(rowno=j, region=region, ref=list_spectra_upper[i])
 
         for i,j in enumerate(list_spectra_lower[1:]):
             percent_complete = (i+len(list_spectra_upper))/(len(list_spectra_upper)+len(list_spectra_lower)-2)
             progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_lower[i]} as reference). Please wait."
             progress_bar.progress(percent_complete, text=progress_text)
-            process.fit_from_ref(rowno=j, ref=list_spectra_lower[i])
+            process.fit_from_ref(rowno=j, region=region, ref=list_spectra_lower[i])
 
         progress_bar.empty()
         stop.empty()
