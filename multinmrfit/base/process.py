@@ -325,7 +325,7 @@ class Process(object):
             self.results[spectrum].update_offset(offset)
     
 
-    def build_spectra_list(self, user_input, ref, reprocess=True):
+    def build_spectra_list(self, user_input, ref, region, reprocess=True):
         """Build list of spectra.
 
         Args:
@@ -355,14 +355,28 @@ class Process(object):
         except:
             return []
         
-        exclude = [ref] if reprocess else list(self.results.keys()) + [ref]
+        exclude = [ref] if reprocess else [k for k in self.results.keys() if region in list(self.results[k].keys())] + [ref]
         experiment_list = [i for i in experiment_list if i not in exclude]
 
         return experiment_list
     
-    def regions(self, rowno):
-        regions = list(self.results.get(rowno, {}).keys())
+    def regions(self, rowno=None):
+
+        if rowno is None:
+            regions = []
+            for _, r in self.results.items():
+                regions += list(r.keys())
+        else:
+            regions = list(self.results.get(rowno, {}).keys())
+        regions=list(set(regions))
         return regions
+
+    def spectra(self, region=None):
+        if region is None:
+            spectra = list(self.results.keys())
+        else:
+            spectra = [k for k in self.results.keys() if region in self.results[k].keys()]
+        return spectra
 
 
     @staticmethod

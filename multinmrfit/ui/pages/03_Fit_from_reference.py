@@ -18,32 +18,39 @@ if process is None or len(process.results) == 0:
 
 else:
 
-    str_list = str(list(process.results.keys()))
-    st.info(f"Processed spectra: {str_list}")
-
-    # set default parameters
-    session.set_widget_defaults(
-        spectra_to_process = "-".join([str(process.spectra_list[0]), str(process.spectra_list[-1])])
-    )
+    processed_regions = process.regions()
 
     col1, col2 = st.columns(2)
-
     with col1:
-        already_processed = sorted(process.results.keys())
-        index = already_processed.index(process.ref_spectrum_rowno) if process.ref_spectrum_rowno in already_processed else 0
+        region = st.selectbox(
+                        label="Select region",
+                        key="region_ref",
+                        options=processed_regions,
+                        index=0,
+                        help="Select the number of the spectrum used for peak picking and clustering"
+                        )
+        spectra = process.spectra(region)
+        st.info(f"Processed in spectra: {spectra}")
+
+    with col2:
+
+
         reference_spectrum = st.selectbox(
-                    label="Select reference spectrum",
+                    label="Select spectrum used as reference",
                     key="reference_spectrum",
-                    options=already_processed,
-                    index=index,
+                    options=spectra,
+                    index=0,
                     help="Select the number of the spectrum used for peak picking and clustering"
                     )
             
-    with col2:
-        spectra_to_process = st.text_input(
+    # set default parameters
+    spectra_to_process = "-".join([str(process.spectra_list[0]), str(process.spectra_list[-1])])
+
+
+    spectra_to_process = st.text_input(
                 label="Spectra to process",
                 key="spectra_to_process",
-                value=session.widget_space["spectra_to_process"],
+                value=spectra_to_process,
                 help="Enter all spectra to process"
                 )
     
@@ -55,12 +62,12 @@ else:
         })
     
     with st.expander("Reference spectrum", expanded=False):
-        fig = process.results[reference_spectrum].plot(ini=False, fit=True)
+        fig = process.results[reference_spectrum][region].plot(ini=False, fit=True)
         fig.update_layout(autosize=False, width=800, height=600)
         fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
         st.plotly_chart(fig)
     
-    spectra_list = process.build_spectra_list(spectra_to_process, ref=reference_spectrum, reprocess=reprocess)
+    spectra_list = process.build_spectra_list(spectra_to_process, ref=reference_spectrum, region=region, reprocess=reprocess)
 
     str_list = str(spectra_list) if len(spectra_list) else "None (wrong input)"
     st.info(f"Spectra to process: {str_list}")
