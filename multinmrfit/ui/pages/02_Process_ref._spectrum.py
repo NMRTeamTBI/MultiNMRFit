@@ -273,7 +273,6 @@ else:
         save = st.button(txt, on_click=process.add_region)
 
         if save:
-
             #process.add_region()
             #st.session_state.regions = ["Add new region"] + process.regions(process.current_spectrum.rowno)
             st.success("Saved")
