@@ -82,7 +82,7 @@ if uploaded_file is not None:
             output_res_folder = process.output_res_folder,
             output_filename = process.filename
         )
-    
+
     # save state
     session.object_space["loaded_file"] = pathlib.Path(process.output_res_path, process.output_res_folder, process.filename + ".pkl")
 
@@ -101,10 +101,12 @@ if session.object_space["loaded_file"] is not None:
 
 with st.container():
     st.write("### Analysis type")
+    disabled = False if session.object_space['process'] is None else True
     analysis_type = st.selectbox(
             label='Select type of analysis',
             key = 'analysis_type',
-            options = ['pseudo2D','list of 1Ds','txt data']
+            options = ['pseudo2D','list of 1Ds','txt data'],
+            disabled=disabled
             )
     session.register_widgets({"analysis_type": analysis_type})
 
@@ -118,22 +120,26 @@ with st.form('Inputs/Outputs'):
                 key = "input_exp_data_path",
                 value = session.widget_space["input_exp_data_path"],
                 help="Select NMR experiment data path",
+                disabled=disabled
                 )
             input_exp_data_folder = st.text_input(
                 label="Enter data folder",
                 key = "input_exp_data_folder",
                 value = session.widget_space["input_exp_data_folder"],
+                disabled=disabled
             )
             input_expno = st.number_input(
                 label="Enter Expno",
                 key="input_expno",  
                 value = session.widget_space["input_expno"],
+                disabled=disabled,
                 help='Enter the expno(s) use in the analysis. If multiple numbers (separated with "," ) are provided it will automatically turned them into a list'
             )
             input_procno = st.number_input(
                 label="Enter Procno",
                 key="input_procno",  
                 value = session.widget_space["input_procno"],
+                disabled=disabled,
                 help='Enter the procno. (Must be the same for all the experiments)'
             )
         
@@ -160,7 +166,7 @@ with st.form('Inputs/Outputs'):
             value = session.widget_space["output_filename"],
         )
 
-    if session.object_space["loaded_file"] is None:
+    if session.object_space["process"] is None:
         load_spectrum = st.form_submit_button('Load spectrum')
     else:
         load_spectrum = st.form_submit_button('Update process')
@@ -170,7 +176,7 @@ if load_spectrum:
 
     # get input & output fields
     options = {
-        "analysis_type" : analysis_type,
+        "analysis_type": analysis_type,
         "input_exp_data_path": input_exp_data_path if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
         "input_exp_data_folder": input_exp_data_folder if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
         "input_expno": int(input_expno) if analysis_type in ['pseudo2D','list of 1Ds'] else None, 

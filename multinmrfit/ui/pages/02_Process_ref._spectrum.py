@@ -42,10 +42,17 @@ else:
 #index=process.spectra_list.index(process.current_spectrum.rowno),
                 
     with col2:
+        cur_lim = str(round(session.widget_space["spectrum_limit_min"], 2)) + " | " + str(round(session.widget_space["spectrum_limit_max"], 2))
+        regs = ["Add new region"] + process.regions(process.current_spectrum.rowno)
+        if cur_lim in regs:
+            idx = regs.index(cur_lim)
+        else:
+            idx = 0
         region = st.selectbox(
                 label="Select region to (re)process",
                 key="regions",
-                options=["Add new region"] + process.regions(process.current_spectrum.rowno),
+                options=regs,
+                index=idx,
                 help="Select the region"
                 )
         #process.regions.index()

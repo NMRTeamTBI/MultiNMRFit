@@ -38,6 +38,7 @@ class Process(object):
         self.models = io.IoHandler.get_models()
 
         # extract information
+        self.analysis_type = dataset["analysis_type"]
         self.data_path = dataset["data_path"]
         self.dataset = dataset["dataset"]
         self.expno = dataset["expno"]
