@@ -73,7 +73,6 @@ if uploaded_file is not None:
 
     # set wisgets defaults
     session.set_widget_defaults(
-            #analysis_type = process.analysis_type,
             analysis_type = process.analysis_type,
             input_exp_data_path = process.data_path,
             input_exp_data_folder = process.dataset,
@@ -172,10 +171,10 @@ if load_spectrum:
     # get input & output fields
     options = {
         "analysis_type" : analysis_type,
-        "input_exp_data_path": input_exp_data_path, 
-        "input_exp_data_folder": input_exp_data_folder, 
-        "input_expno": int(input_expno), 
-        "input_procno": int(input_procno), 
+        "input_exp_data_path": input_exp_data_path if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
+        "input_exp_data_folder": input_exp_data_folder if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
+        "input_expno": int(input_expno) if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
+        "input_procno": int(input_procno) if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
         "output_res_path": output_res_path,
         "output_res_folder": output_res_folder,
         "output_filename": output_filename
