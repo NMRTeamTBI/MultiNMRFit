@@ -112,6 +112,7 @@ else:
     if process.current_spectrum.rowno != reference_spectrum or np.abs(process.current_spectrum.ppm_limits[0]-spec_lim_min) > ppm_step or np.abs(process.current_spectrum.ppm_limits[1]-spec_lim_max) > ppm_step:
         if (spec_lim_max-spec_lim_min) < 0.1:
             st.error("Error: ppm max must be higher than ppm min.")
+            cur_lim = None
         else:  
             cur_lim = str(round(spec_lim_min, 2)) + " | " + str(round(spec_lim_max, 2))  
             process.set_current_spectrum(session.widget_space["reference_spectrum"], window=(round(spec_lim_min, 2), round(spec_lim_max, 2)))
@@ -119,7 +120,7 @@ else:
 
     with st.form("Clustering"):
 
-        if process is not None:
+        if process is not None and cur_lim is not None:
 
             st.write("### Peak picking & Clustering")
 
