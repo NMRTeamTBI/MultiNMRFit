@@ -155,7 +155,7 @@ else:
             create_models = st.form_submit_button("Assign peaks") 
 
             if create_models:
-                
+                # check here for overlaping clusters
                 clusters = set(list(filter(None, edited_peak_table.cID.values.tolist())))
 
                 if len(clusters):

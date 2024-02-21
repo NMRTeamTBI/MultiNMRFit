@@ -21,6 +21,7 @@ else:
 
     if len(process.results):
         with st.container():
+            
             st.write("### Spectra")
 
             spectra_list = sorted(list(process.results.keys()))
