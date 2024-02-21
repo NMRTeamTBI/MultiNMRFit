@@ -54,15 +54,17 @@ else:
                 help="Select the region"
                 )
         #process.regions.index()
-    col1, col2 = st.columns(2)
+    _, _, col3, col4 = st.columns(4)
 
-    with col2:
-
+    with col3:
         exist = process.results.get(reference_spectrum, {}).get(region, False)
-
         if exist:
+            delete = st.button("Delete in current spectrum", on_click=process.delete_region, args=[reference_spectrum, region])
 
-            delete = st.button("Delete results for selected region", on_click=process.delete_region, args=[reference_spectrum, region])
+    with col4:
+        exist = process.results.get(reference_spectrum, {}).get(region, False)
+        if exist:
+            delete = st.button("Delete in all spectra", on_click=process.delete_region, args=[None, region])
 
 
     col1, col2 = st.columns(2)
@@ -110,6 +112,7 @@ else:
     if process.current_spectrum.rowno != reference_spectrum or np.abs(process.current_spectrum.ppm_limits[0]-spec_lim_min) > ppm_step or np.abs(process.current_spectrum.ppm_limits[1]-spec_lim_max) > ppm_step:
         if (spec_lim_max-spec_lim_min) < 0.1:
             st.error("Error: ppm max must be higher than ppm min.")
+            cur_lim = None
         else:  
             cur_lim = str(round(spec_lim_min, 2)) + " | " + str(round(spec_lim_max, 2))  
             process.set_current_spectrum(session.widget_space["reference_spectrum"], window=(round(spec_lim_min, 2), round(spec_lim_max, 2)))
@@ -117,7 +120,7 @@ else:
 
     with st.form("Clustering"):
 
-        if process is not None:
+        if process is not None and cur_lim is not None:
 
             st.write("### Peak picking & Clustering")
 
@@ -222,7 +225,7 @@ else:
 
         if len(process.current_spectrum.params):
 
-            with st.form("Fit reference spectrum"):
+            with st.form("Fit spectrum"):
 
                 st.write("### Fitting")
 
@@ -239,7 +242,7 @@ else:
                         disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral"]
                         )
                 
-                fit_ok = st.form_submit_button("Fit reference spectrum") 
+                fit_ok = st.form_submit_button("Fit spectrum") 
 
                 if fit_ok:
 
@@ -261,7 +264,7 @@ else:
 
                     # save as pickle file
                     process.save_process_to_file()
-                    st.success("Reference spectrum has been fitted.")
+                    st.success("Spectrum has been fitted.")
 
     if process.current_spectrum.fit_results is not None:
 
