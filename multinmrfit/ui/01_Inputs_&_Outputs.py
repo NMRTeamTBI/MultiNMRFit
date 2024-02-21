@@ -83,7 +83,7 @@ if uploaded_file is not None:
             output_res_path = process.output_res_path,
             output_res_folder = process.output_res_folder,
             output_filename = process.filename,
-            txt_data = process.txt_data
+            txt_data = process.txt_data if hasattr(process, 'txt_data') else None
         )
 
     # save state
