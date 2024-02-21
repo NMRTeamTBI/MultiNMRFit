@@ -51,7 +51,7 @@ def load_defaults():
             output_res_path = "path/to/output/data",
             output_res_folder = 'results_folder',
             output_filename = "filename",
-            txt_data = False
+            txt_data = None
         )
 
 # set page title with multinmrfit version

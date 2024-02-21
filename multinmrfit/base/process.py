@@ -78,7 +78,7 @@ class Process(object):
             raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
 
         # get dimensions
-        self.exp_dim = self.get_dim()
+        self.exp_dim = self.data_full.shape
 
         # get list of spectra
         self.spectra_list = list(range(1, self.exp_dim[0]+1))
@@ -217,18 +217,6 @@ class Process(object):
             raise ValueError("An unknown error has occurred when opening spectrum: '{}'.".format(e))
 
         return ppm, data
-
-
-    def get_dim(self):
-        """Estimate the number of rows in the experiment.
-        
-        Returns:
-            tuple: dimensions of the spectrum (colno, rowno)
-        """
-
-        #_, data = self.read_topspin_data(self.data_path, self.dataset, self.expno, self.procno)
-
-        return self.data_full.shape
 
     def model_cluster_assignment(self):
         """Estimate the number of peaks per model
