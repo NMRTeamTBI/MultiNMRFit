@@ -515,32 +515,35 @@ class Process(object):
 
     def consolidate_results(self):
         consolidated_results = []
-        for j in self.results.keys():
+        for spec in self.results.keys():
+            for reg in self.results[spec].keys():
             # all params except integral
-            for i in range(len(self.results[j].params)):
-                tmp = [
-                    j,
-                    self.results[j].params.iloc[i].loc['signal_id'],
-                    self.results[j].params.iloc[i].loc['model'],
-                    self.results[j].params.iloc[i].loc['par'],
-                    self.results[j].params.iloc[i].loc['opt'],
-                    self.results[j].params.iloc[i].loc['opt_sd'],
-                ]
-                consolidated_results.append(tmp)
-            
-            # add integral rows
-            df_integral = self.results[j].params.loc[:,['signal_id','model','integral']].drop_duplicates()
-            for i in range(len(df_integral)):
-                tmp = [
-                    j,
-                    df_integral.signal_id.iloc[i],
-                    df_integral.model.iloc[i],
-                    'integral',
-                    df_integral.integral.iloc[i],
-                    0
-                ]
-                consolidated_results.append(tmp)
-        self.consolidated_results = pd.DataFrame(consolidated_results,columns = ['rowno','signal_id','model','par','opt','opt_sd'])
+                for i in range(len(self.results[spec][reg].params)):
+                    tmp = [
+                        spec,
+                        reg,
+                        self.results[spec][reg].params.iloc[i].loc['signal_id'],
+                        self.results[spec][reg].params.iloc[i].loc['model'],
+                        self.results[spec][reg].params.iloc[i].loc['par'],
+                        self.results[spec][reg].params.iloc[i].loc['opt'],
+                        self.results[spec][reg].params.iloc[i].loc['opt_sd'],
+                    ]
+                    consolidated_results.append(tmp)
+                
+                # add integral rows
+                df_integral = self.results[spec][reg].params.loc[:,['signal_id','model','integral']].drop_duplicates()
+                for i in range(len(df_integral)):
+                    tmp = [
+                        spec,
+                        reg,
+                        df_integral.signal_id.iloc[i],
+                        df_integral.model.iloc[i],
+                        'integral',
+                        df_integral.integral.iloc[i],
+                        0
+                    ]
+                    consolidated_results.append(tmp)
+        self.consolidated_results = pd.DataFrame(consolidated_results,columns = ['rowno','signal_id','region','model','par','opt','opt_sd'])
 
     def select_params(self,signal,parameter):
         selected_params = self.consolidated_results[(self.consolidated_results.signal_id==signal)&(self.consolidated_results.par==parameter)]

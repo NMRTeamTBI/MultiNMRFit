@@ -81,7 +81,7 @@ else:
                         )
 
             # consolidate the results 
-        #    process.consolidate_results()
+            process.consolidate_results()
 
         # with st.container():
         #     st.write("### Parameter Plot")
