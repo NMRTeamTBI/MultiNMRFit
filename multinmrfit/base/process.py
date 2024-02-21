@@ -182,12 +182,10 @@ class Process(object):
         return ppm, data
 
     def load_txt_spectrum(self):
-        txt_data = pd.read_csv(self.txt_data,sep='\t')
-        try:
-            ppm = pd.Series(txt_data.ppm)
-            data = txt_data.loc[:, txt_data.columns != 'ppm']
-        except Exception as e:
-            raise ValueError("Provide a column entitled ppm in your text file")
+        if "ppm" not in self.txt_data.columns:
+            raise ValueError("Column 'ppm' missing")
+        ppm = self.txt_data.ppm.values.tolist()
+        data = np.array(self.txt_data.loc[:, self.txt_data.columns != 'ppm'])
 
         return ppm, data
 

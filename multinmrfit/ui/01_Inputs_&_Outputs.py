@@ -11,6 +11,7 @@ import pickle
 import pathlib
 from sess_i.base.main import SessI
 from multinmrfit.base.process import Process
+import pandas as pd
 
 
 session = SessI(
@@ -116,7 +117,6 @@ with st.container():
 with st.form('Inputs/Outputs'):
     with st.container():
         st.write("### Inputs")
-        st.write(session.widget_space["analysis_type"])
         if session.widget_space["analysis_type"] in ['pseudo2D','list of 1Ds']:
             input_exp_data_path = st.text_input(
                 label="Enter data path",
@@ -148,9 +148,11 @@ with st.form('Inputs/Outputs'):
                 help='Enter the procno. (Must be the same for all the experiments)'
             )
         
-        if session.widget_space["analysis_type"] in ['txt data']:
-            txt_data = st.file_uploader("Load a txt file containing data.")
-            print(txt_data)
+        if analysis_type == 'txt data':
+            txt_data = None
+            txt_data_upl = st.file_uploader("Load a tsv file containing data.", type={"csv", "txt", "tsv"})
+            if txt_data_upl is not None:
+                txt_data = pd.read_csv(txt_data_upl)            
             session.object_space["txt_data"] = txt_data
             
 
@@ -180,6 +182,7 @@ with st.form('Inputs/Outputs'):
 
 if load_spectrum:
     # get input & output fields
+    st.write(len(txt_data.columns))
     options = {
         "analysis_type": analysis_type,
         "input_exp_data_path": input_exp_data_path if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
@@ -189,7 +192,7 @@ if load_spectrum:
         "output_res_path": output_res_path,
         "output_res_folder": output_res_folder,
         "output_filename": output_filename,
-        "txt_data":txt_data if analysis_type in ['txt data'] else None
+        "txt_data": txt_data if analysis_type == 'txt data' else None
     }
     # save as defaults for next run
     save_defaults(options)
@@ -208,7 +211,7 @@ if load_spectrum:
                 "output_res_path": output_res_path,
                 "output_res_folder": output_res_folder,
                 "output_filename": output_filename,
-                "txt_data":str(options["txt_data"]),
+                "txt_data":options["txt_data"],
                 }
         # initialize process
         process = Process(dataset)
