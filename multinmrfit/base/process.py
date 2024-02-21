@@ -65,7 +65,6 @@ class Process(object):
         else:
             raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
 
-        print(self.data_full)
         # get dimensions
         self.exp_dim = self.data_full.shape
 
