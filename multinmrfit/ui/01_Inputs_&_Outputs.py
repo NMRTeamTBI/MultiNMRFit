@@ -151,11 +151,14 @@ with st.form('Inputs/Outputs'):
             )
         
         if analysis_type == 'txt data':
-            txt_data = None
-            txt_data_upl = st.file_uploader("Load a tsv file containing data.", type={"csv", "txt", "tsv"})
-            if txt_data_upl is not None:
-                txt_data = pd.read_csv(txt_data_upl, sep="\t")
-            session.object_space["txt_data"] = txt_data
+            if disabled:
+                st.write("File already loaded in current process.")
+            else:
+                txt_data = None
+                txt_data_upl = st.file_uploader("Load a tsv file containing data.", type={"csv", "txt", "tsv"})
+                if txt_data_upl is not None:
+                    txt_data = pd.read_csv(txt_data_upl, sep="\t")
+                session.object_space["txt_data"] = txt_data
            
 
     with st.container():
