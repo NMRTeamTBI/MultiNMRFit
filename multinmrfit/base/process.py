@@ -62,16 +62,26 @@ class Process(object):
         self.spectra_list = list(range(1, self.exp_dim[0]+1))
         
         # load spectrum
-        match self.analysis_type:
-            case "pseudo2D":
-                self.ppm_full, self.data_full = self.load_2D_spectrum()
-            case "list of 1Ds":
-                self.ppm_full, self.data_full = self.load_1D_spectrum()
-            case "txt data":
-                self.ppm_full, self.data_full = self.load_txt_spectrum()
-            case _:
-                raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
-            
+        # match self.analysis_type:
+        #     case "pseudo2D":
+        #         self.ppm_full, self.data_full = self.load_2D_spectrum()
+        #     case "list of 1Ds":
+        #         self.ppm_full, self.data_full = self.load_1D_spectrum()
+        #     case "txt data":
+        #         self.ppm_full, self.data_full = self.load_txt_spectrum()
+        #     case _:
+        #         raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
+
+        # load spectrum
+        if self.analysis_type == "pseudo2D":
+            self.ppm_full, self.data_full = self.load_2D_spectrum()
+        elif self.analysis_type == "list of 1Ds":
+            self.ppm_full, self.data_full = self.load_1D_spectrum()
+        elif self.analysis_type == "txt data":
+            self.ppm_full, self.data_full = self.load_txt_spectrum()
+        else:
+            raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
+
         # set default window (full spectrum)
         window = (min(self.ppm_full), max(self.ppm_full))
 
