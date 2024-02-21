@@ -28,14 +28,6 @@ else:
 
             spectra_list = sorted(list(process.results.keys()))
 
-            # spectrum = st.selectbox(
-            #             label="Select spectrum",
-            #             key="plot_spectrum",
-            #             options=spectra_list,
-            #             index=0,
-            #             help="Select the spectrum to show"
-            #             )
-
             col1, col2 = st.columns(2)
 
             with col1:
