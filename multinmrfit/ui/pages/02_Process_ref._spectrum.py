@@ -168,19 +168,6 @@ else:
                             tmp_neg = pd.concat([tmp_neg, tmp_row])
                     edited_peak_table = tmp_neg
                 
-                # Takes care of overlaping clusters
-                cID_list = []
-                clean_cID = list(filter(None, edited_peak_table.cID.values.tolist()))
-                print(clean_cID )
-                for i in range(len(clean_cID)):
-                    cID = clean_cID[i].split(',')
-                    if len(cID) == 1:
-                        cID_list.append(cID[0])
-                    else:
-                        for k in range(len(cID)):
-                            cID_list.append(cID[k])
-                clusters = set(list(dict.fromkeys(cID_list)))
-                print(clusters)
                 clusters = set(list(filter(None, edited_peak_table.cID.values.tolist())))
 
                 if len(clusters):
