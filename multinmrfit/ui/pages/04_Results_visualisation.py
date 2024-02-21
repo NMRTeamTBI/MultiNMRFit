@@ -70,7 +70,7 @@ else:
             })
 
             with st.container():
-                st.write("### Parameter Table")
+                st.write("### Parameters")
 
             tmp = process.results[spectrum][region].params.style.apply(process.highlighter, axis=None)
 
@@ -84,10 +84,10 @@ else:
             process.consolidate_results()
 
         with st.container():
-            st.write("### Parameter Plot")
+            st.write("### Plot")
 
             # signal selection to visualize
-            st.write(process.consolidated_results)
+            #st.write(process.consolidated_results)
             signal_list = list(process.consolidated_results.signal_id.unique())        
             signal = st.selectbox(
                         label="Select signal",
@@ -108,55 +108,63 @@ else:
                         help="Select the parameter to show as function of index"
             )
 
-            fig = process.plot(signal,parameter)
+            y_zero = st.checkbox('Set y axis to zero', value=True, key="zero")
+            fig = process.plot(signal, parameter)
+            if y_zero:
+                fig.update_yaxes(rangemode="tozero")
             st.plotly_chart(fig)
 
         with st.container():
             st.write("### Export")
-            save_complete_txt = st.checkbox('Save all data to text file')
 
-            if save_complete_txt:
+            col1, col2 = st.columns(2)
+
+            with col1:
+                export_sel = st.selectbox(
+                        label="Export data to tsv",
+                        key="export",
+                        options=["all data", "specific data"],
+                        index=0
+                        )
+                save_button = st.button('Export')
+            with col2:
+                if export_sel == "all data":
                     filename = st.text_input(
-                            label="Enter specific filename",
+                            label="Enter filename",
                             value=process.filename
                             )
 
-            save_partial_txt = st.checkbox(
-                'Save partial data to text file',
-                disabled = True if save_complete_txt else False)
+                elif export_sel == "specific data":
+                    signal = st.selectbox(
+                                label="Signal",
+                                options = signal_list,
+                                index=0
+                                )
 
-            if save_partial_txt:
-                signal = st.selectbox(
-                    label="Select signal",
-                    key="signal_to_save",
-                    options = signal_list,
-                    index=0,
-                    help="Select the signal id to save"
+                    # parameter selection to save
+                    parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
+
+                    parameter = st.selectbox(
+                                label="Select parameter",
+                                key="parameter_to_save",
+                                options=parameter_list,
+                                index=0,
+                                help="Select the parameter to save"
+                            )   
                     
-                    )
-
-                # parameter selection to save
-                parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
-
-                parameter = st.selectbox(
-                            label="Select parameter",
-                            key="parameter_to_save",
-                            options=parameter_list,
-                            index=0,
-                            help="Select the parameter to save"
-                        )   
-                
-                filename = st.text_input(
-                            label="Enter specific filename",
-                            )
-                
-            save_button = st.button('Save')
+                    filename = st.text_input(
+                                label="Enter filename",
+                                )
+                else:
+                    st.warning("Selection error")
+            
 
             if save_button:
-                if save_complete_txt:
+                if export_sel == "all data":
                     process.save_consolidated_results()
-                if save_partial_txt:
+                    st.info(f"Results files exported")
+                elif export_sel == "specific data":
                     process.save_consolidated_results(data=process.select_params(signal,parameter),partial_filename=filename)
-                st.info(f"Results text files have been saved")
+                    st.info(f"Results files exported")
     else:
         st.warning("No results to display, please process some spectra first.")

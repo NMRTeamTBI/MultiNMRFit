@@ -73,7 +73,7 @@ else:
     
     spectra_list = process.build_spectra_list(spectra_to_process, ref=reference_spectrum, region=region, reprocess=reprocess)
 
-    str_list = str(spectra_list) if len(spectra_list) else "None (wrong input)"
+    str_list = str(spectra_list) if len(spectra_list) else "None"
     st.info(f"Spectra to process: {str_list}")
 
 
