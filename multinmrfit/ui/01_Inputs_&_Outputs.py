@@ -38,7 +38,8 @@ def load_defaults():
             input_procno = options["input_procno"],
             output_res_path = options["output_res_path"],
             output_res_folder = options["output_res_folder"],
-            output_filename = options["output_filename"]
+            output_filename = options["output_filename"],
+            txt_data = options["txt_data"]
         )
     except:
         session.set_widget_defaults(
@@ -49,7 +50,8 @@ def load_defaults():
             input_procno = 1,
             output_res_path = "path/to/output/data",
             output_res_folder = 'results_folder',
-            output_filename = "filename"
+            output_filename = "filename",
+            txt_data = False
         )
 
 # set page title with multinmrfit version
@@ -80,7 +82,8 @@ if uploaded_file is not None:
             input_procno = process.procno,
             output_res_path = process.output_res_path,
             output_res_folder = process.output_res_folder,
-            output_filename = process.filename
+            output_filename = process.filename,
+            txt_data = process.txt_data
         )
 
     # save state
@@ -128,13 +131,15 @@ with st.form('Inputs/Outputs'):
                 value = session.widget_space["input_exp_data_folder"],
                 disabled=disabled
             )
-            input_expno = st.number_input(
+            
+            input_expno = st.text_input(
                 label="Enter Expno",
                 key="input_expno",  
                 value = session.widget_space["input_expno"],
                 disabled=disabled,
                 help='Enter the expno(s) use in the analysis. If multiple numbers (separated with "," ) are provided it will automatically turned them into a list'
             )
+
             input_procno = st.number_input(
                 label="Enter Procno",
                 key="input_procno",  
@@ -144,9 +149,10 @@ with st.form('Inputs/Outputs'):
             )
         
         if session.widget_space["analysis_type"] in ['txt data']:
-            uploaded_file = st.file_uploader("Load a txt file containing data.")
+            txt_data = st.file_uploader("Load a txt file containing data.")
+            print(txt_data)
+            session.object_space["txt_data"] = txt_data
             
-            st.write()
 
     with st.container():
         st.write("### Outputs")
@@ -173,19 +179,18 @@ with st.form('Inputs/Outputs'):
     
 
 if load_spectrum:
-
     # get input & output fields
     options = {
         "analysis_type": analysis_type,
         "input_exp_data_path": input_exp_data_path if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
         "input_exp_data_folder": input_exp_data_folder if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
-        "input_expno": int(input_expno) if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
+        "input_expno": input_expno if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
         "input_procno": int(input_procno) if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
         "output_res_path": output_res_path,
         "output_res_folder": output_res_folder,
-        "output_filename": output_filename
+        "output_filename": output_filename,
+        "txt_data":txt_data if analysis_type in ['txt data'] else None
     }
-
     # save as defaults for next run
     save_defaults(options)
 
@@ -202,7 +207,8 @@ if load_spectrum:
                 "procno": str(options["input_procno"]),
                 "output_res_path": output_res_path,
                 "output_res_folder": output_res_folder,
-                "output_filename": output_filename
+                "output_filename": output_filename,
+                "txt_data":str(options["txt_data"]),
                 }
         # initialize process
         process = Process(dataset)
@@ -218,7 +224,6 @@ if load_spectrum:
     
     # save as pickle file
     #process.save_process_to_file()
-
 
 if session.object_space["process"] is not None:
     # show message

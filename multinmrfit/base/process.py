@@ -44,6 +44,7 @@ class Process(object):
         self.expno = dataset["expno"]
         self.procno = dataset["procno"]
         self.ppm = None
+        self.txt_data = dataset["txt_data"]
 
         # outputs
         self.output_res_path = dataset["output_res_path"]
@@ -55,12 +56,6 @@ class Process(object):
         self.results = {}
         self.consolidated_results = None
 
-        # get dimensions
-        self.exp_dim = self.get_dim()
-
-        # get list of spectra
-        self.spectra_list = list(range(1, self.exp_dim[0]+1))
-        
         # load spectrum
         # match self.analysis_type:
         #     case "pseudo2D":
@@ -81,6 +76,12 @@ class Process(object):
             self.ppm_full, self.data_full = self.load_txt_spectrum()
         else:
             raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
+
+        # get dimensions
+        self.exp_dim = self.get_dim()
+
+        # get list of spectra
+        self.spectra_list = list(range(1, self.exp_dim[0]+1))
 
         # set default window (full spectrum)
         window = (min(self.ppm_full), max(self.ppm_full))
@@ -160,10 +161,38 @@ class Process(object):
             self.current_spectrum = copy.deepcopy(self.results[rowno][region])
 
     def load_1D_spectrum(self):
-        raise ValueError("Not implemented yet.")
+        print('###')
+        expno_list = self.expno.split(",")
+        for exp in expno_list:
+            print(exp)
+
+            # get complete data path
+            full_path = Path(self.data_path, self.dataset, exp, 'pdata', self.procno)
+        
+            # read processed data
+            try:
+                dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
+
+                # extract ppm and intensities
+                udic = ng.bruker.guess_udic(dic, data)
+                uc_F = ng.fileiobase.uc_from_udic(udic, 0)
+                ppm = pd.Series(uc_F.ppm_scale())
+
+            except Exception as e:
+                raise ValueError("An unknown error has occurred when opening spectrum: '{}'.".format(e))
+            print(ppm)
+            
+        # raise ValueError("Not implemented yet.")
 
     def load_txt_spectrum(self):
-        raise ValueError("Not implemented yet.")
+        txt_data = pd.read_csv(self.txt_data,sep='\t')
+        try:
+            ppm = pd.Series(txt_data.ppm)
+            data = txt_data.loc[:, txt_data.columns != 'ppm']
+        except Exception as e:
+            raise ValueError("Provide a column entitled ppm in your text file")
+
+        return ppm, data
 
     def load_2D_spectrum(self):
         """Load 2D NMR spectra.
@@ -172,8 +201,8 @@ class Process(object):
             list: chemical shift
             list: intensity
         """
-
         # get complete data path
+
         full_path = Path(self.data_path, self.dataset, self.expno, 'pdata', self.procno)
         
         # read processed data
@@ -197,18 +226,9 @@ class Process(object):
             tuple: dimensions of the spectrum (colno, rowno)
         """
 
-        _, data = self.read_topspin_data(self.data_path, self.dataset, self.expno, self.procno)
+        #_, data = self.read_topspin_data(self.data_path, self.dataset, self.expno, self.procno)
 
-        return data.shape
-
-
-    def get_ppm_limits(self):
-        """Estimate the ppm limits in the experiment (minimum of ppm scale, maximim of ppm scale).
-        """
-
-        ppm, _ = self.read_topspin_data(self.data_path, self.dataset, self.expno, self.procno)
-        self.ppm_limits = (min(ppm), max(ppm))
-
+        return self.data_full.shape
 
     def model_cluster_assignment(self):
         """Estimate the number of peaks per model
