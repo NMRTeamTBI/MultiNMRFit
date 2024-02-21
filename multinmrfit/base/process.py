@@ -161,7 +161,8 @@ class Process(object):
             self.current_spectrum = copy.deepcopy(self.results[rowno][region])
 
     def load_1D_spectrum(self):
-        print('###')
+        ppm_all = []
+        data_all = []
         expno_list = self.expno.split(",")
         for exp in expno_list:
             print(exp)
@@ -176,13 +177,20 @@ class Process(object):
                 # extract ppm and intensities
                 udic = ng.bruker.guess_udic(dic, data)
                 uc_F = ng.fileiobase.uc_from_udic(udic, 0)
-                ppm = pd.Series(uc_F.ppm_scale())
-
+                # ppm = pd.Series(uc_F.ppm_scale())
+                ppm = uc_F.ppm_scale()
+                ppm_all.append(ppm)
+                data_all.append([data])
             except Exception as e:
                 raise ValueError("An unknown error has occurred when opening spectrum: '{}'.".format(e))
-            print(ppm)
-            
-        # raise ValueError("Not implemented yet.")
+        
+        if (ppm_all == ppm_all[0]).all():
+            ppm = pd.Series(ppm_all[0])
+        else:
+            raise ValueError("If loading a series of 1Ds ppm scales must be identical")
+
+        data = np.array(data_all)
+        return ppm, data
 
     def load_txt_spectrum(self):
         txt_data = pd.read_csv(self.txt_data,sep='\t')
@@ -215,6 +223,9 @@ class Process(object):
             ppm = pd.Series(uc_F.ppm_scale())
         except Exception as e:
             raise ValueError("An unknown error has occurred when opening spectrum: '{}'.".format(e))
+
+        print(data)
+        print(data.shape)
 
         return ppm, data
 

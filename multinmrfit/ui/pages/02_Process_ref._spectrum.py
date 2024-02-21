@@ -157,7 +157,7 @@ else:
                 # Takes care of overlaping clusters
                 cID_list = []
                 clean_cID = list(filter(None, edited_peak_table.cID.values.tolist()))
-                
+                print(clean_cID )
                 for i in range(len(clean_cID)):
                     cID = clean_cID[i].split(',')
                     if len(cID) == 1:
