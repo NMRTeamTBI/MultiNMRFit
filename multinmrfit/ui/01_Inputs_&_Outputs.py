@@ -237,4 +237,3 @@ if load_spectrum:
 if session.object_space["process"] is not None:
     # show message
     st.success("Dataset loaded successfully.")
-
