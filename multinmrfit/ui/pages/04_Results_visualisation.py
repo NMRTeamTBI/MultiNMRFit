@@ -11,8 +11,10 @@ st.title("Results visualization")
 
 process = session.get_object(key="process")
 
-
-
+def update_checkbox(widget):
+    session.register_widgets({widget: not session.widget_space[widget]})
+    
+    
 if process is None:
 
     st.warning("No results to display, please process some spectra first.")
@@ -52,9 +54,9 @@ else:
                         options=regions,
                         )
 
-            show_ini = st.checkbox('Show spectrum for initial values', value=session.widget_space["show_ini"], key="show_ini")
-            show_ind_signals = st.checkbox('Show individual signals', value=session.widget_space["show_ind_signals"], key="show_ind_signals")
-
+            show_ini = st.checkbox('Show spectrum for initial values', value=session.widget_space["show_ini"], key="show_ini", on_change=update_checkbox, args=["show_ini"])
+            show_ind_signals = st.checkbox('Show individual signals', value=session.widget_space["show_ind_signals"], key="show_ind_signals", on_change=update_checkbox, args=["show_ind_signals"])
+            
             fig = process.results[spectrum][region].plot(ini=True, fit=True, colored_area=True)
             fig.update_layout(autosize=False, width=800, height=600)
             fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15))
@@ -63,11 +65,6 @@ else:
             if not show_ind_signals:
                 fig.for_each_trace(lambda trace: trace.update(visible="legendonly") if "signal" in trace.name else ())
             st.plotly_chart(fig)
-
-            session.register_widgets({
-                "show_ini": show_ini,
-                "show_ind_signals": show_ind_signals
-            })
 
             with st.container():
                 st.write("### Parameters")
@@ -110,6 +107,7 @@ else:
 
             y_zero = st.checkbox('Set y axis to zero', value=True, key="zero")
             fig = process.plot(signal, parameter)
+            fig.update_layout(xaxis_title="spectrum")
             if y_zero:
                 fig.update_yaxes(rangemode="tozero")
             st.plotly_chart(fig)

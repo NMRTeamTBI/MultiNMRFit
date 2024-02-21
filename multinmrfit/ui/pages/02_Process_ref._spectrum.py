@@ -41,11 +41,9 @@ else:
 
     with col2:
         cur_lim = str(round(session.widget_space["spectrum_limit_min"], 2)) + " | " + str(round(session.widget_space["spectrum_limit_max"], 2))
-        regs = ["Add new region"] + process.regions(process.current_spectrum.rowno)
-        if cur_lim in regs:
-            idx = regs.index(cur_lim)
-        else:
-            idx = 0
+        regs = ["Add new region"] + process.regions(reference_spectrum)
+        idx = regs.index(cur_lim) if cur_lim in regs else 0
+
         region = st.selectbox(
                 label="Select region to (re)process",
                 key="regions",
@@ -53,49 +51,46 @@ else:
                 index=idx,
                 help="Select the region"
                 )
-        #process.regions.index()
-    _, _, col3, col4 = st.columns(4)
+    
+    if region != "Add new region":
+        _, _, col3, col4 = st.columns(4)
 
-    with col3:
-        exist = process.results.get(reference_spectrum, {}).get(region, False)
-        if exist:
-            delete = st.button("Delete in current spectrum", on_click=process.delete_region, args=[reference_spectrum, region])
+        with col3:
+            exist = process.results.get(reference_spectrum, {}).get(region, False)
+            if exist:
+                delete = st.button("Delete in current spectrum", on_click=process.delete_region, args=[reference_spectrum, region])
 
-    with col4:
-        exist = process.results.get(reference_spectrum, {}).get(region, False)
-        if exist:
-            delete = st.button("Delete in all spectra", on_click=process.delete_region, args=[None, region])
+        with col4:
+            exist = process.results.get(reference_spectrum, {}).get(region, False)
+            if exist:
+                delete = st.button("Delete in all spectra", on_click=process.delete_region, args=[None, region])
 
 
     col1, col2 = st.columns(2)
 
+    try:
+        val_min, val_max = process.results[reference_spectrum][region].ppm_limits
+        disabled = True
+    except:
+        val_min = session.widget_space["spectrum_limit_min"]
+        val_max = session.widget_space["spectrum_limit_max"]
+        disabled = False
+
     with col1:
-        try:
-            val = process.results[reference_spectrum][region].ppm_limits[1]
-            disabled = True
-        except:
-            val = session.widget_space["spectrum_limit_max"]
-            disabled = False
         spec_lim_max = st.number_input(
                 label="Spectral limits (max)",
                 key="spectrum_limit_max",
-                value = round(val, 2),
+                value = round(val_max, 2),
                 min_value = round(min(process.ppm_full) + 0.05, 2),
                 max_value = round(max(process.ppm_full), 2),
                 disabled = disabled
                 )
             
     with col2:
-        try:
-            val = process.results[reference_spectrum][region].ppm_limits[0]
-            disabled = True
-        except:
-            val = session.widget_space["spectrum_limit_min"]
-            disabled = False
         spec_lim_min = st.number_input(
                 label="Spectral limits (min)",
                 key="spectrum_limit_min",
-                value = round(val, 2),
+                value = round(val_min, 2),
                 min_value = round(min(process.ppm_full), 2),
                 max_value = round(max(process.ppm_full) - 0.05, 2),
                 disabled = disabled
