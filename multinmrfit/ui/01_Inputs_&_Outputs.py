@@ -152,7 +152,7 @@ with st.form('Inputs/Outputs'):
             txt_data = None
             txt_data_upl = st.file_uploader("Load a tsv file containing data.", type={"csv", "txt", "tsv"})
             if txt_data_upl is not None:
-                txt_data = pd.read_csv(txt_data_upl)            
+                txt_data = pd.read_csv(txt_data_upl, sep="\t")            
             session.object_space["txt_data"] = txt_data
             
 
@@ -182,7 +182,6 @@ with st.form('Inputs/Outputs'):
 
 if load_spectrum:
     # get input & output fields
-    st.write(len(txt_data.columns))
     options = {
         "analysis_type": analysis_type,
         "input_exp_data_path": input_exp_data_path if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
