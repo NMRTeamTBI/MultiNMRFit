@@ -43,7 +43,6 @@ class Process(object):
         self.dataset = dataset["dataset"]
         self.expno = dataset["expno"]
         self.procno = dataset["procno"]
-        self.ppm = None
         self.txt_data = dataset["txt_data"]
 
         # outputs
@@ -55,17 +54,6 @@ class Process(object):
         self.current_spectrum = None
         self.results = {}
         self.consolidated_results = None
-
-        # load spectrum
-        # match self.analysis_type:
-        #     case "pseudo2D":
-        #         self.ppm_full, self.data_full = self.load_2D_spectrum()
-        #     case "list of 1Ds":
-        #         self.ppm_full, self.data_full = self.load_1D_spectrum()
-        #     case "txt data":
-        #         self.ppm_full, self.data_full = self.load_txt_spectrum()
-        #     case _:
-        #         raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
 
         # load spectrum
         if self.analysis_type == "pseudo2D":
