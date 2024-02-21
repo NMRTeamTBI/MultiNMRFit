@@ -214,7 +214,23 @@ class Process(object):
         """
 
         # filtering and removing none assigned rows
-        edited_peak_table = self.current_spectrum.edited_peak_table.replace(r'^\s*$', np.nan, regex=True)
+        edited_peak_table = self.current_spectrum.edited_peak_table
+        # Check if some clusters overlap
+        mask = edited_peak_table['cID'].str.contains(',')
+        # Duplicate rows for overlapping clusters (if any)
+        if sum(mask):
+            edited_peak_table_dup = edited_peak_table[~mask]
+            rows_to_duplicate = edited_peak_table[mask]
+            for i in rows_to_duplicate.index:
+                ci = rows_to_duplicate['cID'][i].split(",")
+                for j in ci:
+                    tmp_row = rows_to_duplicate.loc[[i]]
+                    tmp_row.loc[i, "cID"] = j
+                    edited_peak_table_dup = pd.concat([edited_peak_table_dup, tmp_row])
+            edited_peak_table = edited_peak_table_dup
+                
+
+        edited_peak_table = edited_peak_table.replace(r'^\s*$', np.nan, regex=True)
         edited_peak_table.dropna(axis=0, inplace=True)
 
         model_list = self.get_models_peak_number()
@@ -231,6 +247,8 @@ class Process(object):
         clusters_and_models = {}
         for c in range(len(n_cID)):    
             clusters_and_models[cluster_names[c]] = {'n':int(n_cID.iloc[c]), 'models':list(d[int(n_cID.iloc[c])])}
+        
+        self.current_spectrum._edited_peak_table = edited_peak_table
         
         return clusters_and_models
         
@@ -249,7 +267,7 @@ class Process(object):
         # create signals
         for key in cluster_dict:
             model = self.models[cluster_dict[key]['model']]()
-            filtered_peak_table = self.current_spectrum.edited_peak_table[self.current_spectrum.edited_peak_table.cID==key]
+            filtered_peak_table = self.current_spectrum._edited_peak_table[self.current_spectrum._edited_peak_table.cID==key]
             signals[key] = model.pplist2signal(filtered_peak_table)
 
         self.signals = signals
@@ -450,13 +468,15 @@ class Process(object):
 
         # shift upper bound
         upper_bounds = params["opt"] + interval
-        mask = params['par'].isin(["gl"]) & (upper_bounds > 1.0)
+        mask = params['par'].isin(["gl"])
         upper_bounds[mask] = 1.0
         params["ub"] = upper_bounds
         
         # shift lower bound (with some fixed at zero)
         lower_bounds = params["opt"] - interval
-        mask = params['par'].isin(["gl",'lw']) & (lower_bounds < 0.0)
+        mask = params['par'].isin(['lw']) & (lower_bounds < 0.0)
+        lower_bounds[mask] = 0
+        mask = params['par'].isin(['gl'])
         lower_bounds[mask] = 0
         #mask = params['par'].isin(["lw"]) & (lower_bounds < 0.0)
         #lower_bounds[mask] = 0

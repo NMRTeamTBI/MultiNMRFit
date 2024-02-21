@@ -154,25 +154,8 @@ else:
 
             if create_models:
 
-                # Check if some clusters overlap
-                mask = edited_peak_table['cID'].str.contains(',')
-                # Duplicate rows for overlapping clusters (if any)
-                if sum(mask):
-                    tmp_neg = edited_peak_table[~mask]
-                    tmp_pos = edited_peak_table[mask]
-                    for i in tmp_pos.index:
-                        ci = tmp_pos['cID'][i].split(",")
-                        for j in ci:
-                            tmp_row = tmp_pos.loc[[i]]
-                            tmp_row.loc[i, "cID"] = j
-                            tmp_neg = pd.concat([tmp_neg, tmp_row])
-                    edited_peak_table = tmp_neg
-                
-                clusters = set(list(filter(None, edited_peak_table.cID.values.tolist())))
-
-                if len(clusters):
-                    process.current_spectrum.edited_peak_table = edited_peak_table
-                    process.current_spectrum.user_models = {}
+                process.current_spectrum.edited_peak_table = edited_peak_table
+                process.current_spectrum.user_models = {}
 
 
     with st.form("create model"):
@@ -275,7 +258,7 @@ else:
 
     if process.current_spectrum.fit_results is not None:
 
-        txt = "Save current region"
+        txt = "Add current region"
         if process.current_spectrum.rowno in process.results.keys():
             if process.current_spectrum.region in process.results[process.current_spectrum.rowno].keys():
                 txt = "Update current region"
