@@ -54,8 +54,12 @@ else:
                         options=regions,
                         )
 
-            show_ini = st.checkbox('Show spectrum for initial values', value=session.widget_space["show_ini"], key="show_ini", on_change=update_checkbox, args=["show_ini"])
-            show_ind_signals = st.checkbox('Show individual signals', value=session.widget_space["show_ind_signals"], key="show_ind_signals", on_change=update_checkbox, args=["show_ind_signals"])
+            col1, col2 = st.columns(2)
+
+            with col1:
+                show_ini = st.checkbox('Show spectrum for initial values', value=session.widget_space["show_ini"], key="show_ini", on_change=update_checkbox, args=["show_ini"])
+            with col2:
+                show_ind_signals = st.checkbox('Show individual signals', value=session.widget_space["show_ind_signals"], key="show_ind_signals", on_change=update_checkbox, args=["show_ind_signals"])
             
             fig = process.results[spectrum][region].plot(ini=True, fit=True, colored_area=True)
             fig.update_layout(autosize=False, width=800, height=600)
@@ -84,26 +88,31 @@ else:
             st.write("### Plot")
 
             # signal selection to visualize
-            #st.write(process.consolidated_results)
-            signal_list = list(process.consolidated_results.signal_id.unique())        
-            signal = st.selectbox(
-                        label="Select signal",
-                        key="signal_to_show",
-                        options = signal_list,
-                        index=0,
-                        help="Select the signal id to show as function of index"
-            )
+            col1, col2 = st.columns(2)
+
+            with col1:
+            
+                signal_list = list(process.consolidated_results.signal_id.unique())        
+                signal = st.selectbox(
+                            label="Select signal",
+                            key="signal_to_show",
+                            options = signal_list,
+                            index=0,
+                            help="Select the signal id to show as function of index"
+                )
 
             # parameter selection to visualize
-            parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
+            with col2:
 
-            parameter = st.selectbox(
-                        label="Select parameter",
-                        key="parameter_to_show",
-                        options=parameter_list,
-                        index=0,
-                        help="Select the parameter to show as function of index"
-            )
+                parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
+
+                parameter = st.selectbox(
+                            label="Select parameter",
+                            key="parameter_to_show",
+                            options=parameter_list,
+                            index=0,
+                            help="Select the parameter to show as function of index"
+                )
 
             y_zero = st.checkbox('Set y axis to zero', value=True, key="zero")
             fig = process.plot(signal, parameter)
@@ -143,7 +152,7 @@ else:
                     parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
 
                     parameter = st.selectbox(
-                                label="Select parameter",
+                                label="Parameter",
                                 key="parameter_to_save",
                                 options=parameter_list,
                                 index=0,
@@ -151,7 +160,7 @@ else:
                             )   
                     
                     filename = st.text_input(
-                                label="Enter filename",
+                                label="Filename",
                                 )
                 else:
                     st.warning("Selection error")

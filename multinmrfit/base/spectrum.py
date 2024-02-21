@@ -58,6 +58,7 @@ class Spectrum(object):
         self.peakpicking_threshold = None
         self.from_ref = from_ref
         self.edited_peak_table = None
+        self._edited_peak_table = None
         self.user_models = None
         self.signals = None
 
