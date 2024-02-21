@@ -543,7 +543,7 @@ class Process(object):
                         0
                     ]
                     consolidated_results.append(tmp)
-        self.consolidated_results = pd.DataFrame(consolidated_results,columns = ['rowno','signal_id','region','model','par','opt','opt_sd'])
+        self.consolidated_results = pd.DataFrame(consolidated_results,columns = ['rowno','region','signal_id','model','par','opt','opt_sd'])
 
     def select_params(self,signal,parameter):
         selected_params = self.consolidated_results[(self.consolidated_results.signal_id==signal)&(self.consolidated_results.par==parameter)]

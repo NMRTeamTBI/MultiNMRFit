@@ -83,79 +83,80 @@ else:
             # consolidate the results 
             process.consolidate_results()
 
-        # with st.container():
-        #     st.write("### Parameter Plot")
+        with st.container():
+            st.write("### Parameter Plot")
 
-        #     # signal selection to visualize
-        #     signal_list = list(process.consolidated_results.signal_id.unique())        
-        #     signal = st.selectbox(
-        #                 label="Select signal",
-        #                 key="signal_to_show",
-        #                 options = signal_list,
-        #                 index=0,
-        #                 help="Select the signal id to show as function of index"
-        #     )
+            # signal selection to visualize
+            st.write(process.consolidated_results)
+            signal_list = list(process.consolidated_results.signal_id.unique())        
+            signal = st.selectbox(
+                        label="Select signal",
+                        key="signal_to_show",
+                        options = signal_list,
+                        index=0,
+                        help="Select the signal id to show as function of index"
+            )
 
-        #     # parameter selection to visualize
-        #     parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
+            # parameter selection to visualize
+            parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
 
-        #     parameter = st.selectbox(
-        #                 label="Select parameter",
-        #                 key="parameter_to_show",
-        #                 options=parameter_list,
-        #                 index=0,
-        #                 help="Select the parameter to show as function of index"
-        #     )
+            parameter = st.selectbox(
+                        label="Select parameter",
+                        key="parameter_to_show",
+                        options=parameter_list,
+                        index=0,
+                        help="Select the parameter to show as function of index"
+            )
 
-        #     fig = process.plot(signal,parameter)
-        #     st.plotly_chart(fig)
+            fig = process.plot(signal,parameter)
+            st.plotly_chart(fig)
 
-        # with st.container():
-        #     st.write("### Export")
-        #     save_complete_txt = st.checkbox('Save all data to text file')
+        with st.container():
+            st.write("### Export")
+            save_complete_txt = st.checkbox('Save all data to text file')
 
-        #     if save_complete_txt:
-        #             filename = st.text_input(
-        #                     label="Enter specific filename",
-        #                     value=process.filename
-        #                     )
+            if save_complete_txt:
+                    filename = st.text_input(
+                            label="Enter specific filename",
+                            value=process.filename
+                            )
 
-        #     save_partial_txt = st.checkbox(
-        #         'Save partial data to text file',
-        #         disabled = True if save_complete_txt else False)
+            save_partial_txt = st.checkbox(
+                'Save partial data to text file',
+                disabled = True if save_complete_txt else False)
 
-        #     if save_partial_txt:
-        #         signal = st.selectbox(
-        #             label="Select signal",
-        #             key="signal_to_save",
-        #             options = signal_list,
-        #             index=0,
-        #             help="Select the signal id to save"
+            if save_partial_txt:
+                signal = st.selectbox(
+                    label="Select signal",
+                    key="signal_to_save",
+                    options = signal_list,
+                    index=0,
+                    help="Select the signal id to save"
                     
-        #             )
+                    )
 
-        #         # parameter selection to save
-        #         parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
+                # parameter selection to save
+                parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
 
-        #         parameter = st.selectbox(
-        #                     label="Select parameter",
-        #                     key="parameter_to_save",
-        #                     options=parameter_list,
-        #                     index=0,
-        #                     help="Select the parameter to save"
-        #                 )   
+                parameter = st.selectbox(
+                            label="Select parameter",
+                            key="parameter_to_save",
+                            options=parameter_list,
+                            index=0,
+                            help="Select the parameter to save"
+                        )   
                 
-        #         filename = st.text_input(
-        #                     label="Enter specific filename",
-        #                     )
+                filename = st.text_input(
+                            label="Enter specific filename",
+                            )
                 
-        #     save_button = st.button('Save')
+            save_button = st.button('Save')
 
-        #     if save_button:
-        #         if save_complete_txt:
-        #             process.save_consolidated_results()
-        #         if save_partial_txt:
-        #             process.save_consolidated_results(data=process.select_params(signal,parameter),partial_filename=filename)
-        #         st.info(f"Results text files have been saved")
+            if save_button:
+                if save_complete_txt:
+                    process.save_consolidated_results()
+                if save_partial_txt:
+                    process.save_consolidated_results(data=process.select_params(signal,parameter),partial_filename=filename)
+                st.info(f"Results text files have been saved")
     else:
         st.warning("No results to display, please process some spectra first.")
