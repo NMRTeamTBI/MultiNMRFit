@@ -227,7 +227,9 @@ if load_spectrum:
     
     # save as pickle file
     #process.save_process_to_file()
-
+        
+    
 if session.object_space["process"] is not None:
     # show message
     st.success("Dataset loaded successfully.")
+
