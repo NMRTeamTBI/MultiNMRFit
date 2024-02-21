@@ -93,9 +93,16 @@ class Process(object):
             raise ValueError("Directory '{}' does not exist.".format(full_path))
 
     def delete_region(self, rowno, region):
-        del self.results[rowno][region]
-        if not len(self.results[rowno]):
-            del self.results[rowno]
+        if rowno is None:
+            tmp = list(self.results.keys())
+            for s in tmp:
+                del self.results[s][region]
+                if not len(self.results[s]):
+                    del self.results[s]
+        else:
+            del self.results[rowno][region]
+            if not len(self.results[rowno]):
+                del self.results[rowno]
 
     def update_pp_threshold(self, pp_threshold):
         """Update peak picking threshold, and detect peaks.
