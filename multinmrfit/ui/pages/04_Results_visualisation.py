@@ -38,14 +38,19 @@ else:
                             )
             
             regions = list(process.results[spectrum].keys())
+            idx = regions.index(session.widget_space["region_plot"]) if session.widget_space["region_plot"] in regions else 0
 
             with col2:
                 region = st.selectbox(
                         label="Select region",
                         key="region_plot",
                         options=regions,
+                        index=idx
                         )
-
+                session.register_widgets({
+                        "region_plot": region
+                    })
+    
             col1, col2 = st.columns(2)
 
             with col1:

@@ -222,6 +222,7 @@ if load_spectrum:
             process = Process(dataset)
             # save in session state
             session.object_space["process"] = process
+
         else:
             # get process
             process = session.object_space["process"]
@@ -229,7 +230,12 @@ if load_spectrum:
             process.output_res_path = output_res_path
             process.output_res_folder = output_res_folder
             process.filename = output_filename
-        
+            
+        session.set_widget_defaults(
+                spectrum_limit_min = round(min(process.ppm_full), 2),
+                spectrum_limit_max = round(max(process.ppm_full), 2)
+                )
+
     
 if session.object_space["process"] is not None:
     # show message

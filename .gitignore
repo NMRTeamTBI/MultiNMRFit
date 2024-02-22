@@ -12,3 +12,4 @@ __pycache__/
 /multinmrfit/ui/filename.pkl
 /multinmrfit/ui/conf/default_conf.pickle
 /multinmrfit/ui/conf/default_conf.pickle
+multinmrfit/ui/conf/default_conf.pickle

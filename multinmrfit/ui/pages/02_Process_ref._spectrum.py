@@ -23,8 +23,8 @@ else:
     # set default parameters
     session.set_widget_defaults(
         reference_spectrum = process.current_spectrum.rowno,
-        spectrum_limit_min = round(max([process.current_spectrum.ppm_limits[0], process.ppm_full[0]]), 2),
-        spectrum_limit_max = round(min([process.current_spectrum.ppm_limits[1], process.ppm_full[len(process.ppm_full)-1]]), 2)
+        spectrum_limit_min = round(max([process.current_spectrum.ppm_limits[0], min(process.ppm_full)]), 2),
+        spectrum_limit_max = round(min([process.current_spectrum.ppm_limits[1], max(process.ppm_full)]), 2)
     )
 
     # add widgets
@@ -72,8 +72,8 @@ else:
         val_min, val_max = process.results[reference_spectrum][region].ppm_limits
         disabled = True
     except:
-        val_min = max(session.widget_space["spectrum_limit_min"], process.current_spectrum.ppm_limits[0])
-        val_max = min(session.widget_space["spectrum_limit_max"], process.current_spectrum.ppm_limits[1])
+        val_min = round(process.current_spectrum.ppm_limits[0],2)
+        val_max = round(process.current_spectrum.ppm_limits[1],2)
         disabled = False
     
     with col1:
