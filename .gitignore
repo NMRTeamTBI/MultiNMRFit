@@ -7,8 +7,8 @@ __pycache__/
 .idea/
 /.idea/
 /.idea/*
-example/.ipynb_checkpoints/
-example/.ipynb_checkpoints/*
-multinmrfit/ui/filename.pkl
-multinmrfit/ui/conf/default_conf.pickle
-multinmrfit/ui/conf/default_conf.pickle
+/example/.ipynb_checkpoints/
+/example/.ipynb_checkpoints/*
+/multinmrfit/ui/filename.pkl
+/multinmrfit/ui/conf/default_conf.pickle
+/multinmrfit/ui/conf/default_conf.pickle
