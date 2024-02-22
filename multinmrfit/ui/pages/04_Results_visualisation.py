@@ -101,13 +101,13 @@ else:
             # parameter selection to visualize
             with col2:
 
-                parameter_list = process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique()
+                parameter_list = list(process.consolidated_results[process.consolidated_results.signal_id==signal].par.unique())
 
                 parameter = st.selectbox(
                             label="Select parameter",
                             key="parameter_to_show",
                             options=parameter_list,
-                            index=0,
+                            index=parameter_list.index("integral"),
                             help="Select the parameter to show as function of index"
                 )
 
