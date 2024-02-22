@@ -441,6 +441,8 @@ class Process(object):
         upper_bounds = params["opt"] + interval
         mask = params['par'].isin(["gl"])
         upper_bounds[mask] = 1.0
+        mask = params['par'].isin(["intensity"])
+        upper_bounds[mask] *= 10
         params["ub"] = upper_bounds
         
         # shift lower bound (with some fixed at zero)
