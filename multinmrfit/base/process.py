@@ -133,7 +133,7 @@ class Process(object):
         if self.results.get(rowno,{}).get(region, None) is None:
 
             # extract reference spectrum
-            tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[self.names.index(rowno)-1])], axis=1)
+            tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[self.names.index(rowno),:])], axis=1)
             tmp_data.columns = ["ppm", "intensity"]
 
             # create spectrum
@@ -464,7 +464,7 @@ class Process(object):
         """
 
         # create spectrum
-        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[self.names.index(rowno)-1])], axis=1)
+        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[self.names.index(rowno)-1,:])], axis=1)
         tmp_data.columns = ["ppm", "intensity"]
         sp = spectrum.Spectrum(data=tmp_data, window=self.results[ref][region].window, from_ref=ref)
 
