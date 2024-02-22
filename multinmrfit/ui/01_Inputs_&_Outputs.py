@@ -104,12 +104,14 @@ if session.object_space["loaded_file"] is not None:
     st.warning("Warning: Remember to update paths below, otherwise the process file and the processing results will be silently overwritten.")
 
 with st.container():
-    st.write("### Analysis type")
+    st.write("### Type of data to process")
     disabled = False if session.object_space['process'] is None else True
+    l_at = ['pseudo2D','list of 1Ds','txt data']
     analysis_type = st.selectbox(
-            label='Select type of analysis',
+            label='Select data type',
             key = 'analysis_type',
-            options = ['pseudo2D','list of 1Ds','txt data'],
+            options = l_at,
+            index = l_at.index(session.object_space["process"].analysis_type) if session.object_space["process"] is not None else 0,
             disabled=disabled
             )
     session.register_widgets({"analysis_type": analysis_type})
@@ -149,12 +151,15 @@ with st.form('Inputs/Outputs'):
             )
         
         if analysis_type == 'txt data':
-            txt_data = None
-            txt_data_upl = st.file_uploader("Load a tsv file containing data.", type={"csv", "txt", "tsv"})
-            if txt_data_upl is not None:
-                txt_data = pd.read_csv(txt_data_upl, sep="\t")            
-            session.object_space["txt_data"] = txt_data
-            
+            if disabled:
+                st.write("File already loaded in current process.")
+            else:
+                txt_data = None
+                txt_data_upl = st.file_uploader("Load a tsv file containing data.", type={"csv", "txt", "tsv"})
+                if txt_data_upl is not None:
+                    txt_data = pd.read_csv(txt_data_upl, sep="\t")
+                session.object_space["txt_data"] = txt_data
+           
 
     with st.container():
         st.write("### Outputs")
@@ -182,50 +187,57 @@ with st.form('Inputs/Outputs'):
 
 if load_spectrum:
     # get input & output fields
+    error = False
     options = {
         "analysis_type": analysis_type,
-        "input_exp_data_path": input_exp_data_path if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
-        "input_exp_data_folder": input_exp_data_folder if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
-        "input_expno": input_expno if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
-        "input_procno": int(input_procno) if analysis_type in ['pseudo2D','list of 1Ds'] else None, 
         "output_res_path": output_res_path,
         "output_res_folder": output_res_folder,
         "output_filename": output_filename,
         "txt_data": txt_data if analysis_type == 'txt data' else None
     }
-    # save as defaults for next run
-    save_defaults(options)
-
-    # update inputs & outputs
-    session.register_widgets(options)
-
-    if session.object_space["process"] is None:
-        # get dataset
-        dataset = {
-                "analysis_type": str(options["analysis_type"]),
-                "data_path": str(options["input_exp_data_path"]),
-                "dataset": str(options["input_exp_data_folder"]),
-                "expno": str(options["input_expno"]),
-                "procno": str(options["input_procno"]),
-                "output_res_path": output_res_path,
-                "output_res_folder": output_res_folder,
-                "output_filename": output_filename,
-                "txt_data":options["txt_data"],
-                }
-        # initialize process
-        process = Process(dataset)
-        # save in session state
-        session.object_space["process"] = process
+    if analysis_type in ['pseudo2D','list of 1Ds']:
+        options.update({
+            "input_exp_data_path": input_exp_data_path, 
+            "input_exp_data_folder": input_exp_data_folder, 
+            "input_expno": input_expno, 
+            "input_procno": int(input_procno)
+        })
     else:
-        # get process
-        process = session.object_space["process"]
-        # update process
-        process.output_res_path = output_res_path
-        process.output_res_folder = output_res_folder
-        process.filename = output_filename
-    
-    # save as pickle file
-    #process.save_process_to_file()
+        if txt_data is None:
+            st.error("Please select a data file")
+            error = True
+ 
+    if not error:
+        # save as defaults for next run
+        save_defaults(options)
+
+        # update inputs & outputs
+        session.register_widgets(options)
+
+        if session.object_space["process"] is None:
+            # get dataset
+            dataset = {
+                    "analysis_type": str(options["analysis_type"]),
+                    "data_path": str(options["input_exp_data_path"]) if analysis_type in ['pseudo2D','list of 1Ds'] else None,
+                    "dataset": str(options["input_exp_data_folder"]) if analysis_type in ['pseudo2D','list of 1Ds'] else None,
+                    "expno": str(options["input_expno"]) if analysis_type in ['pseudo2D','list of 1Ds'] else None,
+                    "procno": str(options["input_procno"]) if analysis_type in ['pseudo2D','list of 1Ds'] else None,
+                    "output_res_path": output_res_path,
+                    "output_res_folder": output_res_folder,
+                    "output_filename": output_filename,
+                    "txt_data":options["txt_data"],
+                    }
+            # initialize process
+            process = Process(dataset)
+            # save in session state
+            session.object_space["process"] = process
+        else:
+            # get process
+            process = session.object_space["process"]
+            # update process
+            process.output_res_path = output_res_path
+            process.output_res_folder = output_res_folder
+            process.filename = output_filename
         
     
 if session.object_space["process"] is not None:

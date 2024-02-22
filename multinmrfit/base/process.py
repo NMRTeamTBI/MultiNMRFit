@@ -185,8 +185,8 @@ class Process(object):
         if "ppm" not in self.txt_data.columns:
             raise ValueError("Column 'ppm' missing")
         ppm = self.txt_data.ppm.values.tolist()
-        data = np.array(self.txt_data.loc[:, self.txt_data.columns != 'ppm']).T
-        
+        data = np.array(self.txt_data.loc[:, self.txt_data.columns != 'ppm']).transpose()
+
         return ppm, data
 
     def load_2D_spectrum(self):
