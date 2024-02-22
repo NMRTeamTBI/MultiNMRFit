@@ -151,12 +151,12 @@ class Process(object):
     def load_1D_spectrum(self):
         ppm_all = []
         data_all = []
-        expno_list = self.expno.split(",")
+        expno_list = self.build_list(self.expno)
 
         for exp in expno_list:
 
             # get complete data path
-            full_path = Path(self.data_path, self.dataset, exp, 'pdata', self.procno)
+            full_path = Path(self.data_path, self.dataset, str(exp), 'pdata', self.procno)
         
             # read processed data
             try:
@@ -165,21 +165,18 @@ class Process(object):
                 # extract ppm and intensities
                 udic = ng.bruker.guess_udic(dic, data)
                 uc_F = ng.fileiobase.uc_from_udic(udic, 0)
-                # ppm = pd.Series(uc_F.ppm_scale())
                 ppm = uc_F.ppm_scale()
                 ppm_all.append(ppm)
                 data_all.append([data][0])
             except Exception as e:
                 raise ValueError("An unknown error has occurred when opening spectrum: '{}'.".format(e))
         
-        if (ppm_all == ppm_all[0]).all():
-            ppm = pd.Series(ppm_all[0])
-        else:
-            raise ValueError("If loading a series of 1Ds ppm scales must be identical")
+        try:
+            data = np.array(data_all)
+        except:
+            raise ValueError("All spectra do not have the same length.")
 
-        data = np.array(data_all)
-
-        return ppm, data, expno_list
+        return ppm_all[0], data, expno_list
 
     def load_txt_spectrum(self):
         if "ppm" not in self.txt_data.columns:
@@ -338,17 +335,8 @@ class Process(object):
             self.results[spectrum][region].update_params(pars)
             self.results[spectrum][region].update_offset(offset)
     
-
-    def build_spectra_list(self, user_input, ref, region, reprocess=True):
-        """Build list of spectra.
-
-        Args:
-            user_input (str): string to parse.
-
-        Returns:
-            list: list of spectra
-        """
-
+    @staticmethod
+    def build_list(user_input):
         # check for allowed characters
         allowed = set(string.digits + ',' + '-')
         if not set(user_input) <= allowed:
@@ -368,6 +356,19 @@ class Process(object):
                     experiment_list.append(int(i))
         except:
             return []
+        return experiment_list
+
+
+    def build_spectra_list(self, user_input, ref, region, reprocess=True):
+        """Build list of spectra.
+
+        Args:
+            user_input (str): string to parse.
+
+        Returns:
+            list: list of spectra
+        """
+        experiment_list = self.build_list(user_input)
         
         experiment_list = [i for i in experiment_list if i in self.names]
         exclude = [ref] if reprocess else [k for k in self.results.keys() if region in list(self.results[k].keys())] + [ref]
