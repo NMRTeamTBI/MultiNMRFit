@@ -169,7 +169,7 @@ class Process(object):
                 ppm_all.append(ppm)
                 data_all.append([data][0])
             except Exception as e:
-                raise ValueError("An unknown error has occurred when opening spectrum: '{}'.".format(e))
+                raise ValueError("An unknown error has occurred when opening spectrum: '{}'. Please check your inputs.".format(e))
         
         try:
             data = np.array(data_all)
@@ -208,7 +208,7 @@ class Process(object):
             ppm = pd.Series(uc_F.ppm_scale())
             names = list(range(1, data.shape[0]+1))
         except Exception as e:
-            raise ValueError("An unknown error has occurred when opening spectrum: '{}'.".format(e))
+            raise ValueError("An unknown error has occurred when opening spectrum: '{}'. Please check your inputs.".format(e))
 
         return ppm, data, names
 
