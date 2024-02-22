@@ -40,9 +40,5 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             'nmrfit = multinmrfit.ui.__main__:main'
-        ]}#,
-    #    'gui_scripts': [
-    #        'multinmrfit = multinmrfit.run:main'
-    #    ]
-    #}
+        ]}
 )
