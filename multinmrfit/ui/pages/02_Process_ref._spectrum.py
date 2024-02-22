@@ -105,7 +105,7 @@ else:
     # update reference spectrum when widgets' values are changed
     ppm_step = 0.01
     if process.current_spectrum.rowno != reference_spectrum or np.abs(process.current_spectrum.ppm_limits[0]-spec_lim_min) > ppm_step or np.abs(process.current_spectrum.ppm_limits[1]-spec_lim_max) > ppm_step:
-        if (spec_lim_max-spec_lim_min) < 0.1:
+        if (spec_lim_max-spec_lim_min) < 0.025:
             st.error("Error: ppm max must be higher than ppm min.")
             cur_lim = None
         else:  
