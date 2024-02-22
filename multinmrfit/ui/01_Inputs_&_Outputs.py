@@ -43,6 +43,18 @@ def load_defaults():
             txt_data = options["txt_data"]
         )
     except:
+        options = {
+        "analysis_type": 'pseudo2D',
+        "output_res_path": "path/to/output/data",
+        "output_res_folder": 'results_folder',
+        "output_filename": "filename",
+        "txt_data": None,
+        "input_exp_data_path": "path/to/topspin/data/folder/", 
+            "input_exp_data_folder": "dataset_name", 
+            "input_expno": 1, 
+            "input_procno": 1
+        }
+
         session.set_widget_defaults(
             analysis_type = 'pseudo2D',
             input_exp_data_path = "path/to/topspin/data/folder/",
