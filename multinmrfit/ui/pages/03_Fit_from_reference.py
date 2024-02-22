@@ -48,7 +48,7 @@ else:
                     )
             
     # set default parameters
-    spectra_to_process = "-".join([str(process.spectra_list[0]), str(process.spectra_list[-1])])
+    spectra_to_process = "-".join([str(process.names[0]), str(process.names[-1])])
 
 
     spectra_to_process = st.text_input(

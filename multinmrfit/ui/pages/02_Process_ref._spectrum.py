@@ -34,7 +34,7 @@ else:
         reference_spectrum = st.selectbox(
                 label="Select spectrum to process",
                 key="reference_spectrum",
-                options=process.spectra_list,
+                options=process.names,
                 index=0,
                 help="Select the spectrum used as reference for peak detection and clustering"
                 )

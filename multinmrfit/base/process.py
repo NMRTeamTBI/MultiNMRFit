@@ -57,11 +57,11 @@ class Process(object):
 
         # load spectrum
         if self.analysis_type == "pseudo2D":
-            self.ppm_full, self.data_full = self.load_2D_spectrum()
+            self.ppm_full, self.data_full, self.names = self.load_2D_spectrum()
         elif self.analysis_type == "list of 1Ds":
-            self.ppm_full, self.data_full = self.load_1D_spectrum()
+            self.ppm_full, self.data_full, self.names = self.load_1D_spectrum()
         elif self.analysis_type == "txt data":
-            self.ppm_full, self.data_full = self.load_txt_spectrum()
+            self.ppm_full, self.data_full, self.names = self.load_txt_spectrum()
         else:
             raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
 
@@ -75,7 +75,7 @@ class Process(object):
         window = (min(self.ppm_full), max(self.ppm_full))
 
         # create default spectrum
-        self.set_current_spectrum(dataset.get("rowno", 1), window=window)
+        self.set_current_spectrum(dataset.get("rowno", self.names[0]), window=window)
 
     def add_region(self):
         self.results[self.current_spectrum.rowno] = self.results.get(self.current_spectrum.rowno, {})
@@ -133,7 +133,7 @@ class Process(object):
         if self.results.get(rowno,{}).get(region, None) is None:
 
             # extract reference spectrum
-            tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[int(rowno)-1])], axis=1)
+            tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[self.names.index(rowno)-1])], axis=1)
             tmp_data.columns = ["ppm", "intensity"]
 
             # create spectrum
@@ -179,15 +179,16 @@ class Process(object):
 
         data = np.array(data_all)
 
-        return ppm, data
+        return ppm, data, expno_list
 
     def load_txt_spectrum(self):
         if "ppm" not in self.txt_data.columns:
             raise ValueError("Column 'ppm' missing")
         ppm = self.txt_data.ppm.values.tolist()
         data = np.array(self.txt_data.loc[:, self.txt_data.columns != 'ppm']).transpose()
+        names = [int(i) for i in self.txt_data.columns[self.txt_data.columns != 'ppm'].tolist()]
 
-        return ppm, data
+        return ppm, data, names
 
     def load_2D_spectrum(self):
         """Load 2D NMR spectra.
@@ -208,10 +209,11 @@ class Process(object):
             udic = ng.bruker.guess_udic(dic, data)
             uc_F = ng.fileiobase.uc_from_udic(udic, 1)
             ppm = pd.Series(uc_F.ppm_scale())
+            names = list(range(1, data.shape[0]+1))
         except Exception as e:
             raise ValueError("An unknown error has occurred when opening spectrum: '{}'.".format(e))
 
-        return ppm, data
+        return ppm, data, names
 
     def model_cluster_assignment(self):
         """Estimate the number of peaks per model
@@ -290,46 +292,6 @@ class Process(object):
         # fit reference spectrum
         self.current_spectrum.fit()
 
-        # add from_ref attribute
-        #self.current_spectrum.from_ref = None
-
-        # save in results
-        #self.results[self.ref_spectrum_rowno] = self.ref_spectrum
-
-
-    @staticmethod
-    def read_topspin_data(data_path, dataset, expno, procno):
-        """Load 2D NMR spectra.
-
-        Returns:
-            list: chemical shift
-            list: intensity
-        """
-
-        # Cyril's version ####
-        # Complete data path
-        full_path = Path(data_path, dataset, expno, 'pdata', procno)
-        # # get dimension
-        # ndim = 1 if rowno is None else 2
-
-        # # read processed data
-        dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
-
-        n_dim = len(data.shape) 
-
-        if n_dim == 1:       
-            udic = ng.bruker.guess_udic(dic,data)
-            uc_F1 = ng.fileiobase.uc_from_udic(udic, 0)
-            ppm = pd.Series(uc_F1.ppm_scale())
-        elif n_dim == 2:
-            udic = ng.bruker.guess_udic(dic,data)
-            uc_F2 = ng.fileiobase.uc_from_udic(udic, 1)
-            ppm = pd.Series(uc_F2.ppm_scale())
-            # Clean data when acquisition has been stopped before the end
-            data = data[~np.all(data == 0, axis=1)]
-
-        return ppm, data
-    
 
     def get_models_peak_number(self):
         """Load signal models.
@@ -407,6 +369,7 @@ class Process(object):
         except:
             return []
         
+        experiment_list = [i for i in experiment_list if i in self.names]
         exclude = [ref] if reprocess else [k for k in self.results.keys() if region in list(self.results[k].keys())] + [ref]
         experiment_list = [i for i in experiment_list if i not in exclude]
 
@@ -501,7 +464,7 @@ class Process(object):
         """
 
         # create spectrum
-        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[int(rowno)-1])], axis=1)
+        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[self.names.index(rowno)-1])], axis=1)
         tmp_data.columns = ["ppm", "intensity"]
         sp = spectrum.Spectrum(data=tmp_data, window=self.results[ref][region].window, from_ref=ref)
 
