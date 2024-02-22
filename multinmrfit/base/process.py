@@ -69,7 +69,7 @@ class Process(object):
         self.exp_dim = self.data_full.shape
 
         # get list of spectra
-        self.spectra_list = list(range(1, self.exp_dim[0]+1))
+        self.spectra_list = list(range(0, self.exp_dim[0]))
 
         # set default window (full spectrum)
         window = (min(self.ppm_full), max(self.ppm_full))
