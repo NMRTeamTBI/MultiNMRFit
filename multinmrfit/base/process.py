@@ -227,7 +227,7 @@ class Process(object):
         # Check if some clusters overlap
         mask = edited_peak_table['cID'].str.contains(',')
         # Duplicate rows for overlapping clusters (if any)
-        if sum(mask):
+        if sum(filter(None, mask)):
             edited_peak_table_dup = edited_peak_table[~mask]
             rows_to_duplicate = edited_peak_table[mask]
             for i in rows_to_duplicate.index:
