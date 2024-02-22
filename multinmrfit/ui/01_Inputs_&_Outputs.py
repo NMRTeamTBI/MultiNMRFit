@@ -95,7 +95,7 @@ if session.object_space["loaded_file"] is not None:
     st.warning("Warning: Remember to update paths below, otherwise the process file and the processing results will be silently overwritten.")
 
 with st.container():
-    st.write("### Type of data to process")
+    st.write("### Data to process")
     disabled = False if session.object_space['process'] is None else True
     l_at = ['pseudo2D','list of 1Ds','txt data']
     analysis_type = st.selectbox(
