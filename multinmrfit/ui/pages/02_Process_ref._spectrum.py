@@ -81,7 +81,7 @@ else:
                 label="Spectral limits (max)",
                 key="spectrum_limit_max",
                 value = round(val_max, 2),
-                min_value = round(min(process.ppm_full) + 0.05, 2),
+                min_value = round(min(process.ppm_full), 2),
                 max_value = round(max(process.ppm_full), 2),
                 disabled = disabled
                 )
@@ -92,7 +92,7 @@ else:
                 key="spectrum_limit_min",
                 value = round(val_min, 2),
                 min_value = round(min(process.ppm_full), 2),
-                max_value = round(max(process.ppm_full) - 0.05, 2),
+                max_value = round(max(process.ppm_full), 2),
                 disabled = disabled
                 )
 
