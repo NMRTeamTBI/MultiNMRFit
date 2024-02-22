@@ -36,11 +36,11 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
-        ]#,
-    #entry_points={
-    #    'console_scripts': [
-    #        'multinmrfit = multinmrfit.run:main'
-    #    ],
+        ],
+    entry_points={
+        'console_scripts': [
+            'nmrfit = multinmrfit.ui.__main__:main'
+        ]}#,
     #    'gui_scripts': [
     #        'multinmrfit = multinmrfit.run:main'
     #    ]
