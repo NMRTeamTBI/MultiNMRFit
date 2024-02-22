@@ -31,49 +31,28 @@ def load_defaults():
         with open(load_path, 'rb') as handle:
             options = pickle.load(handle)
 
-        session.set_widget_defaults(
-            analysis_type = options['analysis_type'],
-            input_exp_data_path = options["input_exp_data_path"],
-            input_exp_data_folder = options["input_exp_data_folder"],
-            input_expno = options["input_expno"],
-            input_procno = options["input_procno"],
-            output_res_path = options["output_res_path"],
-            output_res_folder = options["output_res_folder"],
-            output_filename = options["output_filename"],
-            txt_data = options["txt_data"]
-        )
     except:
         options = {
-        "analysis_type": 'pseudo2D',
-        "output_res_path": "path/to/output/data",
-        "output_res_folder": 'results_folder',
-        "output_filename": "filename",
-        "txt_data": None,
-        "input_exp_data_path": "path/to/topspin/data/folder/", 
-            "input_exp_data_folder": "dataset_name", 
-            "input_expno": 1, 
-            "input_procno": 1
-        }
+                "analysis_type": 'pseudo2D',
+                "output_res_path": "path/to/output/data",
+                "output_res_folder": 'results_folder',
+                "output_filename": "filename",
+                "txt_data": None,
+                "input_exp_data_path": "path/to/topspin/data/folder/", 
+                "input_exp_data_folder": "dataset_name", 
+                "input_expno": 1, 
+                "input_procno": 1
+            }
 
-        session.set_widget_defaults(
-            analysis_type = 'pseudo2D',
-            input_exp_data_path = "path/to/topspin/data/folder/",
-            input_exp_data_folder = "dataset_name",
-            input_expno = 1,
-            input_procno = 1,
-            output_res_path = "path/to/output/data",
-            output_res_folder = 'results_folder',
-            output_filename = "filename",
-            txt_data = None
-        )
+    session.set_widget_defaults(**options)
+    return options
 
 # set page title with multinmrfit version
 st.set_page_config(page_title=f"multiNMRFit (v{multinmrfit.__version__})", layout="wide")
 st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 
 
-load_defaults()
-
+options = load_defaults()
 uploaded_file = st.sidebar.file_uploader("Load a processing file.")
 
 if uploaded_file is not None:
@@ -108,7 +87,7 @@ if reset_process:
     session.object_space["loaded_file"] = None
     process = None
     session.object_space["process"] = process
-    load_defaults()
+    options = load_defaults()
 
 # show warning
 if session.object_space["loaded_file"] is not None:
@@ -200,13 +179,13 @@ with st.form('Inputs/Outputs'):
 if load_spectrum:
     # get input & output fields
     error = False
-    options = {
+    options.update({
         "analysis_type": analysis_type,
         "output_res_path": output_res_path,
         "output_res_folder": output_res_folder,
         "output_filename": output_filename,
         "txt_data": txt_data if analysis_type == 'txt data' else None
-    }
+    })
     if analysis_type in ['pseudo2D','list of 1Ds']:
         options.update({
             "input_exp_data_path": input_exp_data_path, 
