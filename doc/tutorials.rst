@@ -91,21 +91,21 @@ Once you are ready to load the spectrum, clicked the **Load Spectrum** buttom.
 .. Inputs & Outputs
 .. ********************************************************************************
 
-.. Once the data are correctly loaded the second page of the interface becomes available and allows use to perform the fitting of the reference spectrum:
+Once the data are correctly loaded the second page of the interface becomes available and allows use to perform the fitting of the reference spectrum:
 
-.. .. image:: _static/Set_ref_processing.jpg
-..   :scale: 60%
+.. image:: _static/Set_ref_processing.jpg
+  :scale: 60%
 
-.. The top part of this page automatically performs the peak picking on the reference spectrum within the region displayed in the graph:
-.. * **Select reference spectrum**: Select one the spectrum of the list. Tis specturm (called reference spectrum) will be used for automatic peak detection and initial fitting. 
-.. * **Select region to (re)process**: Multiple independent regions can be processed. Here, it will give you the choice of all regions added to the process.  
-.. * **Spectral limits (max)**: Maximum of the spectral window (default is the maximum of the ppm scale)
-.. * **Spectral limits (min)**: Minimum of the spectral window (default is the min of the ppm scale)
+The top part of this page automatically performs the peak picking on the reference spectrum within the region displayed in the graph:
+* **Select reference spectrum**: Select one the spectrum of the list. Tis specturm (called reference spectrum) will be used for automatic peak detection and initial fitting. 
+* **Select region to (re)process**: Multiple independent regions can be processed. Here, it will give you the choice of all regions added to the process.  
+* **Spectral limits (max)**: Maximum of the spectral window (default is the maximum of the ppm scale)
+* **Spectral limits (min)**: Minimum of the spectral window (default is the min of the ppm scale)
 
-.. .. note:: **reference spectrum**:  
-..         The signal that you to analyze needs to be seen in the reference spectrum.
-.. .. note:: **spectral limits**:  
-..         The difference betwwen the max and min should be at least 0.25 ppm.
+.. note:: **reference spectrum**:  
+        The signal that you to analyze needs to be seen in the reference spectrum.
+.. note:: **spectral limits**:  
+        The difference betwwen the max and min should be at least 0.25 ppm.
 
 .. You can adjust the **Peak picking threshold** to detect the desired peaks on the displayed spectrum. 
 
