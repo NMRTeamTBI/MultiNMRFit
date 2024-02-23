@@ -40,25 +40,25 @@ MultiNMRFit can load 1D NMR data in 3 formats:
 |  12   |   3e4 |   ... | 7.85e3|
 +-------+-------+-------+-------+
 
-.. The column **ppm** is mandatory and contains the ppm scale assumes to be same for all spectra. 
-.. The follwing columns here names **0** to **n** correspond to each individual spectra that will be loaded into MultiNMRFit
+The column **ppm** is mandatory and contains the ppm scale assumes to be same for all spectra. 
+The follwing columns here names **0** to **n** correspond to each individual spectra that will be loaded into MultiNMRFit
 
 
-.. .. note:: **list of 1Ds**:  
-..         The list of  experiments should be provided as 
-..         * 1,8,109 : for non-consecutive 
-..         * 1-5 : for consecutive experiments (resulting in 1,2,3,4,5)
-..         * 1-5,109 : for incomplete series (resulting in 1,2,3,4,5,109) 
+.. note:: **list of 1Ds**:  
+        The list of  experiments should be provided as 
+        * 1,8,109 : for non-consecutive 
+        * 1-5 : for consecutive experiments (resulting in 1,2,3,4,5)
+        * 1-5,109 : for incomplete series (resulting in 1,2,3,4,5,109) 
 
-.. .. warning:: **list of 1Ds**  
-..         All the data needs to have the same number of points (**TD**) and the ppm scale identical. 
-..         If data were processes with different **SR** parameters in TopSpin it might shift one dataset to another.
-..         The ppm scale will be taken from the first experiment in the list.
+.. warning:: **list of 1Ds**  
+        All the data needs to have the same number of points (**TD**) and the ppm scale identical. 
+        If data were processes with different **SR** parameters in TopSpin it might shift one dataset to another.
+        The ppm scale will be taken from the first experiment in the list.
 
-.. ..  _`Inputs/Outputs`:
+..  _`Inputs/Outputs`:
 
-.. Inputs/Outputs
-.. ================================================================================
+Inputs/Outputs
+================================================================================
 
 .. :data_path: Path to the directory that contain the data
 .. :data_folder: Folder containing your NMR data
