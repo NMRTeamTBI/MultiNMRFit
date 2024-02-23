@@ -25,22 +25,22 @@ MultiNMRFit can load 1D NMR data in 3 formats:
         * **list of 1Ds**: list of Bruker 1Ds acquired independently, 
         * **txt data**: data from a text tabulated file (:file:'.txt' extension) with the following structure:
 
-                        +-------+-------+-------+-------+
-                        |  ppm  |   0   |  ...  |    n  |
-                        +=======+=======+=======+=======+
-                        |  0    | 1.2e3 |   ... | 1.2e6 |
-                        +-------+-------+-------+-------+
-                        |  0.1  | 1.3e3 |   ... |  4e7  |
-                        +-------+-------+-------+-------+
-                        |  0.2  |   2e8 |   ... | 3.6e3 |
-                        +-------+-------+-------+-------+
-                        |  ...  | ...   |   ... |  ...  |
-                        +-------+-------+-------+-------+
-                        |  12   |   3e4 |   ... | 7.85e3|
-                        +-------+-------+-------+-------+
++-------+-------+-------+-------+
+|  ppm  |   0   |  ...  |    n  |
++=======+=======+=======+=======+
+|  0    | 1.2e3 |   ... | 1.2e6 |
++-------+-------+-------+-------+
+|  0.1  | 1.3e3 |   ... |  4e7  |
++-------+-------+-------+-------+
+|  0.2  |   2e8 |   ... | 3.6e3 |
++-------+-------+-------+-------+
+|  ...  | ...   |   ... |  ...  |
++-------+-------+-------+-------+
+|  12   |   3e4 |   ... | 7.85e3|
++-------+-------+-------+-------+
 
-The column **ppm** is mandatory and contains the ppm scale with will same for all spectra. 
-The follwing columns here names **0** to **n** correspond to each individual spectra that will be loaded in MultiNMRFit
+The column **ppm** is mandatory and contains the ppm scale assumes to be same for all spectra. 
+The follwing columns here names **0** to **n** correspond to each individual spectra that will be loaded into MultiNMRFit
 
 ..  _`Configuration file`:
 
