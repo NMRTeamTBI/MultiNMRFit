@@ -173,6 +173,24 @@ to run the fitting of the selected spectra. The progress of the fitting will be 
         By default MultiNMRFit do not reprocess spectra that have been already been fitted so clicked the option if necessary.
         The reference spectrum associated with the slected region can be visualized on this page. 
 
+Once you have fitted all the data you can move to last page 
+
+.. _Results visualisation:
+
+.. ********************************************************************************
+.. Results visualisation
+.. ********************************************************************************
+
+This page provides several visualization options of the results. 
+
+..  _`Spectra visualisation`:
+
+Spectra visualisation
+================================================================================
+
+.. image:: _static/visu_spectra.jpg
+  :scale: 60%
+
 .. .. topic:: About Analysis
 
 ..           Two type of analysis type are provided **Pseudo2D** or **1D_Series**. In the case of **Pseudo2D** analysis a single *Experiments* should be given and all the 
