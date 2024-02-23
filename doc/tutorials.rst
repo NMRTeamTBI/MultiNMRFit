@@ -113,7 +113,26 @@ While adjusting this threshold the software will automatically display a datafra
 The peaks are displayed in the ascending order (e.g. from right to left on the spectrum).
 
 You can now proceed with the clustering steps that consists in filling out the **cluster ID** column of the **Peak list** to group peaks together. Peaks that belongs to the same multiplets 
-must have the same number.
+must have the same names.
+
+.. note:: **cluster ID**:  
+        Cluter IDs can be anything (numbers or string).
+
+Once this clustering is performed press the **Assign peaks** button to move towards the model construction:
+
+.. image:: _static/model_construction.jpg
+  :scale: 60%
+
+For each cluster MultiNMRFit will provide a choice of all the models containing this number of peaks and will give you the choice to add a offset to fit.
+This offset is equivalent to a linear phase correction on the selected window. Once this step is done, you can click on the **Build model** button 
+that will automatically creates the fitting model and initially display the table of fitting parameters (at this step initial values along with boundaries).
+
+.. image:: _static/fitting_parameters.jpg
+  :scale: 60%
+
+Intitial values are calculated based on [i] the results of the peak picking (intensities and peak position) [ii] the default parameters of the each model
+(look at :doc:`models.rst` for more details on the default parameters).
+
 
 Configuration file
 ================================================================================
