@@ -130,27 +130,27 @@ that will automatically creates the fitting model and initially display the tabl
 .. image:: _static/fitting_parameters.jpg
   :scale: 60%
 
-.. Intitial values are calculated based on [i] the results of the peak picking (intensities and peak position) [ii] the default parameters of the each model
-.. (look at :doc:`models.rst` for more details on the default parameters). If no changes are required press the **Fit spectrum** button to proceed with the minimization
-.. of the reference spectrum. 
+Intitial values are calculated based on [i] the results of the peak picking (intensities and peak position) [ii] the default parameters of the each model
+(look at :doc:`models.rst` for more details on the default parameters). If no changes are required press the **Fit spectrum** button to proceed with the minimization
+of the reference spectrum. 
 
-.. .. note:: **Parameters**:  
-..         All parameters are shwon in **ppm** units.
+.. note:: **Parameters**:  
+        All parameters are shwon in **ppm** units.
 
-.. .. image:: _static/fitting_ref_spec.jpg
-..   :scale: 60%
+.. image:: _static/fitting_ref_spec.jpg
+  :scale: 60%
 
-.. The fitted reference spectrum will be automatically displayed on the resulting graph. This plots will show [i] the experimental data as dots [ii] the best fit 
-.. as red a curve and [iii] the initial values used in the minimzation in green. This is supplemented with the residum plot below. 
+The fitted reference spectrum will be automatically displayed on the resulting graph. This plots will show [i] the experimental data as dots [ii] the best fit 
+as red a curve and [iii] the initial values used in the minimzation in green. This is supplemented with the residum plot below. 
 
-.. .. note:: **Parameters**:  
-..         In the case of evident mismatch between the data and the best fit, you can adjust manually adjust the initial values in the former **parameters** table ()
+.. note:: **Parameters**:  
+        In the case of evident mismatch between the data and the best fit, you can adjust manually adjust the initial values in the former **parameters** table ()
 
-.. If the results are satisying press the the **Add current region** button to save this region and eventually to the same workflow for another region of the spectra. 
-.. For this you will need to go back to the top of page and select **add new region** in the field **Select region to (re)process**. Otherwise move to next page **Fit from reference**. 
+If the results are satisying press the the **Add current region** button to save this region and eventually to the same workflow for another region of the spectra. 
+For this you will need to go back to the top of page and select **add new region** in the field **Select region to (re)process**. Otherwise move to next page **Fit from reference**. 
 
 
-.. _Fit from reference:
+_Fit from reference:
 
 .. ********************************************************************************
 .. Fit from reference
