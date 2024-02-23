@@ -62,13 +62,16 @@ The MultiNMRFit window will open. If the window fails to open, have a look at ou
 .. image:: _static/interface.jpg
   :scale: 60%
 
-Fill al the required entries from the **inputs**, **analysis** and **outputs** sections. **Options** might me used accordingly to your need and 
-click on :samp:`Run`. If you want to save your configuration file click on :samp:`Save` and a small window will pop up in which you can specify the name. 
-If your config file is already created, click on :samp:`Load` that will fill all fields. 
+Fill al the required entries from the **Inputs** and **outputs** sections and 
+click on :samp:`Load Spectrum`. If you the data are correctly loaded it will display a message "Dataset loaded successfully" otehrwise check your inputs (path or data type)
 
-.. note:: The saving of the configuration file is not automatic.
+.. note:: The saving of the process is fully automatic.
 
-When :samp:`Run` is cliked it will display the visualization and clustering window (see below).
+The default data type is **pseudo2D**. It can be changed to **list of 1Ds** with similar interface or to **txt data** and the interface will be adapted such as:
+
+.. image:: _static/interface_txt.jpg
+  :scale: 60%
+
 
 .. note:: MultiNMRFit silently overwrites (results and log) files if they already exist. So take care to copy your results elsewhere if you want to protect them from overwriting.
 
