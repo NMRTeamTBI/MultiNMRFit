@@ -9,7 +9,7 @@ Tutorial
 
 This tutorial will guide you through the different pages of MultiNMRFit interface. 
 
-.. _Inputs & Outputst:
+.. _Inputs & Outputs:
 
 ********************************************************************************
 Inputs & Outputs
@@ -60,10 +60,15 @@ The follwing columns here names **0** to **n** correspond to each individual spe
 Inputs/Outputs
 ================================================================================
 
-:data_path: path to the folder containing the data
-:data_folder: folder containing the data
-:expno: experiment number(s) of the experiment(s)
-:procno: processing number. 
+:data_path: Path to the directory that contain the data
+:data_folder: Folder containing your NMR data
+:expno: List of experiments used in the MultiNMRFit analyis
+:procno: Process number (e.g. procno in Topspin)
+
+.. note:: **Inputs**:  
+        The different fields will for inputs as described above will appear only for data type (**Pseudo2D** & **list of 1Ds**)
+        For **txt data**, the text file must be loaded using the drag-and-drop menu. 
+
 
 .. note:: **procno**:  
         If a list of **expno** is provided the **procno** needs to be same for all the **expnos**.
@@ -72,8 +77,28 @@ Inputs/Outputs
 :output_folder: folder with the outputs
 :filename: name of the pickle file containing the process that will be automatically saved through the workflow.
 
+Load a processing file
+================================================================================
 
-..  _`Configuration file`:
+Along the way the process is saved in a pickle format containing the entire process that was perfomed. 
+The pickle file can be loaded using the drag-and-drop menu available in side bar of the Inputs & Outputs page. 
+
+Once you are ready to load the spectrum, clicked the **Load Spectrum** buttom.
+
+.. _Process ref. spectrum:
+
+********************************************************************************
+Process ref. spectrum
+********************************************************************************
+
+Once the data are correctly loaded the second page of the interface becomes available and allows use to perform the fitting of the reference spectrum:
+
+.. image:: _static/Set_ref_processing.jpg
+  :scale: 60%
+
+The top part of this page set the t
+
+
 
 Configuration file
 ================================================================================
@@ -84,20 +109,6 @@ The configuration file is a json file (see example below) and contains all rows 
 
 :download:`Example file <../multinmrfit/data/Imput_example.json>`.
 
-Inputs
---------------------------------------------------------------------------------
-
-:Data path: Path to the directory that contain the data; e.g. "data_path"
-:Data Folder: Folder containing your NMR data; e.g. "data_folder"
-:Experiments: List of experiments used in the MultiNMRFit analyis; e.g. "data_exp_no"
-:Process Number: Process number (e.g. procno in Topspin); e.g. "data_proc_no"
-
-Analysis
---------------------------------------------------------------------------------
-:Analysis type: Choice of analysis between a pseudo2D or list of 1D experiments; e.g. "analysis_type" (Pseudo2D or 1D_Series)
-:Reference spectrum: Experiment used for the peak picking and initial fit; e.g. "reference_spectrum"
-:Spectral limits: Boundaries for the region of spectra to be used in the analysis; e.g. "spectral_limits"
-:Threshold: Lower limit for the peak detection; e.g. "threshold"
 
 .. topic:: About Analysis
 
@@ -111,11 +122,7 @@ Analysis
 
 .. note:: Threshold
          Users will be able to update it through the graphical user interface is needed.
-Outputs
---------------------------------------------------------------------------------
-:Output path: Path to the directory in which the outputs of the program will be saved; e.g. "output_path"
-:Output folder: Folder for the outputs; e.g. "output_folder"
-:Output name: Name used for all the filed created (text files and figures); e.g. "output_name"
+
 
 Options
 --------------------------------------------------------------------------------
