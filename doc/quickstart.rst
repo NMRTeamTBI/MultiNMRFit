@@ -59,7 +59,7 @@ To start the Graphical User Interface, type in a terminal (Windows: *Anaconda Pr
 The MultiNMRFit window will open. If the window fails to open, have a look at our
 :ref:`dedicated troubleshooting procedure <failed_gui>` to solve the problem.
 
-.. image:: _static/multinmrfit_load_gui.png
+.. image:: _static/interface.jpg
 
 Fill al the required entries from the **inputs**, **analysis** and **outputs** sections. **Options** might me used accordingly to your need and 
 click on :samp:`Run`. If you want to save your configuration file click on :samp:`Save` and a small window will pop up in which you can specify the name. 
