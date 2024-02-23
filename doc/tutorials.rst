@@ -48,7 +48,7 @@ The follwing columns here names **0** to **n** correspond to each individual spe
         The list of  experiments should be provided as 
         * 1,8,109 : for non-consecutive 
         * 1-5 : for consecutive experiments (resulting in 1,2,3,4,5)
-        * 1-5,109 : for a mix (resulting in 1,2,3,4,5,109) 
+        * 1-5,109 : for incomplete series (resulting in 1,2,3,4,5,109) 
 
 .. warning:: **list of 1Ds**  
         All the data needs to have the same number of points (**TD**) and the ppm scale identical. 
@@ -131,18 +131,47 @@ that will automatically creates the fitting model and initially display the tabl
   :scale: 60%
 
 Intitial values are calculated based on [i] the results of the peak picking (intensities and peak position) [ii] the default parameters of the each model
-(look at :doc:`models.rst` for more details on the default parameters).
+(look at :doc:`models.rst` for more details on the default parameters). If no changes are required press the **Fit spectrum** button to proceed with the minimization
+of the reference spectrum. 
+
+.. note:: **Parameters**:  
+        All parameters are shwon in **ppm** units.
+
+.. image:: _static/fitting_ref_spec.jpg
+  :scale: 60%
+
+The fitted reference spectrum will be automatically displayed on the resulting graph. This plots will show [i] the experimental data as dots [ii] the best fit 
+as red a curve and [iii] the initial values used in the minimzation in green. This is supplemented with the residum plot below. 
+
+.. note:: **Parameters**:  
+        In the case of evident mismatch between the data and the best fit, you can adjust manually adjust the initial values in the former **parameters** table ()
+
+If the results are satisying press the the **Add current region** button to save this region and eventually to the same workflow for another region of the spectra. 
+For this you will need to go back to the top of page and select **add new region** in the field **Select region to (re)process**. Otherwise move to next page **Fit from reference**. 
 
 
-Configuration file
-================================================================================
+.. _Fit from reference:
 
-The configuration file contains all the required information to load the data (**Inputs** section), run the analysis (**Analysis** section), 
-output the results (**Outputs** section). Users might alos be intersted to use some of the options (**Options** section). 
-The configuration file is a json file (see example below) and contains all rows described below:
+********************************************************************************
+Fit from reference
+********************************************************************************
 
-:download:`Example file <../multinmrfit/data/Imput_example.json>`.
+This page contains the wrapper that allows you to fit the desired data. 
 
+.. image:: _static/fit_from_reference.jpg
+  :scale: 60%
+
+First select the region that needs to be fitted (**Select region**). Automatically MultiNMRFit will display the list of **Signal IDs** present in the selected region
+along with the **processed spectra** already analyzed (e.g in the first run this nunmber will correspond to the number of the reference spectrum)
+
+MultiNMRFit will give the choice of the spectra you want to process, By default it shows the complete dataset (here 1-256 as the pseudo2D contains 256 in the example).
+However if you want to analyze the first ten spectra one can write 1-10 and it will update the list **spectra to process** automatically. Click the **Fit selected spectra**
+to run the fitting of the selected spectra. The progress of the fitting will be displayed by a progress bar and once complete a message **All spectra have been fitted** will appear.
+
+.. note:: **Fitting**:  
+        This procedure can be repeated for the different regions defined in the previous pages upon selection in **Select region**.
+        By default MultiNMRFit do not reprocess spectra that have been already been fitted so clicked the option if necessary.
+        The reference spectrum associated with the slected region can be visualized on this page. 
 
 .. topic:: About Analysis
 
