@@ -60,18 +60,18 @@ The follwing columns here names **0** to **n** correspond to each individual spe
 Inputs/Outputs
 ================================================================================
 
-.. :data_path: Path to the directory that contain the data
-.. :data_folder: Folder containing your NMR data
-.. :expno: List of experiments used in the MultiNMRFit analyis
-.. :procno: Process number (e.g. procno in Topspin)
+:data_path: Path to the directory that contain the data
+:data_folder: Folder containing your NMR data
+:expno: List of experiments used in the MultiNMRFit analyis
+:procno: Process number (e.g. procno in Topspin)
 
-.. .. note:: **Inputs**:  
-..         The different fields will for inputs as described above will appear only for data type (**Pseudo2D** & **list of 1Ds**)
-..         For **txt data**, the text file must be loaded using the drag-and-drop menu. 
+.. note:: **Inputs**:  
+        The different fields will for inputs as described above will appear only for data type (**Pseudo2D** & **list of 1Ds**)
+        For **txt data**, the text file must be loaded using the drag-and-drop menu. 
 
 
-.. .. note:: **procno**:  
-..         If a list of **expno** is provided the **procno** needs to be same for all the **expnos**.
+.. note:: **procno**:  
+        If a list of **expno** is provided the **procno** needs to be same for all the **expnos**.
 
 .. :output_path: path to the folder use to export the outputs
 .. :output_folder: folder with the outputs
