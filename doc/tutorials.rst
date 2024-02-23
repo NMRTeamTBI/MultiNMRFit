@@ -73,19 +73,19 @@ Inputs/Outputs
 .. note:: **procno**:  
         If a list of **expno** is provided the **procno** needs to be same for all the **expnos**.
 
-.. :output_path: path to the folder use to export the outputs
-.. :output_folder: folder with the outputs
-.. :filename: name of the pickle file containing the process that will be automatically saved through the workflow.
+:output_path: path to the folder use to export the outputs
+:output_folder: folder with the outputs
+:filename: name of the pickle file containing the process that will be automatically saved through the workflow.
 
-.. Load a processing file
-.. ================================================================================
+Load a processing file
+================================================================================
 
-.. Along the way the process is saved in a pickle format containing the entire process that was perfomed. 
-.. The pickle file can be loaded using the drag-and-drop menu available in side bar of the Inputs & Outputs page. 
+Along the way the process is saved in a pickle format containing the entire process that was perfomed. 
+The pickle file can be loaded using the drag-and-drop menu available in side bar of the Inputs & Outputs page. 
 
-.. Once you are ready to load the spectrum, clicked the **Load Spectrum** buttom.
+Once you are ready to load the spectrum, clicked the **Load Spectrum** buttom.
 
-.. .. _Process ref. spectrum:
+.. _Process ref. spectrum:
 
 .. ********************************************************************************
 .. Process ref. spectrum
