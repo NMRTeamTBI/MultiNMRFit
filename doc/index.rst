@@ -1,4 +1,4 @@
-MultiNMRFit: Fitting of 1D NMR Data
+MultiNMRFit: Fitting of 1D NMR Data Newest version
 ********************************************************************************
 
 Welcome to MultiNMRFit documentation!
