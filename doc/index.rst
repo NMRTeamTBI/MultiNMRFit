@@ -23,7 +23,8 @@ and can be downloaded as a `PDF file <https://multinmrfit.readthedocs.io/_/downl
 * open-source, free and easy to install everywhere where Python 3 and pip run,
 * biotechnologist-friendly.
 
-.. seealso:: We strongly encourage you to read the :ref:`Tutorials` before using MultiNMRFit.
+.. seealso:: See Also
+We strongly encourage you to read the :ref:`Tutorials` before using MultiNMRFit.
 
 .. toctree::
    :maxdepth: 2
