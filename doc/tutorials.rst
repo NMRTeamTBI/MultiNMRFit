@@ -150,11 +150,11 @@ If the results are satisying press the the **Add current region** button to save
 For this you will need to go back to the top of page and select **add new region** in the field **Select region to (re)process**. Otherwise move to next page **Fit from reference**. 
 
 
-_Fit from reference:
+.. _Fit from reference:
 
-.. ********************************************************************************
-.. Fit from reference
-.. ********************************************************************************
+********************************************************************************
+Fit from reference
+********************************************************************************
 
 .. This page contains the wrapper that allows you to fit the desired data. 
 
