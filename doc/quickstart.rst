@@ -78,36 +78,7 @@ The default data type is **pseudo2D**. It can be changed to **list of 1Ds** with
 *Data Loading* via Command Line Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To process your data, type in a terminal:
-
-.. code-block:: bash
-
-  multinmrfit [path/config_file.json]
-
-where path/config_file.json is the path to the configuration file tha
-
-.. argparse::
-   :module: isocor.ui.isocorcli
-   :func: parseArgs
-   :prog: isocorcli
-   :nodescription:
-
-MultiNMRFit will display the visualization and clustering window (see below).
-
-.. seealso:: Tutorial :ref:`First time using MultiNMRFit` has example of configuration file.
-
-*Peak Picking visualisation and Clustering* via Graphical User Interface
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. image:: _static/multinmrfit_clustering_gui.png
-
-MultiNMRFit automatically detects peaks above the threshold given previously either through the loading ui or in the configuration file. 
-If the **threshold** is too low (c.a no peaks are detected) you need to update the number in bottom left frame and click on :samp:`Update Threshold`
-to perform the peak picking with the new value. Detected peaks are marked with a colored dot on the spectrum and appear in the **clustering information** table. 
-Peaks are labeled with the same color as on the plot and appear in the chemical shift ascending manner (c.a from right to left).
-
-Once you have filled at least one **cluster ID** click on :samp:`Run Fitting` to start the analysis of your data. Progress bars will appear on 
-the screen to report on the progress of the fitting procedure and more information are displayed in the terminal window or the *Anaconda Prompt*.
-
+**Not implemented yet**
 
 Library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
