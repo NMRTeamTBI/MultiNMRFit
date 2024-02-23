@@ -191,6 +191,14 @@ Spectra visualisation
 .. image:: _static/visu_spectra.jpg
   :scale: 60%
 
+User can select the spectrum and the region to display. 
+
+.. image:: _static/visu_parameters.jpg
+  :scale: 60%
+
+.. image:: _static/visu_param_plot.jpg
+  :scale: 60%
+
 .. .. topic:: About Analysis
 
 ..           Two type of analysis type are provided **Pseudo2D** or **1D_Series**. In the case of **Pseudo2D** analysis a single *Experiments* should be given and all the 
