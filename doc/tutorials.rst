@@ -87,11 +87,11 @@ Once you are ready to load the spectrum, clicked the **Load Spectrum** buttom.
 
 .. _Process ref. spectrum:
 
-********************************************************************************
-Process ref. spectrum
-********************************************************************************
+.. ********************************************************************************
+.. Process ref. spectrum
+.. ********************************************************************************
 
-Once the data are correctly loaded the second page of the interface becomes available and allows use to perform the fitting of the reference spectrum:
+.. Once the data are correctly loaded the second page of the interface becomes available and allows use to perform the fitting of the reference spectrum:
 
 .. .. image:: _static/Set_ref_processing.jpg
 ..   :scale: 60%
