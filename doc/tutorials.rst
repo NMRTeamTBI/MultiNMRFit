@@ -40,99 +40,99 @@ MultiNMRFit can load 1D NMR data in 3 formats:
 |  12   |   3e4 |   ... | 7.85e3|
 +-------+-------+-------+-------+
 
-The column **ppm** is mandatory and contains the ppm scale assumes to be same for all spectra. 
-The follwing columns here names **0** to **n** correspond to each individual spectra that will be loaded into MultiNMRFit
+.. The column **ppm** is mandatory and contains the ppm scale assumes to be same for all spectra. 
+.. The follwing columns here names **0** to **n** correspond to each individual spectra that will be loaded into MultiNMRFit
 
 
-.. note:: **list of 1Ds**:  
-        The list of  experiments should be provided as 
-        * 1,8,109 : for non-consecutive 
-        * 1-5 : for consecutive experiments (resulting in 1,2,3,4,5)
-        * 1-5,109 : for incomplete series (resulting in 1,2,3,4,5,109) 
+.. .. note:: **list of 1Ds**:  
+..         The list of  experiments should be provided as 
+..         * 1,8,109 : for non-consecutive 
+..         * 1-5 : for consecutive experiments (resulting in 1,2,3,4,5)
+..         * 1-5,109 : for incomplete series (resulting in 1,2,3,4,5,109) 
 
-.. warning:: **list of 1Ds**  
-        All the data needs to have the same number of points (**TD**) and the ppm scale identical. 
-        If data were processes with different **SR** parameters in TopSpin it might shift one dataset to another.
-        The ppm scale will be taken from the first experiment in the list.
+.. .. warning:: **list of 1Ds**  
+..         All the data needs to have the same number of points (**TD**) and the ppm scale identical. 
+..         If data were processes with different **SR** parameters in TopSpin it might shift one dataset to another.
+..         The ppm scale will be taken from the first experiment in the list.
 
-..  _`Inputs/Outputs`:
+.. ..  _`Inputs/Outputs`:
 
-Inputs/Outputs
-================================================================================
+.. Inputs/Outputs
+.. ================================================================================
 
-:data_path: Path to the directory that contain the data
-:data_folder: Folder containing your NMR data
-:expno: List of experiments used in the MultiNMRFit analyis
-:procno: Process number (e.g. procno in Topspin)
+.. :data_path: Path to the directory that contain the data
+.. :data_folder: Folder containing your NMR data
+.. :expno: List of experiments used in the MultiNMRFit analyis
+.. :procno: Process number (e.g. procno in Topspin)
 
-.. note:: **Inputs**:  
-        The different fields will for inputs as described above will appear only for data type (**Pseudo2D** & **list of 1Ds**)
-        For **txt data**, the text file must be loaded using the drag-and-drop menu. 
+.. .. note:: **Inputs**:  
+..         The different fields will for inputs as described above will appear only for data type (**Pseudo2D** & **list of 1Ds**)
+..         For **txt data**, the text file must be loaded using the drag-and-drop menu. 
 
 
-.. note:: **procno**:  
-        If a list of **expno** is provided the **procno** needs to be same for all the **expnos**.
+.. .. note:: **procno**:  
+..         If a list of **expno** is provided the **procno** needs to be same for all the **expnos**.
 
-:output_path: path to the folder use to export the outputs
-:output_folder: folder with the outputs
-:filename: name of the pickle file containing the process that will be automatically saved through the workflow.
+.. :output_path: path to the folder use to export the outputs
+.. :output_folder: folder with the outputs
+.. :filename: name of the pickle file containing the process that will be automatically saved through the workflow.
 
-Load a processing file
-================================================================================
+.. Load a processing file
+.. ================================================================================
 
-Along the way the process is saved in a pickle format containing the entire process that was perfomed. 
-The pickle file can be loaded using the drag-and-drop menu available in side bar of the Inputs & Outputs page. 
+.. Along the way the process is saved in a pickle format containing the entire process that was perfomed. 
+.. The pickle file can be loaded using the drag-and-drop menu available in side bar of the Inputs & Outputs page. 
 
-Once you are ready to load the spectrum, clicked the **Load Spectrum** buttom.
+.. Once you are ready to load the spectrum, clicked the **Load Spectrum** buttom.
 
-.. _Process ref. spectrum:
+.. .. _Process ref. spectrum:
 
-********************************************************************************
-Process ref. spectrum
-********************************************************************************
+.. ********************************************************************************
+.. Process ref. spectrum
+.. ********************************************************************************
 
-Once the data are correctly loaded the second page of the interface becomes available and allows use to perform the fitting of the reference spectrum:
+.. Once the data are correctly loaded the second page of the interface becomes available and allows use to perform the fitting of the reference spectrum:
 
-.. image:: _static/Set_ref_processing.jpg
-  :scale: 60%
+.. .. image:: _static/Set_ref_processing.jpg
+..   :scale: 60%
 
-The top part of this page automatically performs the peak picking on the reference spectrum within the region displayed in the graph:
-* **Select reference spectrum**: Select one the spectrum of the list. Tis specturm (called reference spectrum) will be used for automatic peak detection and initial fitting. 
-* **Select region to (re)process**: Multiple independent regions can be processed. Here, it will give you the choice of all regions added to the process.  
-* **Spectral limits (max)**: Maximum of the spectral window (default is the maximum of the ppm scale)
-* **Spectral limits (min)**: Minimum of the spectral window (default is the min of the ppm scale)
+.. The top part of this page automatically performs the peak picking on the reference spectrum within the region displayed in the graph:
+.. * **Select reference spectrum**: Select one the spectrum of the list. Tis specturm (called reference spectrum) will be used for automatic peak detection and initial fitting. 
+.. * **Select region to (re)process**: Multiple independent regions can be processed. Here, it will give you the choice of all regions added to the process.  
+.. * **Spectral limits (max)**: Maximum of the spectral window (default is the maximum of the ppm scale)
+.. * **Spectral limits (min)**: Minimum of the spectral window (default is the min of the ppm scale)
 
-.. note:: **reference spectrum**:  
-        The signal that you to analyze needs to be seen in the reference spectrum.
-.. note:: **spectral limits**:  
-        The difference betwwen the max and min should be at least 0.25 ppm.
+.. .. note:: **reference spectrum**:  
+..         The signal that you to analyze needs to be seen in the reference spectrum.
+.. .. note:: **spectral limits**:  
+..         The difference betwwen the max and min should be at least 0.25 ppm.
 
-You can adjust the **Peak picking threshold** to detect the desired peaks on the displayed spectrum. 
+.. You can adjust the **Peak picking threshold** to detect the desired peaks on the displayed spectrum. 
 
-While adjusting this threshold the software will automatically display a dataframe **Peak list** with the detected peaks in the region (marked with a yellow triangle on the spectrum).
-The peaks are displayed in the ascending order (e.g. from right to left on the spectrum).
+.. While adjusting this threshold the software will automatically display a dataframe **Peak list** with the detected peaks in the region (marked with a yellow triangle on the spectrum).
+.. The peaks are displayed in the ascending order (e.g. from right to left on the spectrum).
 
-You can now proceed with the clustering steps that consists in filling out the **cluster ID** column of the **Peak list** to group peaks together. Peaks that belongs to the same multiplets 
-must have the same names.
+.. You can now proceed with the clustering steps that consists in filling out the **cluster ID** column of the **Peak list** to group peaks together. Peaks that belongs to the same multiplets 
+.. must have the same names.
 
-.. note:: **cluster ID**:  
-        Cluter IDs can be anything (numbers or string).
+.. .. note:: **cluster ID**:  
+..         Cluter IDs can be anything (numbers or string).
 
-Once this clustering is performed press the **Assign peaks** button to move towards the model construction:
+.. Once this clustering is performed press the **Assign peaks** button to move towards the model construction:
 
-.. image:: _static/model_construction.jpg
-  :scale: 60%
+.. .. image:: _static/model_construction.jpg
+..   :scale: 60%
 
-For each cluster MultiNMRFit will provide a choice of all the models containing this number of peaks and will give you the choice to add a offset to fit.
-This offset is equivalent to a linear phase correction on the selected window. Once this step is done, you can click on the **Build model** button 
-that will automatically creates the fitting model and initially display the table of fitting parameters (at this step initial values along with boundaries).
+.. For each cluster MultiNMRFit will provide a choice of all the models containing this number of peaks and will give you the choice to add a offset to fit.
+.. This offset is equivalent to a linear phase correction on the selected window. Once this step is done, you can click on the **Build model** button 
+.. that will automatically creates the fitting model and initially display the table of fitting parameters (at this step initial values along with boundaries).
 
-.. image:: _static/fitting_parameters.jpg
-  :scale: 60%
+.. .. image:: _static/fitting_parameters.jpg
+..   :scale: 60%
 
-Intitial values are calculated based on [i] the results of the peak picking (intensities and peak position) [ii] the default parameters of the each model
-(look at :doc:`models.rst` for more details on the default parameters). If no changes are required press the **Fit spectrum** button to proceed with the minimization
-of the reference spectrum. 
+.. Intitial values are calculated based on [i] the results of the peak picking (intensities and peak position) [ii] the default parameters of the each model
+.. (look at :doc:`models.rst` for more details on the default parameters). If no changes are required press the **Fit spectrum** button to proceed with the minimization
+.. of the reference spectrum. 
 
 .. .. note:: **Parameters**:  
 ..         All parameters are shwon in **ppm** units.
