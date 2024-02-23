@@ -109,7 +109,11 @@ The top part of this page automatically performs the peak picking on the referen
 
 You can adjust the **Peak picking threshold** to detect the desired peaks on the displayed spectrum. 
 
-The **Peak picking threshold**
+While adjusting this threshold the software will automatically display a dataframe **Peak list** with the detected peaks in the region (marked with a yellow triangle on the spectrum).
+The peaks are displayed in the ascending order (e.g. from right to left on the spectrum).
+
+You can now proceed with the clustering steps that consists in filling out the **cluster ID** column of the **Peak list** to group peaks together. Peaks that belongs to the same multiplets 
+must have the same number.
 
 Configuration file
 ================================================================================
