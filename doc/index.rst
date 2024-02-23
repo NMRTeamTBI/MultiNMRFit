@@ -1,12 +1,8 @@
-MultiNMRFit: Fitting of 1D NMR Data Newest version
+MultiNMRFit: Fitting of 1D NMR Data 
 ********************************************************************************
 
 Welcome to MultiNMRFit documentation!
 ----------------------------------------
-
-.. image:: _static/toc_multinmrfit.png
-   :width: 100%
-   :align: center
 
 **MultiNMRFit is a scientific software dedicated to the analysis of 1H NMR data **.
 
