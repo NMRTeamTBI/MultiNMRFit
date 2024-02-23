@@ -1,5 +1,4 @@
-MultiNMRFit: Fitting of 1D NMR Data 
-********************************************************************************
+
 
 Welcome to MultiNMRFit documentation!
 ----------------------------------------
@@ -16,12 +15,13 @@ This documentation is available on Read the Docs (`https://multinmrfit.readthedo
 and can be downloaded as a `PDF file <https://multinmrfit.readthedocs.io/_/downloads/en/latest/pdf/>`_.
 
 
-.. rubric:: Key features
+
+**MultiNMRFit includes the following key features **.
 
 * **Rapid analysis** of a large number of 1H spectra (pseudo 2D, time series, ...) ,
 * Maintain the **multiplicity** in the fitting procedure,
 * open-source, free and easy to install everywhere where Python 3 and pip run,
-* biotechnologist-friendly.
+* biotechnologist-friendly,
 
 .. rubric:: See Also
 We strongly encourage you to read the :ref:`Tutorials` before using MultiNMRFit.
@@ -30,6 +30,7 @@ We strongly encourage you to read the :ref:`Tutorials` before using MultiNMRFit.
    :maxdepth: 2
    :caption: Usage
 
+   installation.rst
    quickstart.rst
    tutorials.rst
    cite.rst
