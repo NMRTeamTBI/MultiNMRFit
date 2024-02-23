@@ -7,11 +7,12 @@ Tutorial
 .. seealso:: If you have a question that is not covered in the tutorials, have a look
              at the :ref:`faq` or please contact us.
 
+This tutorial will guide you through the different pages of MultiNMRFit interface. 
 
-.. _First time using MultiNMRFit:
+.. _Inputs & Outputst:
 
 ********************************************************************************
-First time using MultiNMRFit
+Inputs & Outputs
 ********************************************************************************
 
 ..  _`Data type`:
@@ -43,7 +44,7 @@ The column **ppm** is mandatory and contains the ppm scale assumes to be same fo
 The follwing columns here names **0** to **n** correspond to each individual spectra that will be loaded into MultiNMRFit
 
 
-.. note:: **list of 1Ds**  
+.. note:: **list of 1Ds**:  
         The list of  experiments should be provided as 
         * 1,8,109 : for non-consecutive 
         * 1-5 : for consecutive experiments (resulting in 1,2,3,4,5)
@@ -64,7 +65,7 @@ Inputs/Outputs
 :expno: experiment number(s) of the experiment(s)
 :procno: processing number. 
 
-.. note:: **procno**  
+.. note:: **procno**:  
         If a list of **expno** is provided the **procno** needs to be same for all the **expnos**.
 
 :output_path: path to the folder use to export the outputs
