@@ -7,7 +7,7 @@ Quick start
 Installation
 ------------------------------------------------
 
-MultiNMRFit requires Python 3.5 or higher. If you do not have a Python environment
+MultiNMRFit requires Python 3.6 or higher. If you do not have a Python environment
 configured on your computer, we recommend that you follow the instructions
 from `Anaconda <https://www.anaconda.com/download/>`_.
 
@@ -54,7 +54,7 @@ To start the Graphical User Interface, type in a terminal (Windows: *Anaconda Pr
 
 .. code-block:: bash
 
-  multinmrfit
+  nmrfit
 
 The MultiNMRFit window will open. If the window fails to open, have a look at our
 :ref:`dedicated troubleshooting procedure <failed_gui>` to solve the problem.

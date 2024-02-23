@@ -12,7 +12,7 @@ To install MultiNMRFit using Python's built-in installer, you can just run the f
 
 .. code-block:: bash
 
-    pip install mulitnmrfit
+    pip install multinmrfit
 
 .. tip::  We recommend the creation of isolated environments for each python tool you install in your system using the python built-in `venv <https://docs.python.org/3/library/venv.html>`_ package or `Anaconda <https://www.anaconda.com/products/individual>`_.
 
@@ -27,23 +27,23 @@ Alternatives & updates
 
 If yiu want to install the software in development mode, you can use the following command:
 
-.. code-block::
+.. code-block:: bash
 
-    pip install --3 mulitnmrfit
+    pip install --e multinmrfit
 
-If you know that you do not have permission to install software system-wide, you can install mulitnmrfit into your user directory using the :samp:`--user` flag:
+If you know that you do not have permission to install software system-wide, you can install multinmrfit into your user directory using the :samp:`--user` flag:
 
-.. code-block::
+.. code-block:: bash
 
-    pip install --user mulitnmrfit
+    pip install --user multinmrfit
 
 This does not require any special privileges.
 
 Once the package is installed, you can update it using the following command:
 
-.. code-block::
+.. code-block:: bash
 
-    pip install -U mulitnmrfit
+    pip install -U multinmrfit
 
-Alternatively, you can also download all sources in a tarball from `GitHub <https://github.com/MetaSys-LISBP/PhysioFit>`_,
-but it will be more difficult to update PhysioFit later on.
+Alternatively, you can also download all sources in a tarball from `GitHub <https://github.com/NMRTeamTBI/MultiNMRFit/tree/dev2.0.0a_GUI>`_,
+but it will be more difficult to update MultiNMRFit later on.

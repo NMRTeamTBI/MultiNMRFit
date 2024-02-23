@@ -160,7 +160,7 @@ with st.form('Inputs/Outputs'):
             value = session.widget_space["output_res_path"],
         )
         output_res_folder = st.text_input(
-            label="Enter output path",
+            label="Enter output folder",
             key="output_res_folder",
             value = session.widget_space["output_res_folder"],
         )
