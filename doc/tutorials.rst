@@ -14,9 +14,9 @@ Tutorial
 First time using MultiNMRFit
 ********************************************************************************
 
-..  _`Input data`:
+..  _`Data type`:
 
-Input data
+Data type
 ================================================================================
 MultiNMRFit assumes that all the processing (base line correction, phasing, ...) is performed prior its usage.
 MultiNMRFit can load 1D NMR data in 3 formats:
@@ -48,6 +48,29 @@ The follwing columns here names **0** to **n** correspond to each individual spe
         * 1,8,109 : for non-consecutive 
         * 1-5 : for consecutive experiments (resulting in 1,2,3,4,5)
         * 1-5,109 : for a mix (resulting in 1,2,3,4,5,109) 
+
+.. warning:: **list of 1Ds**  
+        All the data needs to have the same number of points (**TD**) and the ppm scale identical. 
+        If data were processes with different **SR** parameters in TopSpin it might shift one dataset to another.
+        The ppm scale will be taken from the first experiment in the list.
+
+..  _`Inputs/Outputs`:
+
+Inputs/Outputs
+================================================================================
+
+:data_path: path to the folder containing the data
+:data_folder: folder containing the data
+:expno: experiment number(s) of the experiment(s)
+:procno: processing number. 
+
+.. note:: **procno**  
+        If a list of **expno** is provided the **procno** needs to be same for all the **expnos**.
+
+:output_path: path to the folder use to export the outputs
+:output_folder: folder with the outputs
+:filename: name of the pickle file containing the process that will be automatically saved through the workflow.
+
 
 ..  _`Configuration file`:
 
