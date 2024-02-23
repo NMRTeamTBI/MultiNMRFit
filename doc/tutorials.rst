@@ -1,7 +1,7 @@
 ..  _Tutorials:
 
 ################################################################################
-Tutorials
+Tutorial
 ################################################################################
 
 .. seealso:: If you have a question that is not covered in the tutorials, have a look
@@ -19,8 +19,23 @@ First time using MultiNMRFit
 Input data
 ================================================================================
 
-MultiNMRFit takes as input processed 1D NMR data either acquired in a Pseudo2D manner or a list of 1D experiments acquired separetly.
+MultiNMRFit takes as input processed 1D NMR data from Bruker either acquired in a Pseudo2D manner (**Pseudo2D**) or a list of 1D experiments acquired separetly (**list of 1Ds**).
 MultiNMRFit assumes that all the processing (base line correction, phasing, ...) is performed prior its usage.
+MultiNMRFit can also use data from a text tabulated file as input (**txt data**) (:file:'.txt' extension) with the following structure:
+
++-------+-------+-------+-------+
+|  ppm  |   0   |  ...  |    n  |
++=======+=======+=======+=======+
+|  0    | 1.2e3 |   ... | 1.2e6 |
++-------+-------+-------+-------+
+|  0.1  | 1.3e3 |   ... |  4e7  |
++-------+-------+-------+-------+
+|  0.2  |   2e8 |   ... | 3.6e3 |
++-------+-------+-------+-------+
+|  ...  | ...   |   ... |  ...  |
++-------+-------+-------+-------+
+|  12   |   3e4 |   ... | 7.85e3|
++-------+-------+-------+-------+
 
 ..  _`Configuration file`:
 
