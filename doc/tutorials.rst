@@ -188,10 +188,10 @@ This page provides several visualization options of the results.
 Spectra visualisation
 ================================================================================
 
+User can select the spectrum and the region to display. 
+
 .. image:: _static/visu_spectra.jpg
   :scale: 60%
-
-User can select the spectrum and the region to display. 
 
 .. image:: _static/visu_parameters.jpg
   :scale: 60%
