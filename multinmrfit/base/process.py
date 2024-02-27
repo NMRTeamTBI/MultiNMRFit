@@ -387,6 +387,10 @@ class Process(object):
         # remove duplicates
         regions = list(set(regions))
 
+        # sort
+        if regions is not None:
+            regions.sort()
+
         return regions
 
     def compounds(self, rowno=None, region=None):
@@ -411,13 +415,24 @@ class Process(object):
         # remove duplicates
         compounds = list(set(compounds))
 
+        # sort
+        if compounds is not None:
+            compounds.sort()
+
         return compounds
 
     def spectra(self, region=None):
+
+        # get spectra
         if region is None:
             spectra = list(self.results.keys())
         else:
             spectra = [k for k in self.results.keys() if region in self.results[k].keys()]
+        
+        # sort
+        if spectra is not None:
+            spectra.sort()
+
         return spectra
 
 

@@ -37,7 +37,7 @@ else:
                             options=spectra_list,
                             )
             
-            regions = list(process.results[spectrum].keys())
+            regions = sorted(list(process.results[spectrum].keys()))
             idx = regions.index(session.widget_space["region_plot"]) if session.widget_space["region_plot"] in regions else 0
 
             with col2:
@@ -89,7 +89,7 @@ else:
 
             with col1:
             
-                signal_list = list(process.consolidated_results.signal_id.unique())        
+                signal_list = sorted(list(process.consolidated_results.signal_id.unique()))      
                 signal = st.selectbox(
                             label="Select signal",
                             key="signal_to_show",
