@@ -181,18 +181,26 @@ Once you have fitted all the data you can move to last page
 .. Results visualisation
 .. ********************************************************************************
 
-This page provides several visualization options of the results. 
+This page provides several visualization options of the results. On top, you can inspect every fitted spectrum. 
+If multiple signals were fitted on the the same region, you can observe individual ones by clicking on the different 
+signal IDs in the figure caption.
 
 ..  _`Spectra visualisation`:
 
 Spectra visualisation
 ================================================================================
 
-User can select the spectrum and the region to display. 
+Users can select the spectrum and the region to display. 
 
 .. image:: _static/visu_spectra.jpg
   :scale: 60%
 
+..  _`Parameters visualisation`:
+
+Parameters visualisation
+================================================================================
+
+for the corresponding spectra shown above you can 
 .. image:: _static/visu_parameters.jpg
   :scale: 60%
 
