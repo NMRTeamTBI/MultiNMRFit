@@ -16,22 +16,8 @@ session = SessI(
 process = session.object_space["process"]
 
 def append_line(chem_shift, process):
-    # df = process.current_spectrum.edited_peak_table
-    # df.loc[len(df)] = pd.Series([chem_shift, process.get_current_intensity(chem_shift), ""])
-    # print("toto")
-    # print(df)
-    # print("tutu")
-    # def2 = pd.DataFrame({"ppm":[chem_shift], "intensity":[process.get_current_intensity(chem_shift)], "cID":[""]})
-    # print(def2)
-    # print(pd.Series([chem_shift, process.get_current_intensity(chem_shift), ""]))
-    # session.object_space["edited_peak_table"] = pd.concat([])
-    df = process.current_spectrum.edited_peak_table
-
-    df2 = pd.DataFrame({"ppm":[chem_shift], "intensity":[process.get_current_intensity(chem_shift)], "cID":[""]})
-
-    #session.object_space["edited_peak_table"] = pd.concat([df, df2])
-
-    process.current_spectrum.edited_peak_table = pd.concat([df, df2])
+    new_line = pd.DataFrame({"ppm":[chem_shift], "intensity":[process.get_current_intensity(chem_shift)], "cID":[""]})
+    process.current_spectrum.edited_peak_table = pd.concat([process.current_spectrum.edited_peak_table, new_line])
 
 
 if process is None:
@@ -143,7 +129,6 @@ else:
 
             if peakpicking_threshold != process.current_spectrum.peakpicking_threshold:
                 process.update_pp_threshold(peakpicking_threshold)
-                
             
             fig = process.current_spectrum.plot(pp=process.current_spectrum.edited_peak_table, threshold=process.current_spectrum.peakpicking_threshold)
             fig.update_layout(autosize=False, width=800, height=500)
@@ -154,7 +139,6 @@ else:
 
             with col1:
                 st.write("Peak list")
-                #session.object_space["edited_peak_table"] = process.current_spectrum.edited_peak_table
                 edited_peak_table = st.data_editor(
                             process.current_spectrum.edited_peak_table,
                             column_config={
@@ -186,7 +170,6 @@ else:
 
             if create_models:
                 process.current_spectrum.edited_peak_table = edited_peak_table
-                #session.object_space["edited_peak_table"] = process.current_spectrum.edited_peak_table
                 process.current_spectrum.user_models = {}
 
 
