@@ -200,12 +200,23 @@ Users can select the spectrum and the region to display.
 Parameters visualisation
 ================================================================================
 
-for the corresponding spectra shown above you can 
+For the corresponding spectra shown above users can find the table of paramters. 
+A particular attention must me given to the **opt** that contains the optimal values of the 
+fitting routine. If one value is highlited in red it means that is value is stuck to either 
+the lower or higher bound. If this the case the spectra need to re-analyzed in leaving more freedom tho the parameter.  
+
 .. image:: _static/visu_parameters.jpg
   :scale: 60%
 
+Finally, users can observe the variation of a given paramters as function of spectra IDs. 
+
 .. image:: _static/visu_param_plot.jpg
   :scale: 60%
+
+Export results
+================================================================================
+
+
 
 .. .. topic:: About Analysis
 
