@@ -2,6 +2,7 @@ import streamlit as st
 from sess_i.base.main import SessI
 import numpy as np
 import pandas as pd
+import math
 
 st.set_page_config(page_title="Process ref spectrum",layout="wide")
 st.title("Process reference spectrum")
@@ -53,29 +54,23 @@ else:
                 )
     
     if region != "Add new region":
-        _, _, col3, col4 = st.columns(4)
-
-        with col3:
-            exist = process.results.get(reference_spectrum, {}).get(region, False)
-            if exist:
+        exist = process.results.get(reference_spectrum, {}).get(region, False)
+        if exist:
+            _, _, col3, col4 = st.columns(4)
+            with col3:
                 delete = st.button("Delete in current spectrum", on_click=process.delete_region, args=[reference_spectrum, region])
-
-        with col4:
-            exist = process.results.get(reference_spectrum, {}).get(region, False)
-            if exist:
+            with col4:
                 delete = st.button("Delete in all spectra", on_click=process.delete_region, args=[None, region])
-
-
-    col1, col2 = st.columns(2)
 
     try:
         val_min, val_max = process.results[reference_spectrum][region].ppm_limits
         disabled = True
     except:
-        val_min = round(process.current_spectrum.ppm_limits[0],2)
-        val_max = round(process.current_spectrum.ppm_limits[1],2)
+        val_min = round(process.current_spectrum.ppm_limits[0], 2)
+        val_max = round(process.current_spectrum.ppm_limits[1], 2)
         disabled = False
-    
+
+    col1, col2 = st.columns(2)
     with col1:
         spec_lim_max = st.number_input(
                 label="Spectral limits (max)",
@@ -112,7 +107,6 @@ else:
             cur_lim = str(round(spec_lim_min, 2)) + " | " + str(round(spec_lim_max, 2))  
             process.set_current_spectrum(session.widget_space["reference_spectrum"], window=(round(spec_lim_min, 2), round(spec_lim_max, 2)))
 
-
     with st.form("Clustering"):
 
         if process is not None and cur_lim is not None:
@@ -136,20 +130,40 @@ else:
             fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
             st.plotly_chart(fig)
 
-            st.write("Peak list")
+            #col1, col2 = st.columns(2)
 
+            #with col1:
+            st.write("Peak list")
+            pk_table = process.current_spectrum.edited_peak_table
+            if not ((pk_table.iloc[-1].intensity is None) or math.isnan(pk_table.iloc[-1].intensity)):
+                for _ in range(3):
+                    pk_table.loc[len(pk_table)] = pd.Series(["","","",""])
             edited_peak_table = st.data_editor(
-                    process.current_spectrum.edited_peak_table,
-                    column_config={
-                            "ppm":"peak position",
-                            "intensity":"peak intensity",
-                            "cID":"cluster ID",
-                            "X_LW":None
-                        },
-                        hide_index=True,
-                        disabled=["ppm", "intensity"]
-                        )
-                
+                        pk_table,
+                        column_config={
+                                "ppm":"peak position",
+                                "intensity":"peak intensity",
+                                "cID":"cluster ID"
+                            },
+                            hide_index=True
+                            )
+            #with col2:
+            #    col3, col4 = st.columns(2)
+            #    with col3:
+            #        chem_shift = st.number_input(
+            #                label="Chemical shift",
+            #                key="chem_shift",
+            #                min_value = spec_lim_min,
+            #                max_value = spec_lim_max
+            #            )
+            #        intensity = st.number_input(
+            #                label="Intensity",
+            #                key="intensity",
+            #                value=process.get_current_intensity(chem_shift),
+            #                disabled=True
+            #            )
+            #        add_peak = st.button("Add peak in peak list")
+
             create_models = st.form_submit_button("Assign peaks") 
 
             if create_models:
@@ -158,11 +172,14 @@ else:
                 process.current_spectrum.user_models = {}
 
 
-    with st.form("create model"):
+    if isinstance(process.current_spectrum.edited_peak_table, pd.DataFrame):
 
-        if isinstance(process.current_spectrum.edited_peak_table, pd.DataFrame):
+        tmp = process.current_spectrum.edited_peak_table[~process.current_spectrum.edited_peak_table.ppm.isnull()]
+        ls = [i for i in tmp.cID.values.tolist() if not pd.isnull(i) and i != ""]
 
-            if len(set(list(filter(None, process.current_spectrum.edited_peak_table.cID.values.tolist())))):
+        if len(ls):
+
+            with st.form("create model"):
 
                 st.write("### Model construction")
 
@@ -266,8 +283,6 @@ else:
         save = st.button(txt, on_click=process.add_region)
 
         if save:
-            #process.add_region()
-            #st.session_state.regions = ["Add new region"] + process.regions(process.current_spectrum.rowno)
             st.success("Saved")
 
 

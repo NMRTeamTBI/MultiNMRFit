@@ -300,6 +300,8 @@ class Spectrum(object):
         # Change columns order
         peak_table = peak_table[['ppm','intensity','X_LW','cID']]
 
+        peak_table.drop('X_LW', axis=1, inplace=True)
+
         logger.debug("peak table\n{}".format(peak_table))
 
         return peak_table

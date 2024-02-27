@@ -199,7 +199,6 @@ class Process(object):
         # read processed data
         try:
             dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
-
             # extract ppm and intensities
             udic = ng.bruker.guess_udic(dic, data)
             uc_F = ng.fileiobase.uc_from_udic(udic, 1)
@@ -218,7 +217,7 @@ class Process(object):
         """
 
         # filtering and removing none assigned rows
-        edited_peak_table = self.current_spectrum.edited_peak_table
+        edited_peak_table = self.current_spectrum.edited_peak_table.dropna()
         # Check if some clusters overlap
         mask = edited_peak_table['cID'].str.contains(',')
         # Duplicate rows for overlapping clusters (if any)
@@ -233,7 +232,6 @@ class Process(object):
                     edited_peak_table_dup = pd.concat([edited_peak_table_dup, tmp_row])
             edited_peak_table = edited_peak_table_dup
                 
-
         edited_peak_table = edited_peak_table.replace(r'^\s*$', np.nan, regex=True)
         edited_peak_table.dropna(axis=0, inplace=True)
 
@@ -553,6 +551,11 @@ class Process(object):
                     ]
                     consolidated_results.append(tmp)
         self.consolidated_results = pd.DataFrame(consolidated_results,columns = ['rowno','region','signal_id','model','par','opt','opt_sd'])
+
+    def get_current_intensity(self, ppm):
+        #tmp = self.current_spectrum.ppm - ppm
+        idx = min(range(len(self.current_spectrum.ppm)), key=lambda i: abs(self.current_spectrum.ppm[i]-ppm))
+        return self.current_spectrum.intensity[idx]
 
     def select_params(self,signal,parameter):
         selected_params = self.consolidated_results[(self.consolidated_results.signal_id==signal)&(self.consolidated_results.par==parameter)]
