@@ -22,7 +22,7 @@ if process is None:
 else:
 
     if len(process.results):
-        with st.container():
+        with st.container(border=True):
             
             st.write("### Spectra")
 
@@ -67,8 +67,7 @@ else:
                 fig.for_each_trace(lambda trace: trace.update(visible="legendonly") if "signal" in trace.name else ())
             st.plotly_chart(fig)
 
-            with st.container():
-                st.write("### Parameters")
+            st.write("### Parameters")
 
             tmp = process.results[spectrum][region].params.style.apply(process.highlighter, axis=None)
 
@@ -81,7 +80,7 @@ else:
             # consolidate the results 
             process.consolidate_results()
 
-        with st.container():
+        with st.container(border=True):
             st.write("### Plot")
 
             # signal selection to visualize
@@ -118,7 +117,7 @@ else:
                 fig.update_yaxes(rangemode="tozero")
             st.plotly_chart(fig)
 
-        with st.container():
+        with st.container(border=True):
             st.write("### Export")
 
             col1, col2 = st.columns(2)
