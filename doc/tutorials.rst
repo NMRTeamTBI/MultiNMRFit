@@ -216,8 +216,25 @@ Finally, users can observe the variation of a given paramters as function of spe
 Export results
 ================================================================================
 
+Users can export their results tabulated text file in 2 different manners: **all data** or **specific data**
+In the first case (**all data**) all the parameters of all the regions and spectra will be saved in the **output** location 
+defined in the first page of the interface. If the second case (option **specific data** selected), you can select one region, one parameter that will 
+exclusively saved in the file. n any case the output text file is saved with following format: 
 
 
++---------+----------+-------------+---------+---------+---------+---------+
+|  rowno  |  region  |  signal_id  |  model  |   par   |    opt  |  opt_sd |
++=========+==========+=============+=========+=========+=========+=========+
+|  1  |  -0.26 | 0.2  |  signal_id  |  model  |   par   |    opt  |  opt_sd |
++---------+----------+-------------+---------+---------+---------+---------+
+|  2  |  -0.26 | 0.2  |  signal_id  |  model  |   par   |    opt  |  opt_sd |
++---------+----------+-------------+---------+---------+---------+---------+
+|  3  |  -0.26 | 0.2  |  signal_id  |  model  |   par   |    opt  |  opt_sd |
++---------+----------+-------------+---------+---------+---------+---------+
+|  4  |  -0.26 | 0.2  |  signal_id  |  model  |   par   |    opt  |  opt_sd |
++---------+----------+-------------+---------+---------+---------+---------+
+|  5  |  -0.26 | 0.2  |  signal_id  |  model  |   par   |    opt  |  opt_sd |
++---------+----------+-------------+---------+---------+---------+---------+
 .. .. topic:: About Analysis
 
 ..           Two type of analysis type are provided **Pseudo2D** or **1D_Series**. In the case of **Pseudo2D** analysis a single *Experiments* should be given and all the 
