@@ -15,8 +15,8 @@ session = SessI(
 # get process
 process = session.object_space["process"]
 
-def append_line(chem_shift, process):
-    new_line = pd.DataFrame({"ppm":[chem_shift], "intensity":[process.get_current_intensity(chem_shift)], "cID":[""]})
+def append_line(chem_shift, process, name):
+    new_line = pd.DataFrame({"ppm":[chem_shift], "intensity":[process.get_current_intensity(chem_shift)], "cID":[name]})
     process.current_spectrum.edited_peak_table = pd.concat([process.current_spectrum.edited_peak_table, new_line])
 
 
@@ -149,19 +149,21 @@ else:
                                 hide_index=True
                                 )
             with col2:
+                st.write("Add peak in peak list")
                 col3, col4 = st.columns(2)
                 with col3:
                     chem_shift = st.number_input(
                             label="Chemical shift",
-                            key="chem_shift",
                             min_value = spec_lim_min,
                             max_value = spec_lim_max
                         )
-                    add_peak = st.button("Add peak in peak list", on_click=append_line, args=(chem_shift, process))
+                    name = st.text_input(
+                            label="Signal name"
+                        )
+                    add_peak = st.button("Add peak", on_click=append_line, args=(chem_shift, process, name))
                 with col4:
                     intensity = st.number_input(
                             label="Intensity",
-                            key="intensity",
                             value=process.get_current_intensity(chem_shift),
                             disabled=True
                         )
