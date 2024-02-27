@@ -15,6 +15,25 @@ session = SessI(
 # get process
 process = session.object_space["process"]
 
+def append_line(chem_shift, process):
+    # df = process.current_spectrum.edited_peak_table
+    # df.loc[len(df)] = pd.Series([chem_shift, process.get_current_intensity(chem_shift), ""])
+    # print("toto")
+    # print(df)
+    # print("tutu")
+    # def2 = pd.DataFrame({"ppm":[chem_shift], "intensity":[process.get_current_intensity(chem_shift)], "cID":[""]})
+    # print(def2)
+    # print(pd.Series([chem_shift, process.get_current_intensity(chem_shift), ""]))
+    # session.object_space["edited_peak_table"] = pd.concat([])
+    df = process.current_spectrum.edited_peak_table
+
+    df2 = pd.DataFrame({"ppm":[chem_shift], "intensity":[process.get_current_intensity(chem_shift)], "cID":[""]})
+
+    #session.object_space["edited_peak_table"] = pd.concat([df, df2])
+
+    process.current_spectrum.edited_peak_table = pd.concat([df, df2])
+
+
 if process is None:
 
     st.warning("Please load a dataset or import a process file.")
@@ -104,10 +123,10 @@ else:
             st.error("Error: ppm max must be higher than ppm min.")
             cur_lim = None
         else:  
-            cur_lim = str(round(spec_lim_min, 2)) + " | " + str(round(spec_lim_max, 2))  
+            cur_lim = str(round(spec_lim_min, 2)) + " | " + str(round(spec_lim_max, 2))
             process.set_current_spectrum(session.widget_space["reference_spectrum"], window=(round(spec_lim_min, 2), round(spec_lim_max, 2)))
 
-    with st.form("Clustering"):
+    with st.container(border=True):
 
         if process is not None and cur_lim is not None:
 
@@ -124,51 +143,50 @@ else:
 
             if peakpicking_threshold != process.current_spectrum.peakpicking_threshold:
                 process.update_pp_threshold(peakpicking_threshold)
-
+                
+            
             fig = process.current_spectrum.plot(pp=process.current_spectrum.edited_peak_table, threshold=process.current_spectrum.peakpicking_threshold)
             fig.update_layout(autosize=False, width=800, height=500)
             fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
             st.plotly_chart(fig)
 
-            #col1, col2 = st.columns(2)
+            col1, col2 = st.columns(2)
 
-            #with col1:
-            st.write("Peak list")
-            pk_table = process.current_spectrum.edited_peak_table
-            if not ((pk_table.iloc[-1].intensity is None) or math.isnan(pk_table.iloc[-1].intensity)):
-                for _ in range(3):
-                    pk_table.loc[len(pk_table)] = pd.Series(["","","",""])
-            edited_peak_table = st.data_editor(
-                        pk_table,
-                        column_config={
-                                "ppm":"peak position",
-                                "intensity":"peak intensity",
-                                "cID":"cluster ID"
-                            },
-                            hide_index=True
-                            )
-            #with col2:
-            #    col3, col4 = st.columns(2)
-            #    with col3:
-            #        chem_shift = st.number_input(
-            #                label="Chemical shift",
-            #                key="chem_shift",
-            #                min_value = spec_lim_min,
-            #                max_value = spec_lim_max
-            #            )
-            #        intensity = st.number_input(
-            #                label="Intensity",
-            #                key="intensity",
-            #                value=process.get_current_intensity(chem_shift),
-            #                disabled=True
-            #            )
-            #        add_peak = st.button("Add peak in peak list")
+            with col1:
+                st.write("Peak list")
+                #session.object_space["edited_peak_table"] = process.current_spectrum.edited_peak_table
+                edited_peak_table = st.data_editor(
+                            process.current_spectrum.edited_peak_table,
+                            column_config={
+                                    "ppm":"peak position",
+                                    "intensity":"peak intensity",
+                                    "cID":"cluster ID"
+                                },
+                                hide_index=True
+                                )
+            with col2:
+                col3, col4 = st.columns(2)
+                with col3:
+                    chem_shift = st.number_input(
+                            label="Chemical shift",
+                            key="chem_shift",
+                            min_value = spec_lim_min,
+                            max_value = spec_lim_max
+                        )
+                    add_peak = st.button("Add peak in peak list", on_click=append_line, args=(chem_shift, process))
+                with col4:
+                    intensity = st.number_input(
+                            label="Intensity",
+                            key="intensity",
+                            value=process.get_current_intensity(chem_shift),
+                            disabled=True
+                        )
 
-            create_models = st.form_submit_button("Assign peaks") 
+            create_models = st.button("Assign peaks") 
 
             if create_models:
-
                 process.current_spectrum.edited_peak_table = edited_peak_table
+                #session.object_space["edited_peak_table"] = process.current_spectrum.edited_peak_table
                 process.current_spectrum.user_models = {}
 
 
