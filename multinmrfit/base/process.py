@@ -139,8 +139,6 @@ class Process(object):
             # create spectrum
             self.current_spectrum = spectrum.Spectrum(data=tmp_data, window=window, rowno=rowno)
 
-            self.current_spectrum.rowno = rowno
-
             # update pp threshold
             self.update_pp_threshold(max(self.current_spectrum.intensity)/5)
         
