@@ -175,6 +175,7 @@ else:
     if isinstance(process.current_spectrum.edited_peak_table, pd.DataFrame):
 
         tmp = process.current_spectrum.edited_peak_table[~process.current_spectrum.edited_peak_table.ppm.isnull()]
+        tmp = tmp[~tmp.intensity.isnull()]
         ls = [i for i in tmp.cID.values.tolist() if not pd.isnull(i) and i != ""]
 
         if len(ls):
