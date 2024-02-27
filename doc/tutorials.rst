@@ -47,7 +47,7 @@ The follwing columns here names **0** to **n** correspond to each individual spe
 .. note:: **list of 1Ds**:  
         The list of  experiments should be provided as 
         * 1,8,109 : for non-consecutive 
-        * 1-5 : for consecutive experiments (resulting in 1,2,3,4,5)
+        * 1-5 : sequential se experiments (resulting in 1,2,3,4,5)
         * 1-5,109 : for incomplete series (resulting in 1,2,3,4,5,109) 
 
 .. warning:: **list of 1Ds**  
@@ -181,143 +181,50 @@ Once you have fitted all the data you can move to last page
 .. Results visualisation
 .. ********************************************************************************
 
-This page provides several visualization options of the results. 
+This page provides several visualization options of the results. On top, you can inspect every fitted spectrum. 
+If multiple signals were fitted on the the same region, you can observe individual ones by clicking on the different 
+signal IDs in the figure caption.
 
 ..  _`Spectra visualisation`:
 
 Spectra visualisation
 ================================================================================
 
-User can select the spectrum and the region to display. 
+Users can select the spectrum and the region to display. 
 
 .. image:: _static/visu_spectra.jpg
   :scale: 60%
 
+..  _`Parameters visualisation`:
+
+Parameters visualisation
+================================================================================
+
+For the corresponding spectra shown above users can find the table of paramters. 
+A particular attention must me given to the **opt** that contains the optimal values of the 
+fitting routine. If one value is highlited in red it means that is value is stuck to either 
+the lower or higher bound. If this the case the spectra need to re-analyzed in leaving more freedom tho the parameter.  
+
 .. image:: _static/visu_parameters.jpg
   :scale: 60%
+
+Finally, users can observe the variation of a given paramters as function of spectra IDs. 
 
 .. image:: _static/visu_param_plot.jpg
   :scale: 60%
 
-.. .. topic:: About Analysis
+Export results
+================================================================================
 
-..           Two type of analysis type are provided **Pseudo2D** or **1D_Series**. In the case of **Pseudo2D** analysis a single *Experiments* should be given and all the 
-..           rows will be processes unless the *Data row no* is defined. The **1D_Series** analysis works for 1D 1H experiments acquired independently. This analysis should 
-..           also be used for a the fitting of a single experiment. *Experiments* might be defined as 1,2,3,4,5,6,7,8,9,10 (or 1-10) for sequential experiments and 1,5,6,7,8,9,10
-..           (1,5-10) for incomplete series. 
-
-.. .. note:: Process Number 
-..          (e.g. "data_proc_no") should be the same for all experiments.
-
-.. .. note:: Threshold
-..          Users will be able to update it through the graphical user interface is needed.
+Users can export their results tabulated text file in 2 different manners: **all data** or **specific data**
+In the first case (**all data**) all the parameters of all the regions and spectra will be saved in the **output** location 
+defined in the first page of the interface. If the second case (option **specific data** selected), you can select one region, one parameter that will 
+exclusively saved in the file.  
 
 
-.. Options
-.. --------------------------------------------------------------------------------
-.. :Data row no: Options used in the case of incomplete processing of a Pseudo2D experiments, in which only a subset of rows need to be analyzed; e.g. "option_data_row_no"
-.. :Use previous fit: Options for the analysis to use the fit of the row *i-1* as a starting parameter for the fitting of row *i*; e.g. "option_previous_fit"
-.. :Offset: Adding an offset in the fitting (otherwise set to 0 by default); e.g. "option_offset"
-.. :Merge pdf(s): Options used to merge all pdfs in a single file; e.g. "option_merge_pdf"
+Warning and error messages
+--------------------------------------------------------------------------------
 
-.. ..  _`MultiNMRFit Analysis`:
-
-.. MultiNMRFit Analysis
-.. ================================================================================
-
-.. Data Loading
-.. --------------------------------------------------------------------------------
-.. The MultiNMRFit analysis is launched from a terminal (Windows: *Anaconda Prompt*) either by using 
-.. the graphical user interface or the command line. In the first case, a interface will allow the user to 
-.. fill all required information, save the configuration file and run the analysis. 
-
-.. .. code-block:: bash
-..   multinmrfit 
-
-.. In the second instance, the configuration file already exists and the analysis might be started from the command line.
-
-.. .. code-block:: bash
-..   multinmrfit <path>/<*config_file.json*>
-
-.. Data visualisation and clustering
-.. --------------------------------------------------------------------------------
-.. A second graphical interface will pop-up and will allow the user to define the multiplets to be analyzed.  
-.. If the threshold needs to be re-evaluated (lower or higher), please change its value and update threshold. 
-
-.. .. note:: Number of peaks
-..         Number of peaks is by default limited to 15.
-
-.. The peaks detection is automatically performed on the reference spectrum and within the spectral range provided by the user in the first step. Only peaks with 
-.. an assigned *Cluster ID* will be fitted later on (e.g. by leaving *Cluster ID* it means that the peak is not included in the analysis)
-
-.. The mulitplicity of each cluster is automatically defined by the number of repetitions of the same *Cluster ID*
-.. in the *Peak Picking visualisation and Clustering* interface. At the current stage of development we have implemented 
-.. only a limited number of multiplicity:
-
-.. :1 peak: Singlet
-.. :2 peaks: Doublet
-.. :3 peaks: Triplet
-.. :4 peaks: Quadruplet 
-
-.. .. note:: Cluster ID
-..         might be defined by integers or string (*xx* for instance)
-
-.. .. note:: Strong coupling
-..         is included for a quadruplet by setting the options *Roof* in the menu of one of the 4 rows defined with the *Cluster ID*.
-
-
-.. Fitting
-.. --------------------------------------------------------------------------------
-.. The fitting procedure starts with the minimization of the reference spectrum with the sum of all the multiplicty defined by the user. 
-.. This initial minimization procedure uses the results of the peak picking as starting point for the position, intensities and coupling constants. 
-.. Each multiplicity is defined a sum of signals that are themselves calculated as a weighted average of a lorentzian and gaussian functions reprensented with the parameter *a*. 
-
-.. The procedure then optimized the **linewidth** of the Signals (e.g. "lw"), the **ratio** lorentzian/gaussian (e.g. "a"), the **amplitude** (e.g. "Amp"), 
-.. the **center position** of the multiplet (e.g. "x0") and the different **coupling constants** (e.g. "J1, J2").
-
-.. The series of spectra is then divided in two groups: above and below the reference spectrum and will be fitted in parallel. A interface will whow the progress 
-.. of the analysis in real-time. If the option *option_previous_fit* is selected (by default for a *Pseudo2D* analysis) the fitting of the a spectra *i* will use 
-.. starting parameters the final results of *i-1* otherwise it will always use the results of the reference spectrum as the initial parameters. The use of this option also restrained 
-.. the change of parameters between 2 spectra with for instance J within 5% of the previous value, x0 within 1% and lw within 30%. 
-
-.. .. note:: Use previous fit
-..         option is worth using even for a 1D_Series if these data are time dependent for instance. 
-
-.. Once the complete analysis is done the program will automatically generate text files and plot the data. Progress are shown in the terminal (Windows: *Anaconda Prompt*).
-
-.. ..  _`Output data`:
-
-.. Output files
-.. ================================================================================
-
-.. Result file
-.. --------------------------------------------------------------------------------
-.. All output are located in the <*Output folder*> 
-
-.. Result file(s) are txt files name as <*Output name*>_<*multiplicity*>_<*cluster_id*>.txt:
-.. If multiple clusters are defined by the user one file per multiplets is created and they all contain the following columns:
-
-.. :exp_no: experiments number 
-.. :proc_no: processing number
-.. :row_id: row number in the Pseudo2D experiments (set as *1* for 1D_Series)
-.. :x0, a, Amp, lw, J1, .., integral: fitting parameters 
-.. :x0_err, a_err, Amp_err, lw_err, J1_err, .., integral_err: error on fitting parameters estimated from covariance matrix
-.. :offset: offset to the baseline if the option is selected 
-
-.. Result file
-.. --------------------------------------------------------------------------------
-
-.. All individual plots are displayed in <*plot_ind*> folder which is automatically created. 
-.. If the option *Merge pdf(s)* is selected a single file is created in <*Output name*>_<*Spectra_Full*>.pdf
-
-.. --------------------------------------------------------------------------------
-
-.. A log file is created in the same directory <*Output name*> to store all parameters (for reproducibility),
-.. in file a *process.log*.
-
-.. Warning and error messages
-.. --------------------------------------------------------------------------------
-
-.. Error messages are explicit. You should examine carefully any warning/error message.
-.. After correcting the problem, you might have to restart MultiNMRFit (to reload files)
-.. and perform the analysis again.
+Error messages are explicit. You should examine carefully any warning/error message.
+After correcting the problem, you might have to restart MultiNMRFit (to reload files)
+and perform the analysis again.
