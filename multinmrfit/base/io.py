@@ -36,7 +36,7 @@ class IoHandler():
         return models
 
 
-    def load_data(self, data, window: tuple = None):
+    def load_data(self, data, window: tuple = None, rowno: int = None):
 
         # initialize metadata & load NMR data
         if isinstance(data, pd.DataFrame):
@@ -44,7 +44,7 @@ class IoHandler():
                        "dataset": None,
                        "expno": None,
                        "procno": None,
-                       "rowno": None,
+                       "rowno": rowno,
                        "window": window}
             dataset["ppm"], dataset["intensity"] = self.filter_window(data.ppm, data.intensity, window)
         elif isinstance(data, dict):

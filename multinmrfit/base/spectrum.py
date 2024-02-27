@@ -29,7 +29,7 @@ class Spectrum(object):
         * plotting
     """
 
-    def __init__(self, data, window: tuple = None, from_ref: int = None) -> None:
+    def __init__(self, data, window: tuple = None, from_ref: int = None, rowno: int = None) -> None:
         """Construct the Spectrum object.
 
         Args:
@@ -42,7 +42,7 @@ class Spectrum(object):
 
         # load NMR data
         loader = io.IoHandler()
-        dataset = loader.load_data(data, window=window)
+        dataset = loader.load_data(data, window=window, rowno=rowno)
 
         # set spectrum-related attributes
         self.data_path = dataset["data_path"]
