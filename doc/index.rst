@@ -33,8 +33,9 @@ We strongly encourage you to read the :ref:`Tutorials` before using MultiNMRFit.
    installation.rst
    quickstart.rst
    tutorials.rst
+   models.rst
    cite.rst
-
+   
 .. toctree::
    :maxdepth: 1
    :caption: Miscellaneous
