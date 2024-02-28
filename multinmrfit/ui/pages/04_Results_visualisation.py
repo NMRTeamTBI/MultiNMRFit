@@ -88,7 +88,7 @@ else:
 
             with col1:
             
-                signal_list = sorted(list(process.consolidated_results.signal_id.unique()))      
+                signal_list = process.compounds()      
                 signal = st.selectbox(
                             label="Select signal",
                             key="signal_to_show",
