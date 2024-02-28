@@ -171,7 +171,7 @@ with st.form('Inputs/Outputs'):
         )
 
     if session.object_space["process"] is None:
-        load_spectrum = st.form_submit_button('Load spectrum')
+        load_spectrum = st.form_submit_button('Load data')
     else:
         load_spectrum = st.form_submit_button('Update process')
     
