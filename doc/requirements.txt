@@ -1,8 +1,8 @@
-sphinx>=1.4
-nmrglue>=0.6
-numpy>=1.14.0
-pandas>=0.17.1
-scipy>=0.12.1
+sphinx
+nmrglue
+numpy
+pandas
+scipy
 sess_i
 streamlit
 plotly
