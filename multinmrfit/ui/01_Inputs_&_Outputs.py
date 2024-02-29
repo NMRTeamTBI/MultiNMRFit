@@ -102,7 +102,7 @@ with st.container():
             label='Select data type',
             key = 'analysis_type',
             options = l_at,
-            index = l_at.index(session.object_space["process"].analysis_type) if session.object_space["process"] is not None else 0,
+            index = l_at.index(session.widget_space["analysis_type"]) if session.widget_space["analysis_type"] is not None else 0,
             disabled=disabled
             )
     session.register_widgets({"analysis_type": analysis_type})
