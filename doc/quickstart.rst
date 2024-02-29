@@ -62,12 +62,16 @@ The MultiNMRFit window will open. If the window fails to open, have a look at ou
 .. image:: _static/interface.jpg
   :scale: 60%
 
-Fill the required entries from the **Inputs** and **Outputs** sections and 
-click on :samp:`Load data`. A message ("Dataset loaded successfully") will indicate your data are correctly loaded, otherwise check your inputs (path or data type).
+The main processing steps can be performed via the menu on the left side bar:
+
+* **Inputs & Outputs**: information required to load the data to process and export results (type of data, input and output directories, etc)
+* **Process spectra**: process one or several signal(s) of specific spectra
+* **Process from reference**: process a serie of spectra as done on a given spectrum (used as reference)
+* **Results visualisation**: view and export processing results
+
+Details on MultiNMRFit usage can be found in the :ref:`tutorial` section.
 
 .. note:: The process is continuously and automatically saved as a pickle file in the output folder. To reopen the current processing state, just reopen this file by clicking on "Load a processing file - Browse files" on the side bar at the left.
-
-Data types include **pseudo2D**, **list of 1Ds** and **txt data**.
 
 .. warning:: MultiNMRFit silently overwrites (results and processing) files if they already exist. So take care to copy your results elsewhere or to change the output path and/or filename if you want to protect them from overwriting.
 
