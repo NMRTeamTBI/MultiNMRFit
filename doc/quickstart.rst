@@ -69,7 +69,7 @@ click on :samp:`Load data`. A message ("Dataset loaded successfully") will indic
 
 Data types include **pseudo2D**, **list of 1Ds** and **txt data**.
 
-.. note:: MultiNMRFit silently overwrites (results and processing) files if they already exist. So take care to copy your results elsewhere or to change the output path and/or filename if you want to protect them from overwriting.
+.. warning:: MultiNMRFit silently overwrites (results and processing) files if they already exist. So take care to copy your results elsewhere or to change the output path and/or filename if you want to protect them from overwriting.
 
 Library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
