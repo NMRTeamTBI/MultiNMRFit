@@ -168,3 +168,12 @@ class IoHandler():
 
         return ppm, data, names
 
+    def check_dataset(self):
+
+        if not Path(self.data_path).exists():
+            raise ValueError("Directory '{}' does not exist.".format(self.data_path))
+
+        full_path = Path(self.data_path, self.dataset, self.expno, 'pdata', self.procno)
+
+        if not full_path.exists():
+            raise ValueError("Directory '{}' does not exist.".format(full_path))

@@ -261,7 +261,7 @@ else:
 
                     # fit reference spectrum
                     with st.spinner('Fitting in progress, please wait...'):
-                        process.fit_reference_spectrum()
+                        process.current_spectrum.fit()
 
                 # show last fit
                 if process.current_spectrum.fit_results is not None:

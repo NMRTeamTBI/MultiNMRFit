@@ -80,19 +80,11 @@ class Process(object):
         # create default spectrum
         self.set_current_spectrum(dataset.get("rowno", self.names[0]), window=window)
 
+
     def add_region(self):
         self.results[self.current_spectrum.rowno] = self.results.get(self.current_spectrum.rowno, {})
         self.results[self.current_spectrum.rowno][self.current_spectrum.region] = copy.deepcopy(self.current_spectrum)
 
-    def check_dataset(self):
-
-        if not Path(self.data_path).exists():
-            raise ValueError("Directory '{}' does not exist.".format(self.data_path))
-
-        full_path = Path(self.data_path, self.dataset, self.expno, 'pdata', self.procno)
-
-        if not full_path.exists():
-            raise ValueError("Directory '{}' does not exist.".format(full_path))
 
     def delete_region(self, rowno, region):
         if rowno is None:
@@ -105,6 +97,7 @@ class Process(object):
             del self.results[rowno][region]
             if not len(self.results[rowno]):
                 del self.results[rowno]
+
 
     def update_pp_threshold(self, pp_threshold):
         """Update peak picking threshold, and detect peaks.
@@ -148,6 +141,7 @@ class Process(object):
         else:
 
             self.current_spectrum = copy.deepcopy(self.results[rowno][region])
+
 
     def model_cluster_assignment(self):
         """Estimate the number of peaks per model
@@ -218,14 +212,6 @@ class Process(object):
         self.current_spectrum.build_model(signals=self.signals, available_models=self.models, offset=offset)
 
 
-    def fit_reference_spectrum(self):
-        """Fit reference spectrum.
-        """
-
-        # fit reference spectrum
-        self.current_spectrum.fit()
-
-
     def get_models_peak_number(self):
         """Load signal models.
 
@@ -271,6 +257,7 @@ class Process(object):
             self.results[spectrum][region].update_params(pars)
             self.results[spectrum][region].update_offset(offset)
     
+
     @staticmethod
     def build_list(user_input):
         # check for allowed characters
@@ -312,6 +299,7 @@ class Process(object):
 
         return experiment_list
     
+
     def regions(self, rowno=None):
 
         # get regions
@@ -330,6 +318,7 @@ class Process(object):
             regions.sort()
 
         return regions
+
 
     def compounds(self, rowno=None, region=None):
 
@@ -358,6 +347,7 @@ class Process(object):
             compounds.sort()
 
         return compounds
+
 
     def spectra(self, region=None):
 
@@ -402,8 +392,6 @@ class Process(object):
         lower_bounds[mask] = 0
         mask = params['par'].isin(['gl'])
         lower_bounds[mask] = 0
-        #mask = params['par'].isin(["lw"]) & (lower_bounds < 0.0)
-        #lower_bounds[mask] = 0
         params["lb"] = lower_bounds
 
         return params
@@ -460,6 +448,7 @@ class Process(object):
         except Exception as e:
             raise ValueError(f"An unknown error has occured when saving the process file: {e}")
 
+
     def consolidate_results(self):
         consolidated_results = []
         for spec in self.results.keys():
@@ -492,15 +481,17 @@ class Process(object):
                     consolidated_results.append(tmp)
         self.consolidated_results = pd.DataFrame(consolidated_results,columns = ['rowno','region','signal_id','model','par','opt','opt_sd'])
 
+
     def get_current_intensity(self, ppm):
-        #tmp = self.current_spectrum.ppm - ppm
         idx = min(range(len(self.current_spectrum.ppm)), key=lambda i: abs(self.current_spectrum.ppm[i]-ppm))
         return self.current_spectrum.intensity[idx]
+
 
     def select_params(self,signal,parameter):
         selected_params = self.consolidated_results[(self.consolidated_results.signal_id==signal)&(self.consolidated_results.par==parameter)]
         return selected_params 
     
+
     def save_consolidated_results(self,data=False,partial_filename=False):
         output_path = Path(self.output_res_path, self.output_res_folder)
         output_file = Path(output_path, self.filename + ".txt")
@@ -511,6 +502,7 @@ class Process(object):
             data.to_csv(output_file,sep='\t', index=False)
         else:
             self.consolidated_results.to_csv(output_file,sep='\t', index=False)
+
 
     def plot(self, signal, parameter) -> go.Figure:
         selected_params = self.select_params(signal, parameter)
@@ -528,8 +520,9 @@ class Process(object):
             xaxis=dict(linecolor="black", mirror=True, showline=True), 
             yaxis=dict(linecolor="black", mirror=True, showline=True, title=parameter),
             legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
-
         return fig_full
+    
+
     @staticmethod
     def highlighter(x):
         # initialize default colors
@@ -537,5 +530,4 @@ class Process(object):
         # set Check color to red if opt is close to bounds
         color_codes['opt'] = np.where((x['opt'] < x['lb']*1.05) | (x['opt'] > x['ub']*0.95), 'color:red', None)
         return color_codes
-
 
