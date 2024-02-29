@@ -22,13 +22,13 @@ session = SessI(
 def save_defaults(options):
     save_path = pathlib.Path(multinmrfit.__file__).resolve().parent / "ui" / "conf"
     pathlib.Path(save_path).mkdir(parents=True, exist_ok=True)
-    with open(save_path / 'default_conf.pickle', 'wb') as handle:
+    with open(str(save_path / 'default_conf.pickle'), 'wb') as handle:
         pickle.dump(options, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 def load_defaults():
     try:
         load_path = pathlib.Path(multinmrfit.__file__).resolve().parent / "ui" / "conf" / 'default_conf.pickle'
-        with open(load_path, 'rb') as handle:
+        with open(str(load_path), 'rb') as handle:
             options = pickle.load(handle)
 
     except:
