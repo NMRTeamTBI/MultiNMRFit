@@ -35,7 +35,9 @@ class Process(object):
             window (tuple, optional): lower and upper bounds of the window of interest (in ppm) or full spectrum if None. Defaults to None.
         """
 
-        self.models = io.IoHandler.get_models()
+        self.io = io.IoHandler()
+        
+        self.models = self.io.get_models()
 
         # extract information
         self.analysis_type = dataset["analysis_type"]
@@ -57,11 +59,12 @@ class Process(object):
 
         # load spectrum
         if self.analysis_type == "pseudo2D":
-            self.ppm_full, self.data_full, self.names = self.load_2D_spectrum()
+            self.ppm_full, self.data_full, self.names = self.io.load_2D_spectrum(self.data_path, self.dataset, self.expno, self.procno)
         elif self.analysis_type == "list of 1Ds":
-            self.ppm_full, self.data_full, self.names = self.load_1D_spectrum()
+            expno_list = self.build_list(self.expno)
+            self.ppm_full, self.data_full, self.names = self.io.load_1D_spectrum(self.data_path, self.dataset, self.procno, expno_list)
         elif self.analysis_type == "txt data":
-            self.ppm_full, self.data_full, self.names = self.load_txt_spectrum()
+            self.ppm_full, self.data_full, self.names = self.io.load_txt_spectrum(self.txt_data)
         else:
             raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
 
@@ -145,69 +148,6 @@ class Process(object):
         else:
 
             self.current_spectrum = copy.deepcopy(self.results[rowno][region])
-
-    def load_1D_spectrum(self):
-        ppm_all = []
-        data_all = []
-        expno_list = self.build_list(self.expno)
-
-        for exp in expno_list:
-
-            # get complete data path
-            full_path = Path(self.data_path, self.dataset, str(exp), 'pdata', self.procno)
-        
-            # read processed data
-            try:
-                dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
-
-                # extract ppm and intensities
-                udic = ng.bruker.guess_udic(dic, data)
-                uc_F = ng.fileiobase.uc_from_udic(udic, 0)
-                ppm = uc_F.ppm_scale()
-                ppm_all.append(ppm)
-                data_all.append([data][0])
-            except Exception as e:
-                raise ValueError("An unknown error has occurred when opening spectrum: '{}'. Please check your inputs.".format(e))
-        
-        try:
-            data = np.array(data_all)
-        except:
-            raise ValueError("All spectra do not have the same length.")
-
-        return ppm_all[0], data, expno_list
-
-    def load_txt_spectrum(self):
-        if "ppm" not in self.txt_data.columns:
-            raise ValueError("Column 'ppm' missing")
-        ppm = self.txt_data.ppm.values.tolist()
-        data = np.array(self.txt_data.loc[:, self.txt_data.columns != 'ppm']).transpose()
-        names = [int(i) for i in self.txt_data.columns[self.txt_data.columns != 'ppm'].tolist()]
-
-        return ppm, data, names
-
-    def load_2D_spectrum(self):
-        """Load 2D NMR spectra.
-
-        Returns:
-            list: chemical shift
-            list: intensity
-        """
-        # get complete data path
-
-        full_path = Path(self.data_path, self.dataset, self.expno, 'pdata', self.procno)
-        
-        # read processed data
-        try:
-            dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
-            # extract ppm and intensities
-            udic = ng.bruker.guess_udic(dic, data)
-            uc_F = ng.fileiobase.uc_from_udic(udic, 1)
-            ppm = pd.Series(uc_F.ppm_scale())
-            names = list(range(1, data.shape[0]+1))
-        except Exception as e:
-            raise ValueError("An unknown error has occurred when opening spectrum: '{}'. Please check your inputs.".format(e))
-
-        return ppm, data, names
 
     def model_cluster_assignment(self):
         """Estimate the number of peaks per model

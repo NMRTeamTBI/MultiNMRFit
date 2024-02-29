@@ -103,3 +103,68 @@ class IoHandler():
 
         return ppm, intensity
 
+    @staticmethod
+    def load_1D_spectrum(data_path, dataset, procno, expno_list):
+        ppm_all = []
+        data_all = []
+        
+        for exp in expno_list:
+
+            # get complete data path
+            full_path = Path(data_path, dataset, str(exp), 'pdata', procno)
+        
+            # read processed data
+            try:
+                dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
+
+                # extract ppm and intensities
+                udic = ng.bruker.guess_udic(dic, data)
+                uc_F = ng.fileiobase.uc_from_udic(udic, 0)
+                ppm = uc_F.ppm_scale()
+                ppm_all.append(ppm)
+                data_all.append([data][0])
+            except Exception as e:
+                raise ValueError("An unknown error has occurred when opening spectrum: '{}'. Please check your inputs.".format(e))
+        
+        try:
+            data = np.array(data_all)
+        except:
+            raise ValueError("All spectra do not have the same length.")
+
+        return ppm_all[0], data, expno_list
+
+    @staticmethod
+    def load_txt_spectrum(txt_data):
+        if "ppm" not in txt_data.columns:
+            raise ValueError("Column 'ppm' missing")
+        ppm = txt_data.ppm.values.tolist()
+        data = np.array(txt_data.loc[:, txt_data.columns != 'ppm']).transpose()
+        names = [int(i) for i in txt_data.columns[txt_data.columns != 'ppm'].tolist()]
+
+        return ppm, data, names
+
+    @staticmethod
+    def load_2D_spectrum(data_path, dataset, expno, procno):
+        """Load 2D NMR spectra.
+
+        Returns:
+            list: chemical shift
+            list: intensity
+        """
+        # get complete data path
+
+        full_path = Path(data_path, dataset, expno, 'pdata', procno)
+        
+        # read processed data
+        try:
+            dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
+            # extract ppm and intensities
+            udic = ng.bruker.guess_udic(dic, data)
+            uc_F = ng.fileiobase.uc_from_udic(udic, 1)
+            ppm = pd.Series(uc_F.ppm_scale())
+            names = list(range(1, data.shape[0]+1))
+        except Exception as e:
+            raise ValueError("An unknown error has occurred when opening spectrum: '{}'. Please check your inputs.".format(e))
+
+        return ppm, data, names
+
