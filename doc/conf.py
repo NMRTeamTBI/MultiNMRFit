@@ -18,7 +18,7 @@
 
 project = 'MultiNMRFit'
 copyright = '2024, INRAE'
-author = 'Pierre Millard, Loïc Le-Gregam, Cyril Charlier'
+author = 'Pierre Millard, Cyril Charlier'
 
 # The full version, including alpha/beta/rc tags
 release = "2.0.0"

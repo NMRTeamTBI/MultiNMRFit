@@ -76,7 +76,7 @@ in the command above. You will need a recent latex installation.
 In preparation, 2024, [doi: xxx.xxxx](https://doi.org/xxx.xxxx)
 
 ## Authors
-Pierre Millard, Loic Le-Gregam, Cyril Charlier 
+Pierre Millard, Cyril Charlier 
 
 ## Contact
 :email: charlier@insa-toulouse.fr 

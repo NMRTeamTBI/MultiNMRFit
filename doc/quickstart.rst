@@ -7,7 +7,7 @@ Quick start
 Installation
 ------------------------------------------------
 
-MultiNMRFit requires Python 3.6 or higher. If you do not have a Python environment
+MultiNMRFit requires Python 3.8 or higher. If you do not have a Python environment
 configured on your computer, we recommend that you follow the instructions
 from `Anaconda <https://www.anaconda.com/download/>`_.
 
@@ -47,7 +47,7 @@ but it will be more difficult to update MultiNMRFit later on.
 Usage
 ------------------------------------------------
 
-*Data Loading* via Graphical User Interface
+Graphical User Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To start the Graphical User Interface, type in a terminal (Windows: *Anaconda Prompt*):
@@ -62,23 +62,14 @@ The MultiNMRFit window will open. If the window fails to open, have a look at ou
 .. image:: _static/interface.jpg
   :scale: 60%
 
-Fill al the required entries from the **Inputs** and **outputs** sections and 
-click on :samp:`Load Spectrum`. If you the data are correctly loaded it will display a message "Dataset loaded successfully" otehrwise check your inputs (path or data type)
+Fill the required entries from the **Inputs** and **Outputs** sections and 
+click on :samp:`Load data`. A message ("Dataset loaded successfully") will indicate your data are correctly loaded, otherwise check your inputs (path or data type).
 
-.. note:: The saving of the process is fully automatic.
+.. note:: The process is continuously and automatically saved as a pickle file in the output folder. To reopen the current processing state, just reopen this file by clicking on "Load a processing file - Browse files" on the side bar at the left.
 
-The default data type is **pseudo2D**. It can be changed to **list of 1Ds** with similar interface or to **txt data** and the interface will be adapted such as:
+Data types include **pseudo2D**, **list of 1Ds** and **txt data**.
 
-.. image:: _static/interface_txt.jpg
-  :scale: 60%
-
-
-.. note:: MultiNMRFit silently overwrites (results and log) files if they already exist. So take care to copy your results elsewhere if you want to protect them from overwriting.
-
-*Data Loading* via Command Line Interface
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**Not implemented yet**
+.. note:: MultiNMRFit silently overwrites (results and processing) files if they already exist. So take care to copy your results elsewhere or to change the output path and/or filename if you want to protect them from overwriting.
 
 Library
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
