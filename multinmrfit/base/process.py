@@ -68,6 +68,9 @@ class Process(object):
         else:
             raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
 
+        # clean if entire rows of 0
+        self.clean_empty_rows()
+
         # get dimensions
         self.exp_dim = self.data_full.shape
 
@@ -80,7 +83,13 @@ class Process(object):
         # create default spectrum
         self.set_current_spectrum(dataset.get("rowno", self.names[0]), window=window)
 
-
+    def clean_empty_rows(self):
+        """ Removes rows filled with 0 
+        """
+        self.data_full = self.data_full[~np.all(self.data_full == 0, axis=1)]
+        self.names = self.names[:self.data_full.shape[0]]
+        
+        
     def add_region(self):
         self.results[self.current_spectrum.rowno] = self.results.get(self.current_spectrum.rowno, {})
         self.results[self.current_spectrum.rowno][self.current_spectrum.region] = copy.deepcopy(self.current_spectrum)
