@@ -513,13 +513,21 @@ class Process(object):
             self.consolidated_results.to_csv(output_file,sep='\t', index=False)
 
     def save_spetrum_data(self,spectrum, region, filename):
+            
         spectrum_to_save = pd.DataFrame(columns=['spectrum','region','ppm','intensity','best_fit'])
+        
         spectrum_to_save['ppm'] = self.results[spectrum][region].ppm
         spectrum_to_save['intensity'] = self.results[spectrum][region].intensity
         spectrum_to_save['best_fit'] = self.results[spectrum][region].fit_results.best_fit
         spectrum_to_save['spectrum'] = spectrum
         spectrum_to_save['region'] = region
-        
+
+        for name,model in self.results[spectrum][region].models.items():
+           
+            spectrum_to_save[str(name)] = model.simulate(
+                [self.results[spectrum][region].params['opt'].values.tolist()[i] for i in model._par_idx], 
+                self.results[spectrum][region].ppm)
+
         output_path = Path(self.output_res_path, self.output_res_folder)
         output_file = Path(output_path, filename + ".txt")
 

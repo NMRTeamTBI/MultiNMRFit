@@ -555,7 +555,6 @@ class Spectrum(object):
             fig_ini = go.Scatter(x=self.ppm, y=ini_intensity, mode='lines', name='initial values', marker_color="#7FC97F")
             fig_full.add_trace(fig_ini, row=1, col=1)
 
-
         if colored_area:
             for name, model in self.models.items():
                 model_intensity = model.simulate([self.params['opt'].values.tolist()[i] for i in model._par_idx], np.array(self.ppm.values.tolist()))
