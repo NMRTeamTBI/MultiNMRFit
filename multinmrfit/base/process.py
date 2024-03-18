@@ -470,8 +470,8 @@ class Process(object):
                         self.results[spec][reg].params.iloc[i].loc['signal_id'],
                         self.results[spec][reg].params.iloc[i].loc['model'],
                         self.results[spec][reg].params.iloc[i].loc['par'],
-                        self.results[spec][reg].params.iloc[i].loc['opt'],
-                        self.results[spec][reg].params.iloc[i].loc['opt_sd'],
+                        self.results[spec][reg].params.iloc[i].loc['opt'] if 'opt' in self.results[spec][reg].params.columns else None,
+                        self.results[spec][reg].params.iloc[i].loc['opt_sd'] if 'opt' in self.results[spec][reg].params.columns else None,
                     ]
                     consolidated_results.append(tmp)
                 
