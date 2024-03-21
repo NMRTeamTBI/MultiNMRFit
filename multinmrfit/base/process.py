@@ -392,7 +392,7 @@ class Process(object):
         mask = params['par'].isin(["gl"])
         upper_bounds[mask] = 1.0
         mask = params['par'].isin(["intensity"])
-        upper_bounds[mask] *= 10
+        upper_bounds[mask] = 20 * params["opt"][mask]
         params["ub"] = upper_bounds
         
         # shift lower bound (with some fixed at zero)
@@ -401,6 +401,8 @@ class Process(object):
         lower_bounds[mask] = 0
         mask = params['par'].isin(['gl'])
         lower_bounds[mask] = 0
+        mask = params['par'].isin(['intensity'])
+        lower_bounds[mask] = 1
         params["lb"] = lower_bounds
         return params
 
