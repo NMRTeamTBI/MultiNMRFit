@@ -402,7 +402,6 @@ class Process(object):
         mask = params['par'].isin(['gl'])
         lower_bounds[mask] = 0
         params["lb"] = lower_bounds
-
         return params
 
 

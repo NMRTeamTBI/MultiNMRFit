@@ -462,7 +462,7 @@ class Spectrum(object):
 
         # apply scaling factor on parameters (intensity & offset)
         params_scaled = self.params.copy(deep=True)
-        params_scaled.loc[params_scaled['par'].isin(["intensity", "offset"]), ["ini", "lb", "ub"]] /= scaling_factor
+        params_scaled.loc[params_scaled['par'].isin(["intensity", "offset"]), ["ini", "lb", "ub"]] /= abs(scaling_factor)
         
         # set initial values
         x0 = params_scaled['ini'].values.tolist()
@@ -471,7 +471,7 @@ class Spectrum(object):
         bounds = list(zip(params_scaled['lb'], params_scaled['ub']))
 
         # scale data
-        data_scaled = self.intensity / scaling_factor
+        data_scaled = self.intensity / abs(scaling_factor)
 
         # fit spectrum
         if method == "differential_evolution":
@@ -509,7 +509,7 @@ class Spectrum(object):
         self.params['opt_sd'] = standard_deviations
 
         # scale back estimated parameters
-        self.params.loc[self.params['par'].isin(["intensity", "offset"]), ["opt", "opt_sd"]] *= scaling_factor
+        self.params.loc[self.params['par'].isin(["intensity", "offset"]), ["opt", "opt_sd"]] *= abs(scaling_factor)
 
         # simulate spectrum from estimated parameters
         self.fit_results.best_fit = self.simulate(self.params['opt'].values.tolist())
