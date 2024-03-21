@@ -70,7 +70,7 @@ class Process(object):
 
         # clean if entire rows of 0
         self.clean_empty_rows()
-
+        
         # get dimensions
         self.exp_dim = self.data_full.shape
 
@@ -414,7 +414,7 @@ class Process(object):
         """
 
         # create spectrum
-        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[self.names.index(rowno)-1,:])], axis=1)
+        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[self.names.index(rowno),:])], axis=1)
         tmp_data.columns = ["ppm", "intensity"]
         sp = spectrum.Spectrum(data=tmp_data, window=self.results[ref][region].window, from_ref=ref, rowno=rowno)
 
