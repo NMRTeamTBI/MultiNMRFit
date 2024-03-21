@@ -459,7 +459,7 @@ class Spectrum(object):
         
         # set scaling factor to stabilize convergence
         mean_sp = np.mean(self.intensity)
-        scaling_factor = mean_sp if mean_sp > 1 else 1
+        scaling_factor = 1 if -1 < mean_sp < 1 else abs(mean_sp)
 
         # apply scaling factor on parameters (intensity & offset)
         params_scaled = self.params.copy(deep=True)
