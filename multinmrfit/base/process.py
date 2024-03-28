@@ -478,18 +478,19 @@ class Process(object):
                     consolidated_results.append(tmp)
                 
                 # add integral rows
-                df_integral = self.results[spec][reg].params.loc[:,['signal_id','model','integral']].drop_duplicates()
-                for i in range(len(df_integral)):
-                    tmp = [
-                        spec,
-                        reg,
-                        df_integral.signal_id.iloc[i],
-                        df_integral.model.iloc[i],
-                        'integral',
-                        df_integral.integral.iloc[i],
-                        0
-                    ]
-                    consolidated_results.append(tmp)
+                if "integral" in self.results[spec][reg].params.columns:
+                    df_integral = self.results[spec][reg].params.loc[:,['signal_id','model','integral']].drop_duplicates()
+                    for i in range(len(df_integral)):
+                        tmp = [
+                            spec,
+                            reg,
+                            df_integral.signal_id.iloc[i],
+                            df_integral.model.iloc[i],
+                            'integral',
+                            df_integral.integral.iloc[i],
+                            0
+                        ]
+                        consolidated_results.append(tmp)
         self.consolidated_results = pd.DataFrame(consolidated_results,columns = ['rowno','region','signal_id','model','par','opt','opt_sd'])
         self.consolidated_results.sort_values(by=['rowno'],inplace=True)
 
