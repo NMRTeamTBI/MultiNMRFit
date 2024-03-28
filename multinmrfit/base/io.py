@@ -128,10 +128,11 @@ class IoHandler():
         
         try:
             data = np.array(data_all)
+            ppm_all = np.array(ppm_all)
         except:
             raise ValueError("All spectra do not have the same length.")
 
-        return ppm_all[0], data, expno_list
+        return ppm_all, data, expno_list
 
     @staticmethod
     def load_txt_spectrum(txt_data):

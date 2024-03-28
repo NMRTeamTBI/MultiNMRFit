@@ -78,7 +78,7 @@ class Process(object):
         self.spectra_list = list(range(0, self.exp_dim[0]))
 
         # set default window (full spectrum)
-        window = (min(self.ppm_full), max(self.ppm_full))
+        window = (max(self.ppm_full[:,-1]), min(self.ppm_full[:,0])) 
 
         # create default spectrum
         self.set_current_spectrum(dataset.get("rowno", self.names[0]), window=window)
@@ -87,6 +87,7 @@ class Process(object):
         """ Removes rows filled with 0 
         """
         self.data_full = self.data_full[~np.all(self.data_full == 0, axis=1)]
+        self.ppm_full = self.ppm_full[~np.all(self.data_full == 0, axis=1)]
         self.names = self.names[:self.data_full.shape[0]]
         
         
@@ -138,7 +139,7 @@ class Process(object):
         if self.results.get(rowno, {}).get(region, None) is None:
 
             # extract reference spectrum
-            tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[self.names.index(rowno),:])], axis=1)
+            tmp_data = pd.concat([pd.Series(self.ppm_full[self.names.index(rowno),:]), pd.Series(self.data_full[self.names.index(rowno),:])], axis=1)
             tmp_data.columns = ["ppm", "intensity"]
 
             # create spectrum
@@ -416,7 +417,7 @@ class Process(object):
         """
 
         # create spectrum
-        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[self.names.index(rowno),:])], axis=1)
+        tmp_data = pd.concat([pd.Series(self.ppm_full[self.names.index(rowno),:]), pd.Series(self.data_full[self.names.index(rowno),:])], axis=1)
         tmp_data.columns = ["ppm", "intensity"]
         sp = spectrum.Spectrum(data=tmp_data, window=self.results[ref][region].window, from_ref=ref, rowno=rowno)
 
@@ -478,19 +479,18 @@ class Process(object):
                     consolidated_results.append(tmp)
                 
                 # add integral rows
-                if "integral" in self.results[spec][reg].params.columns:
-                    df_integral = self.results[spec][reg].params.loc[:,['signal_id','model','integral']].drop_duplicates()
-                    for i in range(len(df_integral)):
-                        tmp = [
-                            spec,
-                            reg,
-                            df_integral.signal_id.iloc[i],
-                            df_integral.model.iloc[i],
-                            'integral',
-                            df_integral.integral.iloc[i],
-                            0
-                        ]
-                        consolidated_results.append(tmp)
+                df_integral = self.results[spec][reg].params.loc[:,['signal_id','model','integral']].drop_duplicates()
+                for i in range(len(df_integral)):
+                    tmp = [
+                        spec,
+                        reg,
+                        df_integral.signal_id.iloc[i],
+                        df_integral.model.iloc[i],
+                        'integral',
+                        df_integral.integral.iloc[i],
+                        0
+                    ]
+                    consolidated_results.append(tmp)
         self.consolidated_results = pd.DataFrame(consolidated_results,columns = ['rowno','region','signal_id','model','par','opt','opt_sd'])
         self.consolidated_results.sort_values(by=['rowno'],inplace=True)
 

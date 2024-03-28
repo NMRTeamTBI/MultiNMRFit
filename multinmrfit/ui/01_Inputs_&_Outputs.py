@@ -232,8 +232,8 @@ if load_spectrum:
             process.filename = output_filename
             
         session.set_widget_defaults(
-                spectrum_limit_min = round(min(process.ppm_full), 2),
-                spectrum_limit_max = round(max(process.ppm_full), 2)
+                spectrum_limit_min = round(max(process.ppm_full[:,0]), 2),
+                spectrum_limit_max = round(min(process.ppm_full[:,-1]), 2)
                 )
 
     

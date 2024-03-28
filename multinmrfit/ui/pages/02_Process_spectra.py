@@ -29,8 +29,8 @@ else:
     # set default parameters
     session.set_widget_defaults(
         reference_spectrum = process.current_spectrum.rowno,
-        spectrum_limit_min = round(max([process.current_spectrum.ppm_limits[0], min(process.ppm_full)]), 2),
-        spectrum_limit_max = round(min([process.current_spectrum.ppm_limits[1], max(process.ppm_full)]), 2)
+        spectrum_limit_min = round(max([process.current_spectrum.ppm_limits[0], process.ppm_full.min()]), 2),
+        spectrum_limit_max = round(min([process.current_spectrum.ppm_limits[1], process.ppm_full.max()]), 2)
     )
 
     # add widgets
@@ -81,18 +81,18 @@ else:
                 label="Spectral limits (max)",
                 key="spectrum_limit_max",
                 value = round(val_max, 2),
-                min_value = round(min(process.ppm_full), 2),
-                max_value = round(max(process.ppm_full), 2),
+                min_value = round(process.ppm_full.min(), 2),
+                max_value = round(process.ppm_full.max(), 2),
                 disabled = disabled
                 )
-            
+
     with col2:
         spec_lim_min = st.number_input(
                 label="Spectral limits (min)",
                 key="spectrum_limit_min",
                 value = round(val_min, 2),
-                min_value = round(min(process.ppm_full), 2),
-                max_value = round(max(process.ppm_full), 2),
+                min_value = round(process.ppm_full.min(), 2),
+                max_value = round(process.ppm_full.max(), 2),
                 disabled = disabled
                 )
 
