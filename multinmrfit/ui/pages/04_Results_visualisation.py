@@ -126,7 +126,7 @@ else:
                 export_sel = st.selectbox(
                         label="Export data to tsv",
                         key="export",
-                        options=["all data", "specific data"],
+                        options=["all data", "specific data","spectrum data"],
                         index=0
                         )
                 save_button = st.button('Export')
@@ -158,6 +158,30 @@ else:
                     filename = st.text_input(
                                 label="Filename",
                                 )
+                    
+                elif export_sel == "spectrum data":
+                    spectrum = st.selectbox(
+                            label="Select spectrum",
+                            key="spectrum_to_save",
+                            options=spectra_list,
+                            )
+                    regions = sorted(list(process.results[spectrum].keys()))
+                    idx = regions.index(session.widget_space["region_plot"]) if session.widget_space["region_plot"] in regions else 0
+                    
+                    region = st.selectbox(
+                        label="Select region",
+                        key="spectrum_region_to_save",
+                        options=regions,
+                        index=idx
+                        )
+                
+                    session.register_widgets({
+                        "spectrum_region_to_save": region
+                    })
+
+                    filename = st.text_input(
+                                label="Filename",
+                                )
                 else:
                     st.warning("Selection error")
             
@@ -169,5 +193,10 @@ else:
                 elif export_sel == "specific data":
                     process.save_consolidated_results(data=process.select_params(signal,parameter),partial_filename=filename)
                     st.info(f"Results files exported")
+                elif export_sel == "spectrum data":
+                    process.save_spetrum_data(spectrum,region,filename)
+                    st.info(f"Spectrum file exported")
+
+                    # print(process.results[spectrum][region].ppm,process.results[spectrum][region].intensity,process.results[spectrum][region].fit_results.best_fit)
     else:
         st.warning("No results to display, please process some spectra first.")

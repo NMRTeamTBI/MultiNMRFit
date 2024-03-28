@@ -68,6 +68,9 @@ class Process(object):
         else:
             raise ValueError(f"Analysis_type '{self.analysis_type}' not implemented yet.")
 
+        # clean if entire rows of 0
+        self.clean_empty_rows()
+        
         # get dimensions
         self.exp_dim = self.data_full.shape
 
@@ -80,7 +83,13 @@ class Process(object):
         # create default spectrum
         self.set_current_spectrum(dataset.get("rowno", self.names[0]), window=window)
 
-
+    def clean_empty_rows(self):
+        """ Removes rows filled with 0 
+        """
+        self.data_full = self.data_full[~np.all(self.data_full == 0, axis=1)]
+        self.names = self.names[:self.data_full.shape[0]]
+        
+        
     def add_region(self):
         self.results[self.current_spectrum.rowno] = self.results.get(self.current_spectrum.rowno, {})
         self.results[self.current_spectrum.rowno][self.current_spectrum.region] = copy.deepcopy(self.current_spectrum)
@@ -383,7 +392,7 @@ class Process(object):
         mask = params['par'].isin(["gl"])
         upper_bounds[mask] = 1.0
         mask = params['par'].isin(["intensity"])
-        upper_bounds[mask] *= 10
+        upper_bounds[mask] = 20 * params["opt"][mask]
         params["ub"] = upper_bounds
         
         # shift lower bound (with some fixed at zero)
@@ -392,12 +401,13 @@ class Process(object):
         lower_bounds[mask] = 0
         mask = params['par'].isin(['gl'])
         lower_bounds[mask] = 0
+        mask = params['par'].isin(['intensity'])
+        lower_bounds[mask] = 1
         params["lb"] = lower_bounds
-
         return params
 
 
-    def fit_from_ref(self, rowno, region, ref):
+    def fit_from_ref(self, rowno, region, ref, update_pars_from_previous=True):
         """Fit a spectrum using another spectrum as reference.
 
         Args:
@@ -406,7 +416,7 @@ class Process(object):
         """
 
         # create spectrum
-        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[self.names.index(rowno)-1,:])], axis=1)
+        tmp_data = pd.concat([pd.Series(self.ppm_full), pd.Series(self.data_full[self.names.index(rowno),:])], axis=1)
         tmp_data.columns = ["ppm", "intensity"]
         sp = spectrum.Spectrum(data=tmp_data, window=self.results[ref][region].window, from_ref=ref, rowno=rowno)
 
@@ -424,7 +434,8 @@ class Process(object):
         prev_params = self.results[ref][region].params.copy(deep=True)
 
         # update bounds
-        prev_params = self.update_bounds(prev_params)
+        if update_pars_from_previous:
+            prev_params = self.update_bounds(prev_params)
 
         # update params in spectrum
         self.update_params(prev_params, spectrum=rowno, region=region)
@@ -461,26 +472,27 @@ class Process(object):
                         self.results[spec][reg].params.iloc[i].loc['signal_id'],
                         self.results[spec][reg].params.iloc[i].loc['model'],
                         self.results[spec][reg].params.iloc[i].loc['par'],
-                        self.results[spec][reg].params.iloc[i].loc['opt'],
-                        self.results[spec][reg].params.iloc[i].loc['opt_sd'],
+                        self.results[spec][reg].params.iloc[i].loc['opt'] if 'opt' in self.results[spec][reg].params.columns else None,
+                        self.results[spec][reg].params.iloc[i].loc['opt_sd'] if 'opt' in self.results[spec][reg].params.columns else None,
                     ]
                     consolidated_results.append(tmp)
                 
                 # add integral rows
-                df_integral = self.results[spec][reg].params.loc[:,['signal_id','model','integral']].drop_duplicates()
-                for i in range(len(df_integral)):
-                    tmp = [
-                        spec,
-                        reg,
-                        df_integral.signal_id.iloc[i],
-                        df_integral.model.iloc[i],
-                        'integral',
-                        df_integral.integral.iloc[i],
-                        0
-                    ]
-                    consolidated_results.append(tmp)
+                if "integral" in self.results[spec][reg].params.columns:
+                    df_integral = self.results[spec][reg].params.loc[:,['signal_id','model','integral']].drop_duplicates()
+                    for i in range(len(df_integral)):
+                        tmp = [
+                            spec,
+                            reg,
+                            df_integral.signal_id.iloc[i],
+                            df_integral.model.iloc[i],
+                            'integral',
+                            df_integral.integral.iloc[i],
+                            0
+                        ]
+                        consolidated_results.append(tmp)
         self.consolidated_results = pd.DataFrame(consolidated_results,columns = ['rowno','region','signal_id','model','par','opt','opt_sd'])
-
+        self.consolidated_results.sort_values(by=['rowno'],inplace=True)
 
     def get_current_intensity(self, ppm):
         idx = min(range(len(self.current_spectrum.ppm)), key=lambda i: abs(self.current_spectrum.ppm[i]-ppm))
@@ -503,6 +515,26 @@ class Process(object):
         else:
             self.consolidated_results.to_csv(output_file,sep='\t', index=False)
 
+    def save_spetrum_data(self,spectrum, region, filename):
+            
+        spectrum_to_save = pd.DataFrame(columns=['spectrum','region','ppm','intensity','best_fit'])
+        
+        spectrum_to_save['ppm'] = self.results[spectrum][region].ppm
+        spectrum_to_save['intensity'] = self.results[spectrum][region].intensity
+        spectrum_to_save['best_fit'] = self.results[spectrum][region].fit_results.best_fit
+        spectrum_to_save['spectrum'] = spectrum
+        spectrum_to_save['region'] = region
+
+        for name,model in self.results[spectrum][region].models.items():
+           
+            spectrum_to_save[str(name)] = model.simulate(
+                [self.results[spectrum][region].params['opt'].values.tolist()[i] for i in model._par_idx], 
+                self.results[spectrum][region].ppm)
+
+        output_path = Path(self.output_res_path, self.output_res_folder)
+        output_file = Path(output_path, filename + ".txt")
+
+        spectrum_to_save.to_csv(output_file,sep='\t', index=False)
 
     def plot(self, signal, parameter) -> go.Figure:
         selected_params = self.select_params(signal, parameter)

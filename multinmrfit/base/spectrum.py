@@ -458,7 +458,8 @@ class Spectrum(object):
         self._check_parameters()
         
         # set scaling factor to stabilize convergence
-        scaling_factor = np.mean(self.intensity)
+        mean_sp = np.mean(self.intensity)
+        scaling_factor = 1 if -1 < mean_sp < 1 else abs(mean_sp)
 
         # apply scaling factor on parameters (intensity & offset)
         params_scaled = self.params.copy(deep=True)
@@ -554,7 +555,6 @@ class Spectrum(object):
             ini_intensity = self.simulate(params = self.params['ini'].values.tolist())
             fig_ini = go.Scatter(x=self.ppm, y=ini_intensity, mode='lines', name='initial values', marker_color="#7FC97F")
             fig_full.add_trace(fig_ini, row=1, col=1)
-
 
         if colored_area:
             for name, model in self.models.items():
