@@ -409,6 +409,7 @@ class Process(object):
 
 
     def fit_from_ref(self, rowno, region, ref, update_pars_from_previous=True):
+        print(update_pars_from_previous)
         """Fit a spectrum using another spectrum as reference.
 
         Args:

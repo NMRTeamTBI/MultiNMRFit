@@ -60,9 +60,15 @@ else:
     
     reprocess = st.checkbox('Reprocess spectra already processed', value=session.widget_space["reprocess"], key="reprocess")
 
+    if not session.widget_space["use_previous"]:
+         session.register_widgets({"use_previous":True})
+         
+    use_previous = st.checkbox('Use initial value from previous spectrum', value=session.widget_space["use_previous"], key="use_previous")
+
     session.register_widgets({
             "spectra_to_process": spectra_to_process,
-            "reprocess":reprocess
+            "reprocess":reprocess,
+            "use_previous":use_previous
         })
     
     with st.expander("Reference spectrum", expanded=False):
@@ -102,13 +108,13 @@ if process is not None and len(spectra_list):
             percent_complete = (i+1)/(len(list_spectra_upper)+len(list_spectra_lower)-2)
             progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_upper[i]} as reference). Please wait."
             progress_bar.progress(percent_complete, text=progress_text)
-            process.fit_from_ref(rowno=j, region=region, ref=list_spectra_upper[i])
+            process.fit_from_ref(rowno=j, region=region, ref=list_spectra_upper[i],update_pars_from_previous=use_previous)
 
         for i,j in enumerate(list_spectra_lower[1:]):
             percent_complete = (i+len(list_spectra_upper))/(len(list_spectra_upper)+len(list_spectra_lower)-2)
             progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_lower[i]} as reference). Please wait."
             progress_bar.progress(percent_complete, text=progress_text)
-            process.fit_from_ref(rowno=j, region=region, ref=list_spectra_lower[i])
+            process.fit_from_ref(rowno=j, region=region, ref=list_spectra_lower[i],update_pars_from_previous=use_previous)
 
         progress_bar.empty()
         stop.empty()
