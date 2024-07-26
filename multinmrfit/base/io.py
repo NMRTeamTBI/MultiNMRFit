@@ -35,7 +35,6 @@ class IoHandler():
 
         return models
 
-
     def load_data(self, data, window: tuple = None, rowno: int = None):
 
         # initialize metadata & load NMR data
@@ -46,7 +45,11 @@ class IoHandler():
                        "procno": None,
                        "rowno": rowno,
                        "window": window}
+            print(dataset["window"])
+            print(data.ppm)
+            print('###')
             dataset["ppm"], dataset["intensity"] = self.filter_window(data.ppm, data.intensity, window)
+            print(dataset["ppm"])
         elif isinstance(data, dict):
             dataset = data
             dataset["window"] = window
@@ -54,7 +57,6 @@ class IoHandler():
         else:
             raise TypeError("Data must be provided as a dict or a dataframe.")
         return dataset
-
 
     @staticmethod
     def read_topspin_data(data_path, dataset, expno, procno, rowno=None, window=None):
@@ -87,20 +89,21 @@ class IoHandler():
 
         return ppm, intensity
 
-
     @staticmethod
     def filter_window(ppm: list, intensity: list, window: tuple = None):
 
         # filter selected window
         if window is not None:
-            mask = (ppm >= window[0]) & (ppm <= window[1])
+            # mask = (ppm >= window[0]) & (ppm <= window[1])
+            mask = (ppm >= np.min(window)) & (ppm <= np.max(window))
+ 
             ppm = ppm[mask]
             intensity = intensity[mask]
 
         # reset index
         ppm.reset_index(inplace=True, drop=True)
         intensity.reset_index(inplace=True, drop=True)
-
+        print(ppm)
         return ppm, intensity
 
     @staticmethod
@@ -142,7 +145,9 @@ class IoHandler():
         data = np.array(txt_data.loc[:, txt_data.columns != 'ppm']).transpose()
         names = [int(i) for i in txt_data.columns[txt_data.columns != 'ppm'].tolist()]
 
-        return ppm, data, names
+        ppm_all = np.array([ppm for l in range(data.shape[0])])
+
+        return ppm_all, data, names
 
     @staticmethod
     def load_2D_spectrum(data_path, dataset, expno, procno):
@@ -166,8 +171,11 @@ class IoHandler():
             names = list(range(1, data.shape[0]+1))
         except Exception as e:
             raise ValueError("An unknown error has occurred when opening spectrum: '{}'. Please check your inputs.".format(e))
+        
+        data = np.array(data)
+        ppm_all = np.array([ppm for l in range(data.shape[0])])
 
-        return ppm, data, names
+        return ppm_all, data, names
 
     def check_dataset(self):
 

@@ -230,7 +230,8 @@ if load_spectrum:
             process.output_res_path = output_res_path
             process.output_res_folder = output_res_folder
             process.filename = output_filename
-            
+        
+        
         session.set_widget_defaults(
                 spectrum_limit_min = round(max(process.ppm_full[:,0]), 2),
                 spectrum_limit_max = round(min(process.ppm_full[:,-1]), 2)
