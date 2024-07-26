@@ -45,11 +45,8 @@ class IoHandler():
                        "procno": None,
                        "rowno": rowno,
                        "window": window}
-            print(dataset["window"])
-            print(data.ppm)
-            print('###')
+
             dataset["ppm"], dataset["intensity"] = self.filter_window(data.ppm, data.intensity, window)
-            print(dataset["ppm"])
         elif isinstance(data, dict):
             dataset = data
             dataset["window"] = window
@@ -103,7 +100,6 @@ class IoHandler():
         # reset index
         ppm.reset_index(inplace=True, drop=True)
         intensity.reset_index(inplace=True, drop=True)
-        print(ppm)
         return ppm, intensity
 
     @staticmethod
