@@ -72,7 +72,7 @@ class Spectrum(object):
 
         self.models = {}
         self.params = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'ini', 'lb', 'ub'])
-        self.cnstr_wd = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'relative_window'])
+        self.cnstr_wd = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'shift_allowed', 'relative'])
         self.offset = False
         self.fit_results = None
 
@@ -116,11 +116,7 @@ class Spectrum(object):
 
         # reset index
         self.params.reset_index(inplace=True, drop=True)
-
-        # set default windows for bounds
-        self.cnstr_wd = self.params[["signal_id", "model","par"]]
-        relative_window = [0.1 for _ in range(len(self.cnstr_wd.index))]
-        self.cnstr_wd = self.cnstr_wd.assign(relative_window = relative_window)
+        self.cnstr_wd.reset_index(inplace=True, drop=True)
 
         logger.debug("parameters\n{}".format(self.params))
 

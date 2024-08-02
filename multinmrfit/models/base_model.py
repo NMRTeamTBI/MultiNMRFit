@@ -19,7 +19,7 @@ class Model(object):
         return self._params
 
     def get_cnstr_wd(self):
-        self._cnstr_wd = pd.DataFrame(dict((k, self.default_params[k]) for k in ('model', 'par', 'relative_window')))
+        self._cnstr_wd = pd.DataFrame(dict((k, self.default_params[k]) for k in ('model', 'par', 'shift_allowed', 'relative')))
         return self._cnstr_wd
 
     def set_params(self, name: str, val: tuple):

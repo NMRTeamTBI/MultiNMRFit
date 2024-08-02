@@ -381,21 +381,27 @@ class Process(object):
     @staticmethod
     def update_cnstr_wd(params, cnstr_wd):
 
-        # shift upper bound
-        upper_bounds = params["ini"] + abs(params["ini"]) * cnstr_wd["relative_window"]
-        mask = params['par'].isin(["gl"])
-        upper_bounds[mask] = 1.0
-        params["ub"] = upper_bounds
+        mask_rel = cnstr_wd['relative'].tolist()
+        mask_abs = [not i for i in mask_rel]
         
-        # shift lower bound (with some fixed at zero)
-        lower_bounds = params["ini"] - abs(params["ini"]) * cnstr_wd["relative_window"]
+        # shift upper bound
+        upper_bounds = params["ini"]
+        params.loc[mask_rel, "ub"] = upper_bounds[mask_rel] + abs(upper_bounds[mask_rel] * cnstr_wd.loc[mask_rel, "shift_allowed"])
+        params.loc[mask_abs, "ub"] = upper_bounds[mask_abs] + abs(cnstr_wd.loc[mask_abs, "shift_allowed"])
+        mask = params['par'].isin(["gl"])
+        params.loc[mask, "ub"] = 1.0
+        
+        # shift lower bound
+        lower_bounds = params["ini"]
+        params.loc[mask_rel, "lb"] = lower_bounds[mask_rel] - abs(upper_bounds[mask_rel] * cnstr_wd.loc[mask_rel, "shift_allowed"])
+        params.loc[mask_abs, "lb"] = lower_bounds[mask_abs] - abs(cnstr_wd.loc[mask_abs, "shift_allowed"])
         mask = params['par'].isin(['lw']) & (lower_bounds < 0.0)
-        lower_bounds[mask] = 0
-        mask = params['par'].isin(['gl'])
-        lower_bounds[mask] = 0
+        params.loc[mask, "lb"] = 0.0
+        mask = params['par'].isin(["gl"])
+        params.loc[mask, "lb"] = 0.0
         mask = params['par'].isin(['intensity'])
-        lower_bounds[mask] = 1
-        params["lb"] = lower_bounds
+        params.loc[mask, "lb"] = 1.0
+        
         return params
 
     def fit_from_ref(self, rowno, region, ref, update_pars_from_previous=True, update_cnstr_wd=None):
@@ -434,6 +440,8 @@ class Process(object):
 
         # update params in spectrum
         self.update_params(prev_params, spectrum=rowno, region=region)
+
+        print(prev_params)
 
         # fit
         self.results[rowno][region].fit()

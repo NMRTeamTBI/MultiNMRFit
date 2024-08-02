@@ -71,7 +71,12 @@ else:
         adapt_cnstr_wd = st.checkbox('Adapt constraints', value=session.widget_space["adapt_cnstr_wd"], key="adapt_cnstr_wd")
         if adapt_cnstr_wd:
             with st.container(border=True):
-                df_cnstr_wd = st.data_editor(process.results[reference_spectrum][region].cnstr_wd, hide_index=True)
+                df_cnstr_wd = st.data_editor(process.results[reference_spectrum][region].cnstr_wd,
+                                             column_config={"relative": st.column_config.CheckboxColumn(
+                                                 "relative",
+                                                 help="Relative or absolute value of parameter change",
+                                                 default=False)},
+                                             hide_index=True)
                 update_cnstr_wd = st.button("Update constraints")
                 if update_cnstr_wd:
                     process.results[reference_spectrum][region].cnstr_wd = df_cnstr_wd
