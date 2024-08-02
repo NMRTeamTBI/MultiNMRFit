@@ -72,6 +72,7 @@ class Spectrum(object):
 
         self.models = {}
         self.params = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'ini', 'lb', 'ub'])
+        self.cnstr_wd = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'relative_window'])
         self.offset = False
         self.fit_results = None
 
@@ -107,8 +108,19 @@ class Spectrum(object):
             # add model parameters to global parameters
             self.params = _params if self.params.empty else pd.concat([self.params, _params])
 
+            # add constraints windows
+            _cnstr_wd = self.models[id].get_cnstr_wd()
+            _cnstr_wd.insert(0, 'signal_id', [id]*len(_cnstr_wd.index))
+            self.cnstr_wd = _cnstr_wd if self.cnstr_wd.empty else pd.concat([self.cnstr_wd, _cnstr_wd])
+
+
         # reset index
         self.params.reset_index(inplace=True, drop=True)
+
+        # set default windows for bounds
+        self.cnstr_wd = self.params[["signal_id", "model","par"]]
+        relative_window = [0.1 for _ in range(len(self.cnstr_wd.index))]
+        self.cnstr_wd = self.cnstr_wd.assign(relative_window = relative_window)
 
         logger.debug("parameters\n{}".format(self.params))
 

@@ -56,6 +56,7 @@ class Process(object):
         self.current_spectrum = None
         self.results = {}
         self.consolidated_results = None
+        #self.use_ref_cnstr_wd = True
 
         # load spectrum
         if self.analysis_type == "pseudo2D":
@@ -375,32 +376,19 @@ class Process(object):
             spectra.sort()
 
         return spectra
-
+    
 
     @staticmethod
-    def update_bounds(params):
-        """Update bounds of parameters.
-
-        Args:
-            params (pd.DataFrame): parameters, with same format as Spectrum.params.
-        """
-
-        # get current interval between bounds
-        interval = (params["ub"] - params["lb"])/2
-
-        # set initial values from best fit of ref spectrum
-        params["ini"] = params['opt']
+    def update_cnstr_wd(params, cnstr_wd):
 
         # shift upper bound
-        upper_bounds = params["opt"] + interval
+        upper_bounds = params["ini"] + abs(params["ini"]) * cnstr_wd["relative_window"]
         mask = params['par'].isin(["gl"])
         upper_bounds[mask] = 1.0
-        mask = params['par'].isin(["intensity"])
-        upper_bounds[mask] = 20 * params["opt"][mask]
         params["ub"] = upper_bounds
         
         # shift lower bound (with some fixed at zero)
-        lower_bounds = params["opt"] - interval
+        lower_bounds = params["ini"] - abs(params["ini"]) * cnstr_wd["relative_window"]
         mask = params['par'].isin(['lw']) & (lower_bounds < 0.0)
         lower_bounds[mask] = 0
         mask = params['par'].isin(['gl'])
@@ -410,9 +398,7 @@ class Process(object):
         params["lb"] = lower_bounds
         return params
 
-
-    def fit_from_ref(self, rowno, region, ref, update_pars_from_previous=True):
-        print(update_pars_from_previous)
+    def fit_from_ref(self, rowno, region, ref, update_pars_from_previous=True, update_cnstr_wd=None):
         """Fit a spectrum using another spectrum as reference.
 
         Args:
@@ -438,9 +424,13 @@ class Process(object):
         # get params from previous spectrum
         prev_params = self.results[ref][region].params.copy(deep=True)
 
-        # update bounds
+        # update initial values
         if update_pars_from_previous:
-            prev_params = self.update_bounds(prev_params)
+            prev_params["ini"] = prev_params['opt']
+
+        # update bounds
+        if update_cnstr_wd is not None:
+            prev_params = self.update_cnstr_wd(prev_params, update_cnstr_wd)
 
         # update params in spectrum
         self.update_params(prev_params, spectrum=rowno, region=region)

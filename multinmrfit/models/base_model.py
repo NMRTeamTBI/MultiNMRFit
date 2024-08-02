@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pandas as pd
 
 
 class Model(object):
@@ -14,7 +15,12 @@ class Model(object):
         self.peak_number = None
     
     def get_params(self):
+        self._params = pd.DataFrame(dict((k, self.default_params[k]) for k in ('model', 'par', 'ini', 'lb', 'ub')))
         return self._params
+
+    def get_cnstr_wd(self):
+        self._cnstr_wd = pd.DataFrame(dict((k, self.default_params[k]) for k in ('model', 'par', 'relative_window')))
+        return self._cnstr_wd
 
     def set_params(self, name: str, val: tuple):
         try:

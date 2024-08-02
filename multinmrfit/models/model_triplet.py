@@ -15,13 +15,14 @@ class SignalModel(Model):
         self.name = "triplet"
         self.description = "mixed gaussian-lorentzian triplet"
         self.peak_number = 3
-        default_params = {'model' : [self.name]*5,
-                          'par' : ['x0', 'J', 'intensity', 'lw', 'gl'],
-                          'ini' : [1.0, 0.05, 1e6, 0.001, 0.5],
-                          'lb' : [0.0, 0.01, 1, 0.0001, 0.0],
-                          'ub' : [10.0, 1.0, 1e15, 0.03, 1.0]}
-        self._params = pd.DataFrame(default_params)
-
+        self.default_params = {'model' : [self.name]*5,
+                               'par' : ['x0', 'J', 'intensity', 'lw', 'gl'],
+                               'ini' : [1.0, 0.05, 1e6, 0.001, 0.5],
+                               'lb' : [0.0, 0.01, 1, 0.0001, 0.0],
+                               'ub' : [10.0, 1.0, 1e15, 0.03, 1.0],
+                               'relative_window' : [0.01, 0.05, 10, 0.3, 10]}
+        
+        
     def pplist2signal(self, peak_list):
         detected_peak_position = np.mean(peak_list.ppm.values)
         detected_peak_intensity = np.mean(peak_list.intensity.values)
