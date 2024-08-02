@@ -4,7 +4,6 @@ Model of triplet.
 from __future__ import annotations
 
 import numpy as np
-import pandas as pd
 
 from multinmrfit.models.base_model import Model
 
