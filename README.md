@@ -17,6 +17,7 @@ Detailed documentation can be found online at Read the Docs ([https://multinmrfi
 * **fit series of 1D spectra** (acquired as individual 1D spectra, as a pseudo 2D spectrum, or provided as tabulated text files),
 * can be used with **all nuclei** (<sup>1</sup>H, <sup>13</sup>C, <sup>15</sup>N, <sup>31</sup>P, etc),
 * estimation of several parameters for each signal of interest (**intensity**, **area**, **chemical shift**, **linewidth**, **coupling constant(s)**, etc),
+* several **signal models** are provided, and users can add their own models
 * **semi-automated analysis** for **peak picking** and **definition of multiplicity** for each signal,
 * account for **overlaps** between peaks and **zero-order baseline correction**,
 * **visual inspection of the fitted curves**,
@@ -34,10 +35,8 @@ installation and usage instructions.
 Use `pip` to **install PhysioFit from GitHub**:
 
 ```bash
-$ python -m pip install git+https://github.com/NMRTeamTBI/MultiNMRFit
+$ pip install multinmrfit
 ```
-
-Note: Git must be installed on your computer. Have a look to the detailed [documentation](https://multinmrfit.readthedocs.io/en/latest/quickstart.html) for help on installing Git in an Anaconda environment.
 
 Then, start the graphical interface with:
 
