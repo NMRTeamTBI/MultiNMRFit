@@ -65,7 +65,7 @@ else:
                 fig.for_each_trace(lambda trace: trace.update(visible="legendonly") if trace.name in ["initial values"] else ())
             if not show_ind_signals:
                 fig.for_each_trace(lambda trace: trace.update(visible="legendonly") if "signal" in trace.name else ())
-            st.plotly_chart(fig)
+            st.plotly_chart(fig, theme=None)
 
             st.write("### Parameters")
 
@@ -115,7 +115,7 @@ else:
             fig.update_layout(xaxis_title="spectrum")
             if y_zero:
                 fig.update_yaxes(rangemode="tozero")
-            st.plotly_chart(fig)
+            st.plotly_chart(fig, theme=None)
 
         with st.container(border=True):
             st.write("### Export")

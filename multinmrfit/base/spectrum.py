@@ -603,7 +603,9 @@ class Spectrum(object):
 
         fig_full.update_yaxes(exponentformat="power", showexponent="last")
         fig_full.update_xaxes(autorange="reversed", ticks="outside")
-        fig_full.update_layout(plot_bgcolor="white", xaxis=dict(linecolor="black"), yaxis=dict(linecolor="black"))
+        fig_full.update_layout(plot_bgcolor="white", xaxis=dict(linecolor="black", zeroline=False), yaxis=dict(linecolor="black", zeroline=False))
+        if fit:
+            fig_full.update_layout(xaxis2=dict(linecolor="black", zeroline=False), yaxis2=dict(linecolor="black"))
         fig_full.update_xaxes(autorange=False, range=[np.max(self.ppm), np.min(self.ppm)])
 
         return fig_full

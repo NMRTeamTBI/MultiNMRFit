@@ -441,7 +441,7 @@ class Process(object):
         # update params in spectrum
         self.update_params(prev_params, spectrum=rowno, region=region)
 
-        print(prev_params)
+        #print(prev_params)
 
         # fit
         self.results[rowno][region].fit()

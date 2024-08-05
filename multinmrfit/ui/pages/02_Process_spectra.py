@@ -133,7 +133,7 @@ else:
             fig = process.current_spectrum.plot(pp=process.current_spectrum.edited_peak_table, threshold=process.current_spectrum.peakpicking_threshold)
             fig.update_layout(autosize=False, width=800, height=500)
             fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
-            st.plotly_chart(fig)
+            st.plotly_chart(fig, theme=None)
 
             col1, col2 = st.columns(2)
 
@@ -270,7 +270,7 @@ else:
                     fig = process.current_spectrum.plot(ini=True, fit=True)
                     fig.update_layout(autosize=False, width=800, height=600)
                     fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
-                    st.plotly_chart(fig)
+                    st.plotly_chart(fig, theme=None)
 
                     # save as pickle file
                     process.save_process_to_file()

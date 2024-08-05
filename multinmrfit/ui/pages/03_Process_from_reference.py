@@ -95,7 +95,7 @@ else:
         fig = process.results[reference_spectrum][region].plot(ini=False, fit=True)
         fig.update_layout(autosize=False, width=800, height=600)
         fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15)) 
-        st.plotly_chart(fig)
+        st.plotly_chart(fig, theme=None)
     
     spectra_list = process.build_spectra_list(spectra_to_process, ref=reference_spectrum, region=region, reprocess=reprocess)
 
