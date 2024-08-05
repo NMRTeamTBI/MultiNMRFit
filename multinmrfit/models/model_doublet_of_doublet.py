@@ -29,8 +29,8 @@ class SignalModel(Model):
 
         ll = peak_list['ppm'].tolist()
         ll.sort()
-        detected_coupling_constant_J1 = np.abs(ll[2]-ll[0])/2
-        detected_coupling_constant_J2 = np.abs(ll[1]-ll[0])/2
+        detected_coupling_constant_J1 = np.abs(ll[2]-ll[0])
+        detected_coupling_constant_J2 = np.abs(ll[1]-ll[0])
 
         signal = {
             "model":self.name ,
@@ -47,10 +47,13 @@ class SignalModel(Model):
     @staticmethod
     def simulate(params: list, ppm: list):
 
-        peak_1 = params[5] * params[3] / ( 1 + (( ppm - params[0] + params[1] + params[2])/params[4])**2) + (1-params[5])*params[3]*np.exp(-(ppm - params[0] + params[1] + params[2])**2/(2*params[4]**2))
-        peak_2 = params[5] * params[3] / ( 1 + (( ppm - params[0] - params[1] + params[2])/params[4])**2) + (1-params[5])*params[3]*np.exp(-(ppm - params[0] - params[1] + params[2])**2/(2*params[4]**2))
-        peak_3 = params[5] * params[3] / ( 1 + (( ppm - params[0] + params[1] - params[2])/params[4])**2) + (1-params[5])*params[3]*np.exp(-(ppm - params[0] + params[1] - params[2])**2/(2*params[4]**2))
-        peak_4 = params[5] * params[3] / ( 1 + (( ppm - params[0] - params[1] - params[2])/params[4])**2) + (1-params[5])*params[3]*np.exp(-(ppm - params[0] - params[1] - params[2])**2/(2*params[4]**2))
+        sum_J1_J2 = (params[1] + params[2])/2
+        dif_J1_J2 = (params[1] - params[2])/2
+        dif_ppm_x0 = ppm - params[0]
+        peak_1 = params[5] * params[3] / ( 1 + ((dif_ppm_x0 + sum_J1_J2)/params[4])**2) + (1-params[5]) * params[3] * np.exp(-(dif_ppm_x0 + sum_J1_J2)**2/(2*params[4]**2))
+        peak_2 = params[5] * params[3] / ( 1 + ((dif_ppm_x0 - sum_J1_J2)/params[4])**2) + (1-params[5]) * params[3] * np.exp(-(dif_ppm_x0 - sum_J1_J2)**2/(2*params[4]**2))
+        peak_3 = params[5] * params[3] / ( 1 + ((dif_ppm_x0 + dif_J1_J2)/params[4])**2) + (1-params[5]) * params[3] * np.exp(-(dif_ppm_x0 + dif_J1_J2)**2/(2*params[4]**2))
+        peak_4 = params[5] * params[3] / ( 1 + ((dif_ppm_x0 - dif_J1_J2)/params[4])**2) + (1-params[5]) * params[3] * np.exp(-(dif_ppm_x0 - dif_J1_J2)**2/(2*params[4]**2))
 
         return peak_1 + peak_2 + peak_3 + peak_4
 
