@@ -14,7 +14,7 @@ class SignalModel(Model):
         self.name = "doublet of doublet"
         self.description = "mixed gaussian-lorentzian doublet of doublet (1:1:1:1)"
         self.peak_number = 4
-        self.default_params = {'model' : [self.name]*5,
+        self.default_params = {'model' : [self.name]*6,
                                'par' : ['x0', 'J1', 'J2', 'intensity', 'lw', 'gl'],
                                'ini' : [1.0, 0.05, 0.02, 1e6, 0.001, 0.5],
                                'lb' : [0.0, 0.01, 0.005, 1, 0.0001, 0.0],
