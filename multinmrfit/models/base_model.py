@@ -15,14 +15,12 @@ class Model(object):
         self._par_idx = None
         self.peak_number = None
     
-    def get_params(self):
-        if self._params is None:
-            self._params = pd.DataFrame(dict((k, self.default_params[k]) for k in ('model', 'par', 'ini', 'lb', 'ub')))
+    def set_default_params(self):
+        self._params = pd.DataFrame(dict((k, self.default_params[k]) for k in ('model', 'par', 'ini', 'lb', 'ub')))
         return self._params
 
-    def get_cnstr_wd(self):
-        if self._cnstr_wd is None:
-            self._cnstr_wd = pd.DataFrame(dict((k, self.default_params[k]) for k in ('model', 'par', 'shift_allowed', 'relative')))
+    def set_default_cnstr_wd(self):
+        self._cnstr_wd = pd.DataFrame(dict((k, self.default_params[k]) for k in ('model', 'par', 'shift_allowed', 'relative')))
         return self._cnstr_wd
 
     def set_params(self, name: str, val: tuple):

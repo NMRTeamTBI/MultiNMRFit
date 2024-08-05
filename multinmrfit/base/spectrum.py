@@ -97,7 +97,7 @@ class Spectrum(object):
             self.models[id] = available_models[signal['model']]()
 
             # get default parameters & bounds
-            _params = self.models[id].get_params()
+            _params = self.models[id].set_default_params()
 
             # add signal id
             _params.insert(0, 'signal_id', [id]*len(_params.index))
@@ -109,7 +109,7 @@ class Spectrum(object):
             self.params = _params if self.params.empty else pd.concat([self.params, _params])
 
             # add constraints windows
-            _cnstr_wd = self.models[id].get_cnstr_wd()
+            _cnstr_wd = self.models[id].set_default_cnstr_wd()
             _cnstr_wd.insert(0, 'signal_id', [id]*len(_cnstr_wd.index))
             self.cnstr_wd = _cnstr_wd if self.cnstr_wd.empty else pd.concat([self.cnstr_wd, _cnstr_wd])
 

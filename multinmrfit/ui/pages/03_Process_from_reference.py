@@ -76,6 +76,7 @@ else:
                                                  "relative",
                                                  help="Relative or absolute value of parameter change",
                                                  default=False)},
+                                                 disabled=["signal_id", "model", "par"],
                                              hide_index=True)
                 update_cnstr_wd = st.button("Update constraints")
                 if update_cnstr_wd:
