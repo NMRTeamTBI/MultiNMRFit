@@ -62,14 +62,14 @@ else:
     if not session.widget_space["use_previous"]:
          session.register_widgets({"use_previous":True})
          
-    use_previous = st.checkbox('Use initial value from previous spectrum', value=session.widget_space["use_previous"], key="use_previous")
+    use_previous = st.checkbox('Use initial values from best fit of previous spectrum', value=session.widget_space["use_previous"], key="use_previous")
 
     if not session.widget_space["adapt_cnstr_wd"]:
-         session.register_widgets({"adapt_cnstr_wd":True})
+         session.register_widgets({"adapt_cnstr_wd":False})
 
     if use_previous:
-        adapt_cnstr_wd = st.checkbox('Adapt constraints', value=session.widget_space["adapt_cnstr_wd"], key="adapt_cnstr_wd")
-        if adapt_cnstr_wd:
+        adapt_cnstr_wd = st.checkbox('Keep initial bounds from reference spectrum', value=session.widget_space["adapt_cnstr_wd"], key="adapt_cnstr_wd")
+        if not adapt_cnstr_wd:
             with st.container(border=True):
                 df_cnstr_wd = st.data_editor(process.results[reference_spectrum][region].cnstr_wd,
                                              column_config={"relative": st.column_config.CheckboxColumn(
@@ -78,11 +78,11 @@ else:
                                                  default=False)},
                                                  disabled=["signal_id", "model", "par"],
                                              hide_index=True)
-                update_cnstr_wd = st.button("Update constraints")
+                update_cnstr_wd = st.button("Update bounds")
                 if update_cnstr_wd:
                     process.results[reference_spectrum][region].cnstr_wd = df_cnstr_wd
     else:
-        adapt_cnstr_wd = False
+        adapt_cnstr_wd = True
 
     session.register_widgets({
             "spectra_to_process": spectra_to_process,
@@ -124,7 +124,7 @@ if process is not None and len(spectra_list):
         list_spectra_upper = [reference_spectrum] + sorted([i for i in spectra_list if i > reference_spectrum])
         list_spectra_lower = [reference_spectrum] + sorted([i for i in spectra_list if i < reference_spectrum], reverse=True)
 
-        cnstr_wd = process.results[reference_spectrum][region].cnstr_wd if adapt_cnstr_wd else None
+        cnstr_wd = process.results[reference_spectrum][region].cnstr_wd if not adapt_cnstr_wd else None
             
         for i,j in enumerate(list_spectra_upper[1:]):
             percent_complete = (i+1)/(len(list_spectra_upper)+len(list_spectra_lower)-2)
