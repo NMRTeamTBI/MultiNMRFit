@@ -83,6 +83,11 @@ if uploaded_file is not None:
 
 reset_process = st.sidebar.button("Reset current process")
 
+st.sidebar.divider()
+st.sidebar.link_button("Documentation", "https://multinmrfit.readthedocs.io/en/latest/")
+st.sidebar.link_button("GitHub project", "https://github.com/NMRTeamTBI/MultiNMRFit")
+st.sidebar.divider()
+
 if reset_process:
     session.object_space["loaded_file"] = None
     process = None
