@@ -25,7 +25,7 @@ else:
     if len(process.results):
         with st.container(border=True):
             
-            st.write("### Spectra")
+            st.write("### Processed spectra")
 
             spectra_list = sorted(list(process.results.keys()))
 
@@ -67,7 +67,7 @@ else:
                 fig.for_each_trace(lambda trace: trace.update(visible="legendonly") if "signal" in trace.name else ())
             st.plotly_chart(fig, theme=None)
 
-            st.write("### Parameters")
+            st.markdown("**Parameters**")
 
             tmp = process.results[spectrum][region].params.style.apply(process.highlighter, axis=None)
 
@@ -81,7 +81,7 @@ else:
             process.consolidate_results()
 
         with st.container(border=True):
-            st.write("### Plot")
+            st.write("### Fitting results")
 
             # signal selection to visualize
             col1, col2 = st.columns(2)
