@@ -104,13 +104,19 @@ class Process(object):
         if rowno is None:
             tmp = list(self.results.keys())
             for s in tmp:
-                del self.results[s][region]
-                if not len(self.results[s]):
-                    del self.results[s]
+                try:
+                    del self.results[s][region]
+                    if not len(self.results[s]):
+                        del self.results[s]
+                except:
+                    pass
         else:
-            del self.results[rowno][region]
-            if not len(self.results[rowno]):
-                del self.results[rowno]
+            try:
+                del self.results[rowno][region]
+                if not len(self.results[rowno]):
+                    del self.results[rowno]
+            except:
+                pass
 
     def update_pp_threshold(self, pp_threshold):
         """Update peak picking threshold, and detect peaks.
