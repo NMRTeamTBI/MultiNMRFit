@@ -13,7 +13,8 @@ process = session.get_object(key="process")
 
 def update_checkbox(widget):
     session.register_widgets({widget: not session.widget_space[widget]})
-    
+
+
     
 if process is None:
 
@@ -28,19 +29,18 @@ else:
 
             spectra_list = sorted(list(process.results.keys()))
 
-            col1, col2 = st.columns(2)
-
-            with col1:
-                spectrum = st.selectbox(
-                            label="Select spectrum",
-                            key="plot_spectrum",
-                            options=spectra_list,
-                            )
+            if len(spectra_list) > 1:
+                spectrum = st.select_slider("Select spectrum", options=spectra_list, key="plot_spectrum")
+            else:
+                spectrum = spectra_list[0]
+                st.write(f"Only one spectrum has been processed: {spectrum}")
+            session.register_widgets({"plot_spectrum": spectrum})
             
             regions = sorted(list(process.results[spectrum].keys()))
             idx = regions.index(session.widget_space["region_plot"]) if session.widget_space["region_plot"] in regions else 0
 
-            with col2:
+            col1, col2 = st.columns(2)
+            with col1:
                 region = st.selectbox(
                         label="Select region",
                         key="region_plot",

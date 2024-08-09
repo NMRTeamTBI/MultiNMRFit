@@ -287,6 +287,6 @@ else:
         save = st.button(txt, on_click=process.add_region)
 
         if save:
-            st.success("Saved")
+            st.success("Region saved")
 
 
