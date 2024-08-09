@@ -65,17 +65,15 @@ class Spectrum(object):
         # initialize model-related attributes (models, params, offset and fit_results) at default values
         self._set_default_model_attributes()
 
-    
     def _set_default_model_attributes(self):
         """Initialize model-related attributes at default values.
-        """   
+        """
 
         self.models = {}
-        self.params = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'ini', 'lb', 'ub'])
-        self.cnstr_wd = pd.DataFrame(columns = ['signal_id', 'model', 'par', 'shift_allowed', 'relative'])
+        self.params = pd.DataFrame(columns=['signal_id', 'model', 'par', 'ini', 'lb', 'ub'])
+        self.cnstr_wd = pd.DataFrame(columns=['signal_id', 'model', 'par', 'shift_allowed', 'relative'])
         self.offset = False
         self.fit_results = None
-
 
     def _initialize_models(self, signals: dict, available_models: dict) -> None:
         """Initialize models of each signal.
@@ -113,13 +111,11 @@ class Spectrum(object):
             _cnstr_wd.insert(0, 'signal_id', [id]*len(_cnstr_wd.index))
             self.cnstr_wd = _cnstr_wd if self.cnstr_wd.empty else pd.concat([self.cnstr_wd, _cnstr_wd])
 
-
         # reset index
         self.params.reset_index(inplace=True, drop=True)
         self.cnstr_wd.reset_index(inplace=True, drop=True)
 
         logger.debug("parameters\n{}".format(self.params))
-
 
     def _reset_fit_results(self) -> None:
         """Remove results of the last fit.
@@ -130,7 +126,6 @@ class Spectrum(object):
 
         # reset fit_results
         self.fit_results = None
-
 
     def _set_param(self, id: str, par: str, k: str, v: float) -> None:
         """Update parameter both in spectrum object and in the corresponding model objects.
@@ -147,8 +142,7 @@ class Spectrum(object):
         self.models[id].set_params(par, (k, v))
 
         # update self.params
-        self.params.loc[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v  
-
+        self.params.loc[(self.params["signal_id"] == id) & (self.params["par"] == par), k] = v
 
     @staticmethod
     def _simulate(params: list, ppm: list, models: dict, offset: bool = False) -> list:
@@ -177,7 +171,6 @@ class Spectrum(object):
 
         return simulated_spectrum
 
-
     @staticmethod
     def _calculate_cost(params: list, func: callable, models: dict, ppm: list, intensity: list, offset: bool = False) -> float:
         """Calculate residuum as sum of squared differences between experimental and simulated data.
@@ -202,7 +195,6 @@ class Spectrum(object):
 
         return residuum
 
-
     def _check_parameters(self) -> None:
         """
         Check initial parameters values are valid (i.e. numbers between lower and upper bounds).
@@ -218,7 +210,6 @@ class Spectrum(object):
         if any(test_bounds):
             par_error = self.params.loc[test_bounds, 'par'].values.tolist()
             raise ValueError("Initial values of parameters '{}' must be within bounds.".format(par_error))
-
 
     @staticmethod
     def _linear_stats(res, ftol: float = 2.220446049250313e-09) -> list:
@@ -241,12 +232,11 @@ class Spectrum(object):
             hess_inv_i = res.hess_inv(tmp_i)[i]
             sd_i = np.sqrt(max(1.0, res.fun) * ftol * hess_inv_i)
             tmp_i[i] = 0.0
-            #logger.debug('sd p{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
-            #logger.debug(f"   (rsd = {sd_i/res.x[i]}")
+            # logger.debug('sd p{0} = {1:12.4e} ± {2:.1e}'.format(i, res.x[i], sd_i))
+            # logger.debug(f"   (rsd = {sd_i/res.x[i]}")
             standard_deviations[i] = sd_i
 
         return standard_deviations
-
 
     def _check_model(self) -> None:
 
@@ -254,13 +244,11 @@ class Spectrum(object):
         if not len(self.models):
             raise ValueError("Model of the spectrum has not been built, must call build_model() first.")
 
-
     def _check_fit_results(self) -> None:
 
         # raise an error if experimental spectrum has not been fitted
         if self.fit_results is None:
             raise ValueError("Spectrum has not been fitted, must call fit() first.")
-
 
     def peak_picking(self, threshold: int) -> pd.DataFrame:
         """Peak picking.
@@ -278,10 +266,10 @@ class Spectrum(object):
         try:
             peak_table = ng.peakpick.pick(self.intensity, pthres=threshold, algorithm='downward')
             peak_table = pd.DataFrame(peak_table)
-            
+
         except:
             logger.debug("No peak found.")
-            peak_table = pd.DataFrame(columns = ['X_AXIS', 'cID', 'X_LW', 'VOL'])
+            peak_table = pd.DataFrame(columns=['X_AXIS', 'cID', 'X_LW', 'VOL'])
 
         self.peakpicking_threshold = threshold
 
@@ -292,28 +280,27 @@ class Spectrum(object):
         peak_table.insert(0, 'intensity', [self.intensity[int(i)] for i in peak_table['X_AXIS'].values])
 
         # drop peak position in points, volumes and linewidths in points
-        peak_table.drop(['X_AXIS','VOL','cID'],axis=1,inplace=True)
+        peak_table.drop(['X_AXIS', 'VOL', 'cID'], axis=1, inplace=True)
         # all clear cluster_ids from nmrglue to be replace from cluster_ids from mulitnmrfit
         peak_table['cID'] = ""
 
         # change type of the cluster column only to allow cluster names
-        peak_table["cID"] = peak_table['cID'].astype(str) 
+        peak_table["cID"] = peak_table['cID'].astype(str)
 
-        # sort by peak position in ppm 
-        peak_table.sort_values(by=['ppm'],inplace=True)
+        # sort by peak position in ppm
+        peak_table.sort_values(by=['ppm'], inplace=True)
 
         # Change Column names
-        peak_table.reset_index(inplace=True,drop=True)
+        peak_table.reset_index(inplace=True, drop=True)
 
         # Change columns order
-        peak_table = peak_table[['ppm','intensity','X_LW','cID']]
+        peak_table = peak_table[['ppm', 'intensity', 'X_LW', 'cID']]
 
         peak_table.drop('X_LW', axis=1, inplace=True)
 
         logger.debug("peak table\n{}".format(peak_table))
 
         return peak_table
-
 
     def build_model(self, signals: dict, available_models: dict, offset: dict = None) -> None:
         """Build models of each signal to simulate the full spectrum.
@@ -336,7 +323,6 @@ class Spectrum(object):
         # set offset
         self.update_offset(offset)
 
-
     def update_params(self, signals: dict) -> None:
         """Update parameters (initial values, lower and upper bounds).
 
@@ -355,8 +341,7 @@ class Spectrum(object):
             for par, val in signal.get("par", {}).items():
                 for k, v in val.items():
                     self._set_param(id, par, k, v)
-                    #self.signals[id]["par"][k] = v
-
+                    # self.signals[id]["par"][k] = v
 
     def update_offset(self, offset: dict) -> None:
         """Update offset (initial value, lower and upper bounds).
@@ -375,8 +360,8 @@ class Spectrum(object):
         if offset is None:
             if self.offset:
                 self.params.drop(self.params[
-                                     (self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset')
-                                 ].index, inplace=True)
+                    (self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset')
+                ].index, inplace=True)
                 self.offset = False
         else:
             if isinstance(offset, dict):
@@ -397,7 +382,6 @@ class Spectrum(object):
                     ]
             else:
                 raise TypeError("offset must be a dict or None")
-        
 
     def simulate(self, params: list = None) -> list:
         """Simulate spectrum.
@@ -408,7 +392,7 @@ class Spectrum(object):
         Returns:
             list: simulated intensities
         """
-        
+
         # check the model has been built
         self._check_model()
 
@@ -419,7 +403,6 @@ class Spectrum(object):
         simulated_spectra = self._simulate(params, self.ppm, self.models, offset=self.offset)
 
         return simulated_spectra
-
 
     def integrate(self, params: list = None, bounds: list = [-100.0, 300.0]) -> dict:
         """Integrate each signal of the spectrum.
@@ -446,7 +429,6 @@ class Spectrum(object):
 
         return area
 
-
     def fit(self, method: str = "L-BFGS-B"):
         """Fit spectrum.
 
@@ -464,7 +446,7 @@ class Spectrum(object):
 
         # check parameters
         self._check_parameters()
-        
+
         # set scaling factor to stabilize convergence
         mean_sp = np.mean(self.intensity)
         scaling_factor = 1 if -1 < mean_sp < 1 else abs(mean_sp)
@@ -472,7 +454,7 @@ class Spectrum(object):
         # apply scaling factor on parameters (intensity & offset)
         params_scaled = self.params.copy(deep=True)
         params_scaled.loc[params_scaled['par'].isin(["intensity", "offset"]), ["ini", "lb", "ub"]] /= scaling_factor
-        
+
         # set initial values
         x0 = params_scaled['ini'].values.tolist()
 
@@ -509,7 +491,7 @@ class Spectrum(object):
         else:
 
             raise ValueError("optimization method '{}' not implemented".format(method))
-        
+
         # calculate standard deviation on estimated parameters (linear statistics)
         standard_deviations = self._linear_stats(self.fit_results)
 
@@ -529,7 +511,6 @@ class Spectrum(object):
 
         logger.debug("parameters\n{}".format(self.params))
 
-
     def plot(self, exp: bool = True, ini: bool = False, fit: bool = False, colored_area: bool = False, pp: pd.DataFrame = None, threshold: float = None) -> go.Figure:
         """Plot experimental and simulated (from initial values and best fit) spectra and peak picking results.
 
@@ -542,15 +523,15 @@ class Spectrum(object):
         Returns:
             go.Figure: plotly figure
         """
-        
+
         logger.debug("create plot")
-        
+
         if fit:
             self._check_fit_results()
             fig_full = make_subplots(rows=2, cols=1, row_heights=[0.7, 0.3], shared_xaxes=True)
         else:
             fig_full = make_subplots(rows=1, cols=1)
-        
+
         # generate individual plots
 
         if exp:
@@ -560,7 +541,7 @@ class Spectrum(object):
 
         if ini:
             self._check_model()
-            ini_intensity = self.simulate(params = self.params['ini'].values.tolist())
+            ini_intensity = self.simulate(params=self.params['ini'].values.tolist())
             fig_ini = go.Scatter(x=self.ppm, y=ini_intensity, mode='lines', name='initial values', marker_color="#7FC97F")
             fig_full.add_trace(fig_ini, row=1, col=1)
 
@@ -568,36 +549,40 @@ class Spectrum(object):
             for name, model in self.models.items():
                 model_intensity = model.simulate([self.params['opt'].values.tolist()[i] for i in model._par_idx], np.array(self.ppm.values.tolist()))
                 fig_colored_area = go.Scatter(
-                    x=self.ppm, 
+                    x=self.ppm,
                     y=model_intensity,
                     fill="tozeroy",
-                    mode='lines', 
+                    mode='lines',
                     name='signal ' + str(name))
                 fig_full.add_trace(fig_colored_area, row=1, col=1)
 
         if fit:
             fig_fit = go.Scatter(x=self.ppm, y=self.fit_results.best_fit, mode='lines', name='best fit', marker_color="#EF553B")
             fig_full.add_trace(fig_fit, row=1, col=1)
-            
+
             residuum = self.fit_results.best_fit - self.intensity
             fig_resid = go.Scatter(x=self.ppm, y=residuum, mode='lines', name='residuum', marker_color="#AB63FA")
             fig_full.add_trace(fig_resid, row=2, col=1)
-            
+
         if isinstance(pp, pd.DataFrame):
             x = pp['ppm'].values
             offset_plot = 0.05 * np.max(self.intensity)
             y = [i + offset_plot for i in pp['intensity'].values]
-            fig_pp = go.Scatter(x=x, y=y, mode='markers', name='peaks detected', marker_symbol="arrow-down", marker_line_width=1.2, marker_size=9, marker_color="#FDC086")
+            fig_pp = go.Scatter(x=x, y=y, mode='markers', name='peaks detected', marker_symbol="arrow-down",
+                                marker_line_width=1.2, marker_size=9, marker_color="#FDC086")
             fig_full.add_trace(fig_pp, row=1, col=1)
 
         if isinstance(threshold, float):
-            fig_full.add_hline(y=threshold,line_width=3, line_dash="dash", line_color="cadetblue", name='threshold')
+            fig_full.add_hline(y=threshold, line_width=3, line_dash="dash", line_color="cadetblue", name='threshold')
 
-        fig_full.update_layout(plot_bgcolor="white", xaxis=dict(linecolor="black", mirror=True, showline=True), yaxis=dict(linecolor="black", mirror=True, showline=True, title='intensity'),legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1))
+        fig_full.update_layout(plot_bgcolor="white", xaxis=dict(linecolor="black", mirror=True, showline=True), yaxis=dict(
+            linecolor="black", mirror=True, showline=True, title='intensity'), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
         if fit:
-            fig_full.update_layout(plot_bgcolor="white", xaxis2=dict(linecolor="black", mirror=True, showline=True, title='chemical shift (ppm)'), yaxis2=dict(linecolor="black", mirror=True, showline=True, title='residuum'))
+            fig_full.update_layout(plot_bgcolor="white", xaxis2=dict(linecolor="black", mirror=True, showline=True,
+                                   title='chemical shift (ppm)'), yaxis2=dict(linecolor="black", mirror=True, showline=True, title='residuum'))
             # add horizontal line at y=0 on residuum
-            fig_full.update_layout(shapes=[{'type': 'line','y0':0,'y1': 0,'x0':np.min(self.ppm), 'x1':np.max(self.ppm),'xref':'x2','yref':'y2', 'line': {'color': 'black','width': 1.0, 'dash': 'dash'}}])
+            fig_full.update_layout(shapes=[{'type': 'line', 'y0': 0, 'y1': 0, 'x0': np.min(self.ppm), 'x1': np.max(
+                self.ppm), 'xref': 'x2', 'yref': 'y2', 'line': {'color': 'black', 'width': 1.0, 'dash': 'dash'}}])
         else:
             fig_full.update_layout(xaxis=dict(title='chemical shift (ppm)'))
 
@@ -609,4 +594,3 @@ class Spectrum(object):
         fig_full.update_xaxes(autorange=False, range=[np.max(self.ppm), np.min(self.ppm)])
 
         return fig_full
-

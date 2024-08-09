@@ -10,6 +10,7 @@ import logging
 # create logger
 logger = logging.getLogger(__name__)
 
+
 class IoHandler():
 
     def __init__(self):
@@ -50,7 +51,8 @@ class IoHandler():
         elif isinstance(data, dict):
             dataset = data
             dataset["window"] = window
-            dataset["ppm"], dataset["intensity"] = self.read_topspin_data(dataset["data_path"], dataset["dataset"], dataset["expno"], dataset["procno"], rowno=dataset.get("rowno", None), window=window)
+            dataset["ppm"], dataset["intensity"] = self.read_topspin_data(
+                dataset["data_path"], dataset["dataset"], dataset["expno"], dataset["procno"], rowno=dataset.get("rowno", None), window=window)
         else:
             raise TypeError("Data must be provided as a dict or a dataframe.")
         return dataset
@@ -60,6 +62,7 @@ class IoHandler():
 
         # get complete data path
         full_path = Path(data_path, dataset, expno, 'pdata', procno)
+
         # get dimension
         ndim = 1 if rowno is None else 2
 
@@ -93,7 +96,7 @@ class IoHandler():
         if window is not None:
             # mask = (ppm >= window[0]) & (ppm <= window[1])
             mask = (ppm >= np.min(window)) & (ppm <= np.max(window))
- 
+
             ppm = ppm[mask]
             intensity = intensity[mask]
 
@@ -106,12 +109,12 @@ class IoHandler():
     def load_1D_spectrum(data_path, dataset, procno, expno_list):
         ppm_all = []
         data_all = []
-        
+
         for exp in expno_list:
 
             # get complete data path
             full_path = Path(data_path, dataset, str(exp), 'pdata', procno)
-        
+
             # read processed data
             try:
                 dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
@@ -124,7 +127,7 @@ class IoHandler():
                 data_all.append([data][0])
             except Exception as e:
                 raise ValueError("An unknown error has occurred when opening spectrum: '{}'. Please check your inputs.".format(e))
-        
+
         try:
             data = np.array(data_all)
             ppm_all = np.array(ppm_all)
@@ -156,7 +159,7 @@ class IoHandler():
         # get complete data path
 
         full_path = Path(data_path, dataset, expno, 'pdata', procno)
-        
+
         # read processed data
         try:
             dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
@@ -167,7 +170,7 @@ class IoHandler():
             names = list(range(1, data.shape[0]+1))
         except Exception as e:
             raise ValueError("An unknown error has occurred when opening spectrum: '{}'. Please check your inputs.".format(e))
-        
+
         data = np.array(data)
         ppm_all = np.array([ppm for l in range(data.shape[0])])
 

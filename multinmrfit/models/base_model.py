@@ -14,7 +14,7 @@ class Model(object):
         self._cnstr_wd = None
         self._par_idx = None
         self.peak_number = None
-    
+
     def set_default_params(self):
         self._params = pd.DataFrame(dict((k, self.default_params[k]) for k in ('model', 'par', 'ini', 'lb', 'ub')))
         return self._params
@@ -36,6 +36,3 @@ class Model(object):
         sim_spectra = self.simulate(params, ppm)
         integral = np.sum(sim_spectra) * np.abs(ppm[0] - ppm[1])
         return integral
-    
-
-
