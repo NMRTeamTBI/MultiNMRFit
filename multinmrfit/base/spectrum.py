@@ -506,7 +506,8 @@ class Spectrum(object):
         self.fit_results.best_fit = self.simulate(self.params['opt'].values.tolist())
 
         # integrate spectrum
-        integrals = self.integrate(self.params['opt'].values.tolist())
+        delta = (max(self.ppm) - min(self.ppm))/2
+        integrals = self.integrate(self.params['opt'].values.tolist(), bounds=[min(self.ppm)-delta, max(self.ppm)+delta])
         self.params['integral'] = [integrals[i] if i != 'full_spectrum' else np.nan for i in self.params['signal_id'].values]
 
         logger.debug("parameters\n{}".format(self.params))
