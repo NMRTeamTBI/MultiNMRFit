@@ -34,5 +34,5 @@ class Model(object):
 
     def integrate(self, params: list, ppm: list):
         sim_spectra = self.simulate(params, ppm)
-        integral = np.sum(sim_spectra) * np.abs(ppm[0] - ppm[1])
+        integral = np.trapz(y=sim_spectra, x=ppm)
         return integral
