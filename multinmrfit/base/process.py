@@ -395,7 +395,7 @@ class Process(object):
         mask = (params['par'].isin(["J", "J1", "J2", "J3"])) & (lower_bounds < 1e-6)
         print(mask)
         params.loc[mask, "lb"] = 1e-6
-        params.loc[mask, "ini"] = (lower_bounds[mask_abs] + upper_bounds[mask_abs])/2
+        params.loc[mask, "ini"] = (params.loc[mask, "lb"] + params.loc[mask, "ub"])/2
         print(params)
         mask = params['par'].isin(['intensity'])
         params.loc[mask, "lb"] = 1.0
