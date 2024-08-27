@@ -20,8 +20,8 @@ class SignalModel(Model):
                                'ini': [1.0, 0.05, 1e6, 0.001, 0.5],
                                'lb': [0.0, 0.01, 1, 0.0001, 0.0],
                                'ub': [10.0, 1.0, 1e15, 0.03, 1.0],
-                               'shift_allowed': [0.01, 0.05, 10, 0.3, 10],
-                               'relative': [False, False, True, True, False]}
+                               'shift_allowed': [0.01, 0.10, 10, 0.3, 10],
+                               'relative': [False, True, True, True, False]}
 
     def pplist2signal(self, peak_list):
         detected_peak_position = np.mean(peak_list.ppm.values)
