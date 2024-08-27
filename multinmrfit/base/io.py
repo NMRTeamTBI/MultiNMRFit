@@ -10,6 +10,7 @@ import logging
 # create logger
 logger = logging.getLogger(__name__)
 
+
 class IoHandler():
 
     def __init__(self):
@@ -35,7 +36,6 @@ class IoHandler():
 
         return models
 
-
     def load_data(self, data, window: tuple = None, rowno: int = None):
 
         # initialize metadata & load NMR data
@@ -46,21 +46,23 @@ class IoHandler():
                        "procno": None,
                        "rowno": rowno,
                        "window": window}
+
             dataset["ppm"], dataset["intensity"] = self.filter_window(data.ppm, data.intensity, window)
         elif isinstance(data, dict):
             dataset = data
             dataset["window"] = window
-            dataset["ppm"], dataset["intensity"] = self.read_topspin_data(dataset["data_path"], dataset["dataset"], dataset["expno"], dataset["procno"], rowno=dataset.get("rowno", None), window=window)
+            dataset["ppm"], dataset["intensity"] = self.read_topspin_data(
+                dataset["data_path"], dataset["dataset"], dataset["expno"], dataset["procno"], rowno=dataset.get("rowno", None), window=window)
         else:
             raise TypeError("Data must be provided as a dict or a dataframe.")
         return dataset
-
 
     @staticmethod
     def read_topspin_data(data_path, dataset, expno, procno, rowno=None, window=None):
 
         # get complete data path
         full_path = Path(data_path, dataset, expno, 'pdata', procno)
+
         # get dimension
         ndim = 1 if rowno is None else 2
 
@@ -87,32 +89,32 @@ class IoHandler():
 
         return ppm, intensity
 
-
     @staticmethod
     def filter_window(ppm: list, intensity: list, window: tuple = None):
 
         # filter selected window
         if window is not None:
-            mask = (ppm >= window[0]) & (ppm <= window[1])
+            # mask = (ppm >= window[0]) & (ppm <= window[1])
+            mask = (ppm >= np.min(window)) & (ppm <= np.max(window))
+
             ppm = ppm[mask]
             intensity = intensity[mask]
 
         # reset index
         ppm.reset_index(inplace=True, drop=True)
         intensity.reset_index(inplace=True, drop=True)
-
         return ppm, intensity
 
     @staticmethod
     def load_1D_spectrum(data_path, dataset, procno, expno_list):
         ppm_all = []
         data_all = []
-        
+
         for exp in expno_list:
 
             # get complete data path
             full_path = Path(data_path, dataset, str(exp), 'pdata', procno)
-        
+
             # read processed data
             try:
                 dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
@@ -125,13 +127,14 @@ class IoHandler():
                 data_all.append([data][0])
             except Exception as e:
                 raise ValueError("An unknown error has occurred when opening spectrum: '{}'. Please check your inputs.".format(e))
-        
+
         try:
             data = np.array(data_all)
+            ppm_all = np.array(ppm_all)
         except:
             raise ValueError("All spectra do not have the same length.")
 
-        return ppm_all[0], data, expno_list
+        return ppm_all, data, expno_list
 
     @staticmethod
     def load_txt_spectrum(txt_data):
@@ -141,7 +144,9 @@ class IoHandler():
         data = np.array(txt_data.loc[:, txt_data.columns != 'ppm']).transpose()
         names = [int(i) for i in txt_data.columns[txt_data.columns != 'ppm'].tolist()]
 
-        return ppm, data, names
+        ppm_all = np.array([ppm for l in range(data.shape[0])])
+
+        return ppm_all, data, names
 
     @staticmethod
     def load_2D_spectrum(data_path, dataset, expno, procno):
@@ -154,7 +159,7 @@ class IoHandler():
         # get complete data path
 
         full_path = Path(data_path, dataset, expno, 'pdata', procno)
-        
+
         # read processed data
         try:
             dic, data = ng.bruker.read_pdata(str(full_path), read_procs=True, read_acqus=False, scale_data=True, all_components=False)
@@ -166,7 +171,10 @@ class IoHandler():
         except Exception as e:
             raise ValueError("An unknown error has occurred when opening spectrum: '{}'. Please check your inputs.".format(e))
 
-        return ppm, data, names
+        data = np.array(data)
+        ppm_all = np.array([ppm for l in range(data.shape[0])])
+
+        return ppm_all, data, names
 
     def check_dataset(self):
 
