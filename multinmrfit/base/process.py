@@ -388,12 +388,12 @@ class Process(object):
         lower_bounds = params["ini"]
         params.loc[mask_rel, "lb"] = lower_bounds[mask_rel] - abs(upper_bounds[mask_rel] * cnstr_wd.loc[mask_rel, "shift_allowed"])
         params.loc[mask_abs, "lb"] = lower_bounds[mask_abs] - abs(cnstr_wd.loc[mask_abs, "shift_allowed"])
-        mask = params['par'].isin(['lw']) & (lower_bounds < 0.0)
-        params.loc[mask, "lb"] = 0.0
+        mask = params['par'].isin(['lw']) & (lower_bounds < 1e-6)
+        params.loc[mask, "lb"] = 1e-6
         mask = params['par'].isin(["gl"])
         params.loc[mask, "lb"] = 0.0
-        mask = params['par'].isin(["J", "J1", "J2", "J3"]) & (lower_bounds < 0.0)
-        params.loc[mask, "lb"] = 0.0
+        mask = params['par'].isin(["J", "J1", "J2", "J3"]) & (lower_bounds < 1e-6)
+        params.loc[mask, "lb"] = 1e-6
         mask = params['par'].isin(['intensity'])
         params.loc[mask, "lb"] = 1.0
 
