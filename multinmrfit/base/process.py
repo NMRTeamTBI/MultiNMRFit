@@ -393,10 +393,8 @@ class Process(object):
         mask = params['par'].isin(["gl"])
         params.loc[mask, "lb"] = 0.0
         mask = (params['par'].isin(["J", "J1", "J2", "J3"])) & (lower_bounds < 1e-6)
-        print(mask)
         params.loc[mask, "lb"] = 1e-6
         params.loc[mask, "ini"] = (params.loc[mask, "lb"] + params.loc[mask, "ub"])/2
-        print(params)
         mask = params['par'].isin(['intensity'])
         params.loc[mask, "lb"] = 1.0
 
@@ -439,7 +437,7 @@ class Process(object):
         # update params in spectrum
         self.update_params(prev_params, spectrum=rowno, region=region)
 
-        # print(prev_params)
+        print(prev_params)
 
         # fit
         self.results[rowno][region].fit()
