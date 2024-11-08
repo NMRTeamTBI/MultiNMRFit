@@ -198,6 +198,5 @@ else:
                     process.save_spetrum_data(spectrum, region, filename)
                     st.info(f"Spectrum file exported")
 
-                    # print(process.results[spectrum][region].ppm,process.results[spectrum][region].intensity,process.results[spectrum][region].fit_results.best_fit)
     else:
         st.warning("No results to display, please process some spectra first.")
