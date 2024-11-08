@@ -467,15 +467,24 @@ class Spectrum(object):
         # fit spectrum
         if method == "differential_evolution":
 
-            self.fit_results = differential_evolution(
+            initial_approximation = differential_evolution(
                 Spectrum._calculate_cost,
                 maxiter=700,
                 popsize=10,
                 bounds=bounds,
                 args=(self._simulate, self.models, self.ppm, data_scaled, self.offset),
-                polish=True,
+                polish=False,
                 x0=x0
             )
+            self.fit_results = minimize(
+                Spectrum._calculate_cost,
+                x0=initial_approximation.x,
+                args=(self._simulate, self.models, self.ppm, data_scaled, self.offset),
+                method="L-BFGS-B",
+                bounds=bounds,
+                options={'maxcor': 30, 'maxls': 30}
+            )
+
 
         elif method == "L-BFGS-B":
 

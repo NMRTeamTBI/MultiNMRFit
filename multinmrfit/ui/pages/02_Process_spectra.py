@@ -253,6 +253,8 @@ else:
                     disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral"]
                 )
 
+                use_DE = st.checkbox('Refine initial values using Differential evolution', value=session.widget_space["use_DE"], key="use_DE")
+                
                 fit_ok = st.form_submit_button("Fit spectrum")
 
                 if fit_ok:
@@ -262,7 +264,8 @@ else:
 
                     # fit reference spectrum
                     with st.spinner('Fitting in progress, please wait...'):
-                        process.current_spectrum.fit()
+                        method = "differential_evolution" if use_DE else "L-BFGS-B"
+                        process.current_spectrum.fit(method=method)
 
                 # show last fit
                 if process.current_spectrum.fit_results is not None:
