@@ -12,6 +12,7 @@ import pathlib
 from sess_i.base.main import SessI
 from multinmrfit.base.process import Process
 import pandas as pd
+from pathlib import Path
 
 
 session = SessI(
@@ -49,11 +50,25 @@ def load_defaults():
     session.set_widget_defaults(**options)
     return options
 
-
 # set page title with multinmrfit version
 st.set_page_config(page_title=f"multiNMRFit (v{multinmrfit.__version__})", layout="wide")
 st.title(f"Welcome to multiNMRFit (v{multinmrfit.__version__})")
 
+update_info = st.empty()
+try:
+    pf_path = Path(multinmrfit.__file__).parent
+    with open(str(Path(pf_path, "last_version.txt")), "r") as f:
+        lastversion = f.read()
+    if lastversion != multinmrfit.__version__:
+        # change the next line to streamlit
+        update_info = st.info(
+                    f'New version available ({lastversion}). '
+                    f'You can update multiNMRFit with: "pip install --upgrade '
+                    f'multinmrfit". Check the documentation for more '
+                    f'information.'
+                )
+except Exception:
+    pass
 
 options = load_defaults()
 uploaded_file = st.sidebar.file_uploader("Load a processing file.")
