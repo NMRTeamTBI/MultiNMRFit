@@ -400,7 +400,7 @@ class Process(object):
 
         return params
 
-    def fit_from_ref(self, rowno, region, ref, update_pars_from_previous=True, update_cnstr_wd=None):
+    def fit_from_ref(self, rowno, region, ref, update_pars_from_previous=True, update_cnstr_wd=None, method="L-BFGS-B"):
         """Fit a spectrum using another spectrum as reference.
 
         Args:
@@ -437,10 +437,8 @@ class Process(object):
         # update params in spectrum
         self.update_params(prev_params, spectrum=rowno, region=region)
 
-        print(prev_params)
-
         # fit
-        self.results[rowno][region].fit()
+        self.results[rowno][region].fit(method=method)
 
     def save_process_to_file(self):
 

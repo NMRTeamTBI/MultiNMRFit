@@ -60,12 +60,17 @@ else:
 
     use_previous = st.checkbox('Use initial values from best fit of previous spectrum', value=session.widget_space["use_previous"], key="use_previous")
 
-    if not session.widget_space["adapt_cnstr_wd"]:
-        session.register_widgets({"adapt_cnstr_wd": False})
+    if not session.widget_space["use_DE"]:
+        session.register_widgets({"use_DE": False})
+
+    use_DE = st.checkbox('Refine initial values using Differential evolution', value=session.widget_space["use_DE"], key="use_DE")
+                
+    if session.widget_space["adapt_cnstr_wd"]:
+        session.register_widgets({"adapt_cnstr_wd": True})
 
     if use_previous:
-        adapt_cnstr_wd = st.checkbox('Keep initial bounds from reference spectrum', value=session.widget_space["adapt_cnstr_wd"], key="adapt_cnstr_wd")
-        if not adapt_cnstr_wd:
+        adapt_cnstr_wd = st.checkbox('Adjust initial bounds dynamically', value=session.widget_space["adapt_cnstr_wd"], key="adapt_cnstr_wd")
+        if adapt_cnstr_wd:
             with st.container(border=True):
                 df_cnstr_wd = st.data_editor(process.results[reference_spectrum][region].cnstr_wd,
                                              column_config={"relative": st.column_config.CheckboxColumn(
@@ -78,13 +83,14 @@ else:
                 if update_cnstr_wd:
                     process.results[reference_spectrum][region].cnstr_wd = df_cnstr_wd
     else:
-        adapt_cnstr_wd = True
+        adapt_cnstr_wd = False
 
     session.register_widgets({
         "spectra_to_process": spectra_to_process,
         "reprocess": reprocess,
         "use_previous": use_previous,
-        "adapt_cnstr_wd": adapt_cnstr_wd
+        "adapt_cnstr_wd": adapt_cnstr_wd,
+        "use_DE": use_DE
     })
 
     with st.expander("Reference spectrum", expanded=False):
@@ -102,6 +108,7 @@ else:
 if process is not None and len(spectra_list):
 
     stop = False
+    method = "differential_evolution" if use_DE else "L-BFGS-B"
 
     col1, col2, col3 = st.columns(3)
 
@@ -120,19 +127,19 @@ if process is not None and len(spectra_list):
         list_spectra_upper = [reference_spectrum] + sorted([i for i in spectra_list if i > reference_spectrum])
         list_spectra_lower = [reference_spectrum] + sorted([i for i in spectra_list if i < reference_spectrum], reverse=True)
 
-        cnstr_wd = process.results[reference_spectrum][region].cnstr_wd if not adapt_cnstr_wd else None
+        cnstr_wd = process.results[reference_spectrum][region].cnstr_wd if adapt_cnstr_wd else None
 
         for i, j in enumerate(list_spectra_upper[1:]):
             percent_complete = (i+1)/(len(list_spectra_upper)+len(list_spectra_lower)-2)
             progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_upper[i]} as reference). Please wait."
             progress_bar.progress(percent_complete, text=progress_text)
-            process.fit_from_ref(rowno=j, region=region, ref=list_spectra_upper[i], update_pars_from_previous=use_previous, update_cnstr_wd=cnstr_wd)
+            process.fit_from_ref(rowno=j, region=region, ref=list_spectra_upper[i], update_pars_from_previous=use_previous, update_cnstr_wd=cnstr_wd, method=method)
 
         for i, j in enumerate(list_spectra_lower[1:]):
             percent_complete = (i+len(list_spectra_upper))/(len(list_spectra_upper)+len(list_spectra_lower)-2)
             progress_text = f"Fitting spectrum {j} (using spectrum {list_spectra_lower[i]} as reference). Please wait."
             progress_bar.progress(percent_complete, text=progress_text)
-            process.fit_from_ref(rowno=j, region=region, ref=list_spectra_lower[i], update_pars_from_previous=use_previous, update_cnstr_wd=cnstr_wd)
+            process.fit_from_ref(rowno=j, region=region, ref=list_spectra_lower[i], update_pars_from_previous=use_previous, update_cnstr_wd=cnstr_wd, method=method)
 
         progress_bar.empty()
         stop.empty()

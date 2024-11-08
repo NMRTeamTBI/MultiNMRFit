@@ -13,3 +13,4 @@ __pycache__/
 /multinmrfit/ui/conf/default_conf.pickle
 /multinmrfit/ui/conf/default_conf.pickle
 multinmrfit/ui/conf/default_conf.pickle
+multinmrfit/last_version.txt
