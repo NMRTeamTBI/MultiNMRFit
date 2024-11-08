@@ -62,9 +62,9 @@ try:
     if lastversion != multinmrfit.__version__:
         # change the next line to streamlit
         update_info = st.info(
-                    f'New version available ({lastversion}). '
-                    f'You can update multiNMRFit with: "pip install --upgrade '
-                    f'multinmrfit". Check the documentation for more '
+                    f'New version available (v{lastversion}). '
+                    f'You can update multiNMRFit with the following command:  \n\npip install --upgrade '
+                    f'multinmrfit  \n\nCheck the documentation for more '
                     f'information.'
                 )
 except Exception:
