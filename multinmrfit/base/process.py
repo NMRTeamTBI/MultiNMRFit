@@ -348,6 +348,9 @@ class Process(object):
             else:
                 compounds = self.results[rowno][region].params.signal_id.values.tolist()
 
+        # remove 'full spectrum'
+        compounds = [i for i in compounds if i != "full_spectrum"]
+
         # remove duplicates
         compounds = list(set(compounds))
 
@@ -374,6 +377,9 @@ class Process(object):
     @staticmethod
     def update_cnstr_wd(params, cnstr_wd):
 
+        params.reset_index(inplace=True, drop=True)
+        cnstr_wd.reset_index(inplace=True, drop=True)
+
         mask_rel = cnstr_wd['relative'].tolist()
         mask_abs = [not i for i in mask_rel]
 
@@ -397,6 +403,19 @@ class Process(object):
         params.loc[mask, "ini"] = (params.loc[mask, "lb"] + params.loc[mask, "ub"])/2
         mask = params['par'].isin(['intensity'])
         params.loc[mask, "lb"] = 1.0
+
+        # if some initial parameters are outside the bounds, adjust bounds
+        # identify params with negative initial values
+        mask_neg = (params['ini'] < 0)
+        mask_pos = [not i for i in mask_neg]
+        # set lower bounds
+        mask = (params['ini'] < params['lb'])
+        params.loc[(mask & mask_neg), "lb"] = params.loc[(mask & mask_neg), "ini"]*10
+        params.loc[(mask & mask_pos), "lb"] = params.loc[(mask & mask_pos), "ini"]*0.1
+        # set upper bounds
+        mask = (params['ini'] > params['ub'])
+        params.loc[(mask & mask_neg), "ub"] = params.loc[(mask & mask_neg), "ini"]*0.1
+        params.loc[(mask & mask_pos), "ub"] = params.loc[(mask & mask_pos), "ini"]*10
 
         return params
 
@@ -425,6 +444,7 @@ class Process(object):
 
         # get params from previous spectrum
         prev_params = self.results[ref][region].params.copy(deep=True)
+        #print(f"Previous params:\n{prev_params}")
 
         # update initial values
         if update_pars_from_previous:
@@ -433,6 +453,8 @@ class Process(object):
         # update bounds
         if update_cnstr_wd is not None:
             prev_params = self.update_cnstr_wd(prev_params, update_cnstr_wd)
+
+        #print(f"Updated params:\n{prev_params}")
 
         # update params in spectrum
         self.update_params(prev_params, spectrum=rowno, region=region)

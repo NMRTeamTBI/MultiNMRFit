@@ -72,7 +72,7 @@ else:
         session.register_widgets({"adapt_cnstr_wd": True})
 
     if use_previous:
-        adapt_cnstr_wd = st.checkbox('Adjust initial bounds dynamically', value=session.widget_space["adapt_cnstr_wd"], key="adapt_cnstr_wd", on_change=update_checkbox, args=["adapt_cnstr_wd"])
+        adapt_cnstr_wd = st.checkbox('Adjust bounds dynamically', value=session.widget_space["adapt_cnstr_wd"], key="adapt_cnstr_wd", on_change=update_checkbox, args=["adapt_cnstr_wd"])
         if adapt_cnstr_wd:
             with st.container(border=True):
                 df_cnstr_wd = st.data_editor(process.results[reference_spectrum][region].cnstr_wd,

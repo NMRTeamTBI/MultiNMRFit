@@ -128,7 +128,7 @@ else:
                 export_sel = st.selectbox(
                     label="Export data to tsv",
                     key="export",
-                        options=["all data", "specific data", "spectrum data"],
+                        options=["all data", "specific data", "spectra data"],
                     index=0
                 )
                 save_button = st.button('Export')

@@ -362,6 +362,9 @@ class Spectrum(object):
                 self.params.drop(self.params[
                     (self.params["signal_id"] == 'full_spectrum') & (self.params["par"] == 'offset')
                 ].index, inplace=True)
+                self.cnstr_wd.drop(self.cnstr_wd[
+                    (self.cnstr_wd["signal_id"] == 'full_spectrum') & (self.cnstr_wd["par"] == 'offset')
+                ].index, inplace=True)
                 self.offset = False
         else:
             if isinstance(offset, dict):
@@ -380,6 +383,9 @@ class Spectrum(object):
                         offset.get('lb', -default_offset_bound),
                         offset.get('ub', default_offset_bound)
                     ]
+                    _cnstr_offset = pd.DataFrame({'signal_id': 'full_spectrum', 'model': None, 'par': 'offset', 'shift_allowed':default_offset_bound, 'relative': False}, index=[0])
+                    self.cnstr_wd = pd.concat([self.cnstr_wd, _cnstr_offset])
+                    self.cnstr_wd.reset_index(inplace=True, drop=True)
             else:
                 raise TypeError("offset must be a dict or None")
 
@@ -448,7 +454,7 @@ class Spectrum(object):
         self._check_parameters()
 
         # set scaling factor to stabilize convergence
-        mean_sp = np.mean(self.intensity)
+        mean_sp = np.max(self.intensity)
         scaling_factor = 1 if -1 < mean_sp < 1 else abs(mean_sp)
 
         # apply scaling factor on parameters (intensity & offset)
@@ -494,7 +500,7 @@ class Spectrum(object):
                 args=(self._simulate, self.models, self.ppm, data_scaled, self.offset),
                 method="L-BFGS-B",
                 bounds=bounds,
-                options={'maxcor': 30, 'maxls': 30}
+                options={'maxcor': 40, 'maxls': 40, 'disp': 1}
             )
 
         else:
