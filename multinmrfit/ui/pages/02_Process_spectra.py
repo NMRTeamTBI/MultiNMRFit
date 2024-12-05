@@ -278,8 +278,10 @@ else:
                     st.plotly_chart(fig, theme=None)
 
                     # save as pickle file
-                    process.save_process_to_file()
                     st.success("Spectrum has been fitted.")
+                    with st.spinner('Saving process file...'):
+                        process.save_process_to_file()
+                    
                 else:
                     # plot fit results
                     fig = process.current_spectrum.plot(ini=True, fit=False)
