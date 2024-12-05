@@ -8,6 +8,7 @@ st.title("Fit from a spectrum of reference")
 session = SessI(session_state=st.session_state, page="Fitting")
 
 process = session.get_object(key="process")
+session.object_space["consolidate"] = True
 
 def update_checkbox(widget):
     session.register_widgets({widget: not session.widget_space[widget]})

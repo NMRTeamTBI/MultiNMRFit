@@ -20,6 +20,7 @@ session = SessI(
     page="inputs_outputs"
 )
 
+session.object_space["consolidate"] = True
 
 def save_defaults(options):
     save_path = pathlib.Path(multinmrfit.__file__).resolve().parent / "ui" / "conf"

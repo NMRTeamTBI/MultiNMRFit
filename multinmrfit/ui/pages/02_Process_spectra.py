@@ -15,7 +15,7 @@ session = SessI(
 
 # get process
 process = session.object_space["process"]
-
+session.object_space["consolidate"] = True
 
 def append_line(chem_shift, process, name):
     new_line = pd.DataFrame({"ppm": [chem_shift], "intensity": [process.get_current_intensity(chem_shift)], "cID": [name]})
