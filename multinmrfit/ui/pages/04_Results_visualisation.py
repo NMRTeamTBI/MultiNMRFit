@@ -21,6 +21,12 @@ if process is None:
     st.warning("No results to display, please process some spectra first.")
 
 else:
+    
+    # consolidate the results only if not done yet
+    if session.get_object(key="consolidate"):
+        with st.spinner('Results consolidation in progress...'):
+            process.consolidate_results()
+            session.object_space["consolidate"] = False
 
     if len(process.results):
         with st.container(border=True):
@@ -79,9 +85,6 @@ else:
                 disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral", "ini", "ub", "lb"]
             )
 
-            # consolidate the results
-            process.consolidate_results()
-
         with st.container(border=True):
             st.write("### Fitting results")
 
@@ -126,20 +129,20 @@ else:
 
             with col1:
                 export_sel = st.selectbox(
-                    label="Export data to tsv",
+                    label="Export results to tsv",
                     key="export",
-                        options=["all data", "specific data", "spectrum data"],
+                        options=["all parameters/signals", "specific parameters/signals", "spectra data"],
                     index=0
                 )
                 save_button = st.button('Export')
             with col2:
-                if export_sel == "all data":
+                if export_sel == "all parameters/signals":
                     filename = st.text_input(
                         label="Enter filename",
                         value=process.filename
                     )
 
-                elif export_sel == "specific data":
+                elif export_sel == "specific parameters/signals":
                     signal = st.selectbox(
                         label="Signal",
                         options=signal_list,
@@ -161,7 +164,7 @@ else:
                         label="Filename",
                     )
 
-                elif export_sel == "spectrum data":
+                elif export_sel == "spectra data":
                     spectrum = st.selectbox(
                         label="Select spectrum",
                         key="spectrum_to_save",
@@ -188,16 +191,15 @@ else:
                     st.warning("Selection error")
 
             if save_button:
-                if export_sel == "all data":
+                if export_sel == "all parameters/signals":
                     process.save_consolidated_results()
                     st.info(f"Results files exported")
-                elif export_sel == "specific data":
+                elif export_sel == "specific parameters/signals":
                     process.save_consolidated_results(data=process.select_params(signal, parameter), partial_filename=filename)
                     st.info(f"Results files exported")
-                elif export_sel == "spectrum data":
+                elif export_sel == "spectra data":
                     process.save_spetrum_data(spectrum, region, filename)
                     st.info(f"Spectrum file exported")
 
-                    # print(process.results[spectrum][region].ppm,process.results[spectrum][region].intensity,process.results[spectrum][region].fit_results.best_fit)
     else:
         st.warning("No results to display, please process some spectra first.")

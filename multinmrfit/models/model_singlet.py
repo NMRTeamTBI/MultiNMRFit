@@ -24,6 +24,7 @@ class SignalModel(Model):
                                'relative': [False, True, True, False]}
 
     def pplist2signal(self, peak_list):
+        
         detected_peak_position = peak_list.ppm.values[0]
         detected_peak_intensity = peak_list.intensity.values[0]
 

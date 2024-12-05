@@ -8,6 +8,10 @@ st.title("Fit from a spectrum of reference")
 session = SessI(session_state=st.session_state, page="Fitting")
 
 process = session.get_object(key="process")
+session.object_space["consolidate"] = True
+
+def update_checkbox(widget):
+    session.register_widgets({widget: not session.widget_space[widget]})
 
 spectra_list = []
 
@@ -69,7 +73,7 @@ else:
         session.register_widgets({"adapt_cnstr_wd": True})
 
     if use_previous:
-        adapt_cnstr_wd = st.checkbox('Adjust initial bounds dynamically', value=session.widget_space["adapt_cnstr_wd"], key="adapt_cnstr_wd")
+        adapt_cnstr_wd = st.checkbox('Adjust bounds dynamically', value=session.widget_space["adapt_cnstr_wd"], key="adapt_cnstr_wd", on_change=update_checkbox, args=["adapt_cnstr_wd"])
         if adapt_cnstr_wd:
             with st.container(border=True):
                 df_cnstr_wd = st.data_editor(process.results[reference_spectrum][region].cnstr_wd,

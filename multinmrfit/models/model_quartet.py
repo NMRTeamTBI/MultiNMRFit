@@ -24,6 +24,7 @@ class SignalModel(Model):
                                'relative': [False, True, True, True, False]}
 
     def pplist2signal(self, peak_list):
+        
         detected_peak_position = np.mean(peak_list.ppm.values)
         detected_peak_intensity = np.mean(peak_list.intensity.values)
         detected_coupling_constant = np.abs(max(peak_list.ppm.values)-min(peak_list.ppm.values))/3
@@ -35,7 +36,7 @@ class SignalModel(Model):
                     'J': {'ini': detected_coupling_constant, 'lb': 0.8*detected_coupling_constant, 'ub': 1.2*detected_coupling_constant},
                     }
         }
-        # add lw
+
         return signal
 
     @staticmethod

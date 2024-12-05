@@ -5,7 +5,7 @@ import pandas as pd
 import math
 
 st.set_page_config(page_title="Process ref spectrum", layout="wide")
-st.title("Process reference spectrum")
+st.title("Process spectra")
 
 
 session = SessI(
@@ -15,12 +15,14 @@ session = SessI(
 
 # get process
 process = session.object_space["process"]
-
+session.object_space["consolidate"] = True
 
 def append_line(chem_shift, process, name):
     new_line = pd.DataFrame({"ppm": [chem_shift], "intensity": [process.get_current_intensity(chem_shift)], "cID": [name]})
     process.current_spectrum.edited_peak_table = pd.concat([process.current_spectrum.edited_peak_table, new_line])
 
+def update_params(process, parameters):
+    process.update_params(parameters)
 
 if process is None:
 
@@ -236,7 +238,7 @@ else:
 
         if len(process.current_spectrum.params):
 
-            with st.form("Fit spectrum"):
+            with st.container(border=True):
 
                 st.write("### Fitting")
 
@@ -253,14 +255,13 @@ else:
                     disabled=["signal_id", "model", "par", "opt", "opt_sd", "integral"]
                 )
 
+                upd_pars = st.button("Update parameters", on_click=update_params, args=(process, parameters))
+
                 use_DE = st.checkbox('Refine initial values using Differential evolution', value=session.widget_space["use_DE"], key="use_DE")
                 
-                fit_ok = st.form_submit_button("Fit spectrum")
+                fit_ok = st.button("Fit spectrum")
 
                 if fit_ok:
-
-                    # update parameters
-                    process.update_params(parameters)
 
                     # fit reference spectrum
                     with st.spinner('Fitting in progress, please wait...'):
@@ -279,6 +280,13 @@ else:
                     # save as pickle file
                     process.save_process_to_file()
                     st.success("Spectrum has been fitted.")
+                else:
+                    # plot fit results
+                    fig = process.current_spectrum.plot(ini=True, fit=False)
+                    fig.update_layout(autosize=False, width=800, height=600)
+                    fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15))
+                    st.plotly_chart(fig, theme=None)
+
 
     if process.current_spectrum.fit_results is not None:
 
