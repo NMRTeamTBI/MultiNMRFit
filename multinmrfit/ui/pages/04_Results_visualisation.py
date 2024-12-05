@@ -161,7 +161,7 @@ else:
                         label="Filename",
                     )
 
-                elif export_sel == "spectrum data":
+                elif export_sel == "spectra data":
                     spectrum = st.selectbox(
                         label="Select spectrum",
                         key="spectrum_to_save",
