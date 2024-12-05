@@ -42,7 +42,7 @@ $ pip install multinmrfit
 Then, start the graphical interface with:
 
 ```bash
-$ multinmrfit
+$ nmrfit
 ```
 
 MultiNMRFit is also available as a Python library.
