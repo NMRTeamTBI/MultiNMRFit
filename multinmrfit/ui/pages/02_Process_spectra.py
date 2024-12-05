@@ -268,7 +268,7 @@ else:
                         method = "differential_evolution" if use_DE else "L-BFGS-B"
                         process.current_spectrum.fit(method=method)
 
-                # show last fit
+                # show spectrum
                 if process.current_spectrum.fit_results is not None:
 
                     # plot fit results
@@ -276,14 +276,11 @@ else:
                     fig.update_layout(autosize=False, width=800, height=600)
                     fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15))
                     st.plotly_chart(fig, theme=None)
-
-                    # save as pickle file
                     st.success("Spectrum has been fitted.")
-                    with st.spinner('Saving process file...'):
-                        process.save_process_to_file()
-                    
+
                 else:
-                    # plot fit results
+
+                    # plot without the fit
                     fig = process.current_spectrum.plot(ini=True, fit=False)
                     fig.update_layout(autosize=False, width=800, height=600)
                     fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15))
@@ -301,3 +298,7 @@ else:
 
         if save:
             st.success("Region saved")
+            # save as pickle file
+            with st.spinner('Saving process file...'):
+                process.save_process_to_file()
+
