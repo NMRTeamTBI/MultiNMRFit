@@ -1,10 +1,10 @@
 """
-Model of singlet.
+Model of a singlet.
 """
 from __future__ import annotations
 
+# required libraries
 import numpy as np
-
 from multinmrfit.models.base_model import Model
 
 
@@ -24,7 +24,9 @@ class SignalModel(Model):
                                'relative': [False, True, True, False]}
 
     def pplist2signal(self, peak_list):
-        
+        """
+        Define parameters from peaklist (initial values, bounds, etc).
+        """
         detected_peak_position = peak_list.ppm.values[0]
         detected_peak_intensity = peak_list.intensity.values[0]
 
@@ -39,7 +41,9 @@ class SignalModel(Model):
 
     @staticmethod
     def simulate(params: list, ppm: list):
-
+        """
+        Simulate a singlet peak from a set of parameters at given chemical shifts.
+        """
         peak_1 = params[3] * params[1] / (1 + ((ppm - params[0])/params[2])**2) + (1-params[3]) * params[1] * np.exp(-(ppm - params[0])**2/(2*params[2]**2))
 
         return peak_1
