@@ -197,7 +197,7 @@ else:
                 elif export_sel == "specific parameters/signals":
                     process.save_consolidated_results(data=process.select_params(signal, parameter), partial_filename=filename)
                     st.info(f"Results files exported")
-                elif export_sel == "spectra":
+                elif export_sel == "spectra data":
                     process.save_spetrum_data(spectrum, region, filename)
                     st.info(f"Spectrum file exported")
 
