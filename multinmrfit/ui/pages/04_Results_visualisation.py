@@ -24,8 +24,9 @@ else:
     
     # consolidate the results only if not done yet
     if session.get_object(key="consolidate"):
-        process.consolidate_results()
-        session.object_space["consolidate"] = False
+        with st.spinner('Results consolidation in progress...'):
+            process.consolidate_results()
+            session.object_space["consolidate"] = False
 
     if len(process.results):
         with st.container(border=True):
