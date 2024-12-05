@@ -5,7 +5,7 @@ import pandas as pd
 import math
 
 st.set_page_config(page_title="Process ref spectrum", layout="wide")
-st.title("Process reference spectrum")
+st.title("Process spectra")
 
 
 session = SessI(
