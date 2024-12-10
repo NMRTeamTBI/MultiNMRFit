@@ -21,6 +21,19 @@ class SignalModel(Model):
     Methods:
         pplist2signal(peak_list): Set parameters from a peaklist.
         simulate(params, ppm): Simulate a singlet peak from a set of parameters at given chemical shifts.
+
+    This object is a subclass of the Model class. It inherits the following attributes and methods from the Model class:
+
+        Methods:
+            set_default_params(): Return the default parameters of the model.
+            set_default_cnstr_wd(): Return the default constraints on the parameters of the model.
+            set_params(name, val): Set a given parameter of the model.
+            integrate(params, ppm): Integrate the simulated signal over the given chemical shifts.
+
+        Attributes:
+            _params (DataFrame): A DataFrame containing the parameters of the model.
+            _cnstr_wd (DataFrame): A DataFrame containing the constraints on the parameters of the model.
+            _par_idx (dict): A dictionary containing the indices of the parameters in the _params DataFrame.
     """
 
     def __init__(self):
