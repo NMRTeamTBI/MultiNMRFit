@@ -12,7 +12,7 @@ This tutorial will guide you through the different pages of MultiNMRFit interfac
 .. _Inputs & Outputs:
 
 ********************************************************************************
-Inputs & Outputs
+Input data
 ********************************************************************************
 
 ..  _`Data type`:
@@ -57,7 +57,7 @@ The follwing columns here names **0** to **n** correspond to each individual spe
 
 ..  _`Inputs/Outputs`:
 
-Inputs/Outputs
+Inputs & outputs paths
 ================================================================================
 
 :data_path: Path to the directory that contain the data
@@ -87,9 +87,9 @@ Once you are ready to load the spectrum, clicked the **Load Spectrum** buttom.
 
 .. _Process ref. spectrum:
 
-.. ********************************************************************************
-.. Inputs & Outputs
-.. ********************************************************************************
+********************************************************************************
+Fit a spectrum
+********************************************************************************
 
 Once the data are correctly loaded the second page of the interface becomes available and allows use to perform the fitting of the reference spectrum:
 
@@ -152,9 +152,9 @@ For this you will need to go back to the top of page and select **add new region
 
 .. _Fit from reference:
 
-.. ********************************************************************************
-.. Fit from reference
-.. ********************************************************************************
+********************************************************************************
+Batch analysis
+********************************************************************************
 
 This page contains the wrapper that allows you to fit the desired data. 
 
@@ -177,9 +177,9 @@ Once you have fitted all the data you can move to last page
 
 .. _Results visualisation:
 
-.. ********************************************************************************
-.. Results visualisation
-.. ********************************************************************************
+********************************************************************************
+Results visualisation and export
+********************************************************************************
 
 This page provides several visualization options of the results. On top, you can inspect every fitted spectrum. 
 If multiple signals were fitted on the the same region, you can observe individual ones by clicking on the different 
