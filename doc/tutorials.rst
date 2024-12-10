@@ -77,8 +77,6 @@ Load a processing file
 Current status of the process is continuously saved in a pickle file containing the entire process that has been perfomed. 
 The pickle file can be loaded using the drag-and-drop menu available in side bar of the Inputs & Outputs page. 
 
-Once you have selected the process file, clicked on **Load Spectrum**.
-
 .. _Process ref. spectrum:
 
 ********************************************************************************
@@ -212,9 +210,9 @@ defined in the first page of the interface. If the second case (option **specifi
 exclusively saved in the file.  
 
 
+********************************************************************************
 Warning and error messages
---------------------------------------------------------------------------------
+********************************************************************************
 
 Error messages are explicit. You should examine carefully any warning/error message.
-After correcting the problem, you might have to restart MultiNMRFit (to reload files)
-and perform the analysis again.
+After correcting the problem, perform the analysis again.
