@@ -87,7 +87,8 @@ else:
             value=round(val_max, 3),
             min_value=round(process.ppm_full.min(), 3),
             max_value=round(process.ppm_full.max(), 3),
-            disabled=disabled
+            disabled=disabled,
+            format="%.3f"
         )
 
     with col2:
@@ -97,7 +98,8 @@ else:
             value=round(val_min, 3),
             min_value=round(process.ppm_full.min(), 3),
             max_value=round(process.ppm_full.max(), 3),
-            disabled=disabled
+            disabled=disabled,
+            format="%.3f"
         )
 
     session.register_widgets({
@@ -160,7 +162,8 @@ else:
                     chem_shift = st.number_input(
                         label="Chemical shift",
                         min_value=spec_lim_min,
-                        max_value=spec_lim_max
+                        max_value=spec_lim_max,
+                        format="%.3f"
                     )
                     name = st.text_input(
                         label="Signal name"
