@@ -142,7 +142,7 @@ class Process(object):
             window (tuple, optional): lower and upper bounds of the window of interest (in ppm) or full spectrum if None. Defaults to None.
         """
 
-        region = str(round(window[0], 2)) + " | " + str(round(window[1], 2))
+        region = str(round(window[0], 3)) + " | " + str(round(window[1], 3))
 
         if self.results.get(rowno, {}).get(region, None) is None:
 

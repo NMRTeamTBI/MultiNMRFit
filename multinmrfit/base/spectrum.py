@@ -53,7 +53,7 @@ class Spectrum(object):
         self.window = dataset["window"]
         self.ppm = dataset["ppm"]
         self.ppm_limits = (min(self.ppm), max(self.ppm))
-        self.region = str(round(self.ppm_limits[0], 2)) + " | " + str(round(self.ppm_limits[1], 2))
+        self.region = str(round(self.ppm_limits[0], 3)) + " | " + str(round(self.ppm_limits[1], 3))
         self.intensity = dataset["intensity"]
         self.peakpicking_threshold = None
         self.from_ref = from_ref
