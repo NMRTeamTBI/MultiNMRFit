@@ -4,6 +4,7 @@ Model of a singlet.
 from __future__ import annotations
 
 # required libraries
+# import here other libraries if needed
 import numpy as np
 from multinmrfit.models.base_model import Model
 
