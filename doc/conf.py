@@ -21,7 +21,7 @@ copyright = '2024, INRAE'
 author = 'Pierre Millard, Cyril Charlier'
 
 # The full version, including alpha/beta/rc tags
-release = "2.0.0"
+release = "2.1.3"
 
 # -- General configuration ---------------------------------------------------
 
