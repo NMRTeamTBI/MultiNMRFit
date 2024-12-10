@@ -11,9 +11,19 @@ in multiNMRFit, and users can also build their own models.
           usefull and valuable to the fluxomics community! Please, keep in touch with us to discuss and see if we can include your 
           model in the built-in models shipped with multiNMRFit! :)
 
-The models used in MultiNMRFit can be found in the models folder. All models follow the same 
-format. Have a look to 'model_singlet.py' as a template.
+The models used in MultiNMRFit can be found in the models folder, which is located in the multinmrfit package. To 
+find the path to the models folder, you can use the following command in a Python console:
 
-Users can add additionnal custom models following this format. We'll provide detailed information 
+.. code-block:: python
+
+    import multinmrfit
+    print(multinmrfit.__path__)
+
+All models follow the same 
+format. Have a look to `model_singlet.py <https://github.com/NMRTeamTBI/MultiNMRFit/blob/master/multinmrfit/models/model_singlet.py/>`_ as a template.
+
+Once you have developed a new model, you can add it to the models folder. The new model will be automatically detected by MultiNMRFit.
+
+Users can add additionnal custom models following this format. We'll provide additional information 
 on the construction of new models soon! In the meantime, do not hesitate to grab us a message or 
 open an issue in our GitHub repository, we will be happy to help! 
