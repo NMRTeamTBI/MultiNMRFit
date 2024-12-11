@@ -43,8 +43,8 @@ MultiNMRFit can load 1D NMR data provided in the following formats:
 The column **ppm** is mandatory and contains the ppm scale, columns named **0** to **n** correspond to each individual spectra.
 
 
-.. note:: **list of 1Ds**:  
-        The list of  experiments should be provided as e.g.
+.. note:: **list of 1Ds**: The list of  experiments should be provided as e.g.
+
         * 1,8,109 : for non-consecutive spectra (here spectra 1,8,109)
         * 1-5 : for sequential spectra (here spectra 1,2,3,4,5)
         * 1-5,109 : a mix of both formats for incomplete series (here spectra 1,2,3,4,5,109) 
@@ -90,10 +90,11 @@ allows use to fit one or several signals contained in a specific region of a giv
   :scale: 60%
 
 The top part of this page automatically performs peak picking on the reference spectrum within the region displayed in the plot:
-* **Select spectrum**: Select one the spectrum of the list. 
-* **Select region to (re)process**: Multiple independent regions can be processed. Here, it will give you the choice of all regions already processed.  
-* **Spectral limits (max)**: Maximum of the spectral window (default is the maximum of the ppm scale)
-* **Spectral limits (min)**: Minimum of the spectral window (default is the min of the ppm scale)
+
+        * **Select spectrum**: Select one the spectrum of the list. 
+        * **Select region to (re)process**: Multiple independent regions can be processed. Here, it will give you the choice of all regions already processed.  
+        * **Spectral limits (max)**: Maximum of the spectral window (default is the maximum of the ppm scale)
+        * **Spectral limits (min)**: Minimum of the spectral window (default is the min of the ppm scale)
 
 .. note:: **spectral limits**:  
         A region should be at least 0.025 ppm wide.
@@ -106,8 +107,7 @@ The peaks are displayed in the ascending order (e.g. from right to left on the s
 You can now proceed with the clustering steps that consists in grouping peaks of a given signal. For this purpose, fill the **cluster ID** column of the **Peak list**. Peaks that belongs to the same multiplets 
 must have the same names.
 
-.. note:: **cluster ID**:  
-        Cluter IDs can be anything (numbers, strings, etc).
+.. note:: **cluster ID**: Cluter IDs can be anything (numbers, strings, etc).
 
 Once clustering has been performed, click **Assign peaks** to move towards the model construction step:
 
