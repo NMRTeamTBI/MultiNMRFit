@@ -70,14 +70,14 @@ if you could open a new issue on our `issue tracker <https://github
 I have develop a new signal model, can you include it in multiNMRFit distribution?
 --------------------------------------------------------------------------
 
-If you have developed a new signal model, we would be happy to include it in PhysimultiNMRFitoFit! 
+If you have developed a new signal model, we would be happy to include it in multiNMRFit! 
 Open a new issue on our `issue tracker  <https://github.com/NMRTeamTBI/MultiNMRFit/issues>`_, 
 and let's discuss about your model and how we could include it! :)
 
-Examples of how to use PhysioFit programmatically can be found in the section :ref:`testing_the_model`, which offers demonstrations on running simulations and flux calculations.
+Examples of how to use multiNMRFit programmatically can be found in the section :ref:`testing_the_model`, which offers demonstrations on running simulations and flux calculations.
 
 I would like a new feature.
 ------------------------------------------------------------------
 
-We would be glad to improve PhysioFit. Please get in touch with us `here 
-<https://github.com/MetaSys-LISBP/PhysioFit/issues>`_ so we could discuss your problem.
+We would be glad to improve multiNMRFit. Please get in touch with us `here 
+<https://github.com/MetaSys-LISBP/multiNMRFit/issues>`_ so we could discuss your problem.
