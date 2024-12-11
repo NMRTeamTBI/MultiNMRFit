@@ -520,7 +520,7 @@ class Process(object):
                     ]
                     consolidated_results.append(tmp)
                 integral = self.results[spec][reg].integrate_full_spectrum()
-                tmp = [spec, reg, reg, None, 'spectrum_integral', integral, None]
+                tmp = [spec, reg, reg, None, 'region_integral', integral, None]
                 consolidated_results.append(tmp)
 
         self.consolidated_results = pd.DataFrame(consolidated_results, columns=['rowno', 'region', 'signal_id', 'model', 'par', 'opt', 'opt_sd'])
