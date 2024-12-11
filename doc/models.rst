@@ -22,6 +22,18 @@ find the path to the models folder, you can use the following command in a Pytho
 All models follow the same 
 format. Have a look to `model_singlet.py <https://github.com/NMRTeamTBI/MultiNMRFit/blob/master/multinmrfit/models/model_singlet.py/>`_ as a template.
 
+Briefly, you will need to adapt the following functions:
+
+- **__init__**: initialize the signal model object with the following attributes:
+    - **name**: the name of the model.
+    - **description**: a brief description of the model.
+    - **peak_number**: the number of peaks in the signal.
+    - **default_params**: a list of the parameters that will be estimated by the fitting algorithm, with their default values and bounds.
+
+- **pplist2signal**: the function that will be used to built the signal from the peak list. It should return a dictionary containing the name of the signal, and some parameter values (if different from the default values).
+
+- **simulate**: the function that will be used to simulate the signal. It should return the simulated signal given the parameters and chemical shifts.
+
 Once you have developed a new model, you can add it to the models folder. The new model will be automatically detected by MultiNMRFit.
 
 Users can add additionnal custom models following this format. We'll provide additional information 
