@@ -525,7 +525,6 @@ class Process(object):
 
         self.consolidated_results = pd.DataFrame(consolidated_results, columns=['rowno', 'region', 'signal_id', 'model', 'par', 'opt', 'opt_sd'])
         self.consolidated_results.sort_values(by=['rowno'], inplace=True)
-        print(self.consolidated_results)
 
     def get_current_intensity(self, ppm):
         idx = min(range(len(self.current_spectrum.ppm)), key=lambda i: abs(self.current_spectrum.ppm[i]-ppm))
