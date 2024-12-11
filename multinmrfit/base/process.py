@@ -484,15 +484,26 @@ class Process(object):
             for reg in self.results[spec].keys():
                 # all params except integral
                 for i in range(len(self.results[spec][reg].params)):
-                    tmp = [
-                        spec,
-                        reg,
-                        self.results[spec][reg].params.iloc[i].loc['signal_id'],
-                        self.results[spec][reg].params.iloc[i].loc['model'],
-                        self.results[spec][reg].params.iloc[i].loc['par'],
-                        self.results[spec][reg].params.iloc[i].loc['opt'] if 'opt' in self.results[spec][reg].params.columns else None,
-                        self.results[spec][reg].params.iloc[i].loc['opt_sd'] if 'opt' in self.results[spec][reg].params.columns else None,
-                    ]
+                    if self.results[spec][reg].params.iloc[i].loc['signal_id'] == "full_spectrum":
+                        tmp = [
+                            spec,
+                            reg,
+                            reg,
+                            None,
+                            self.results[spec][reg].params.iloc[i].loc['par'],
+                            self.results[spec][reg].params.iloc[i].loc['opt'] if 'opt' in self.results[spec][reg].params.columns else None,
+                            self.results[spec][reg].params.iloc[i].loc['opt_sd'] if 'opt' in self.results[spec][reg].params.columns else None,
+                        ]
+                    else:
+                        tmp = [
+                            spec,
+                            reg,
+                            self.results[spec][reg].params.iloc[i].loc['signal_id'],
+                            self.results[spec][reg].params.iloc[i].loc['model'],
+                            self.results[spec][reg].params.iloc[i].loc['par'],
+                            self.results[spec][reg].params.iloc[i].loc['opt'] if 'opt' in self.results[spec][reg].params.columns else None,
+                            self.results[spec][reg].params.iloc[i].loc['opt_sd'] if 'opt' in self.results[spec][reg].params.columns else None,
+                        ]
                     consolidated_results.append(tmp)
 
                 # add integral rows
@@ -508,8 +519,13 @@ class Process(object):
                         0
                     ]
                     consolidated_results.append(tmp)
+                integral = self.results[spec][reg].integrate_full_spectrum()
+                tmp = [spec, reg, reg, None, 'spectrum_integral', integral, None]
+                consolidated_results.append(tmp)
+
         self.consolidated_results = pd.DataFrame(consolidated_results, columns=['rowno', 'region', 'signal_id', 'model', 'par', 'opt', 'opt_sd'])
         self.consolidated_results.sort_values(by=['rowno'], inplace=True)
+        print(self.consolidated_results)
 
     def get_current_intensity(self, ppm):
         idx = min(range(len(self.current_spectrum.ppm)), key=lambda i: abs(self.current_spectrum.ppm[i]-ppm))

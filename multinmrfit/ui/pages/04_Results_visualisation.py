@@ -93,9 +93,9 @@ else:
 
             with col1:
 
-                signal_list = process.compounds()
+                signal_list = process.compounds() + process.regions()
                 signal = st.selectbox(
-                    label="Select signal",
+                    label="Select signal or region",
                     key="signal_to_show",
                     options=signal_list,
                     index=0,
@@ -111,7 +111,7 @@ else:
                     label="Select parameter",
                     key="parameter_to_show",
                     options=parameter_list,
-                    index=parameter_list.index("integral"),
+                    index=parameter_list.index("integral") if "integral" in parameter_list else 0,
                     help="Select the parameter to show as function of index"
                 )
 

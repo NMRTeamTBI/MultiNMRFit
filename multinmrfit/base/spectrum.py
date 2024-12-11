@@ -527,6 +527,18 @@ class Spectrum(object):
 
         logger.debug("parameters\n{}".format(self.params))
 
+    def integrate_full_spectrum(self) -> float:
+        """Integrate full spectrum.
+
+        Returns:
+            float: area of the full spectrum.
+        """
+
+        # integrate full spectrum
+        integral = np.trapz(y=self.intensity, x=self.ppm)
+
+        return integral
+
     def plot(self, exp: bool = True, ini: bool = False, fit: bool = False, colored_area: bool = False, pp: pd.DataFrame = None, threshold: float = None) -> go.Figure:
         """Plot experimental and simulated (from initial values and best fit) spectra and peak picking results.
 
