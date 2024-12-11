@@ -36,6 +36,8 @@ Briefly, you will need to adapt the following functions:
 
 Once you have developed a new model, you can add it to the models folder. The new model will be automatically detected by MultiNMRFit.
 
+.. note:: The file name must start with "model_".
+
 Users can add additionnal custom models following this format. We'll provide additional information 
 on the construction of new models soon! In the meantime, do not hesitate to grab us a message or 
 open an issue in our GitHub repository, we will be happy to help! 
