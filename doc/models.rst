@@ -12,7 +12,7 @@ in multiNMRFit, and users can also build their own models.
           model in the built-in models shipped with multiNMRFit! :)
 
 The models used in MultiNMRFit can be found in the models folder, which is located in the multinmrfit package. To 
-find the path to the models folder, you can use the following command in a Python console:
+find the path to the multinmrfit package, you can use the following command in a Python console:
 
 .. code-block:: python
 
@@ -30,7 +30,7 @@ Briefly, you will need to adapt the following functions:
     - **peak_number**: the number of peaks in the signal.
     - **default_params**: a list of the parameters that will be estimated by the fitting algorithm, with their default values and bounds.
 
-- **pplist2signal**: the function that will be used to built the signal from the peak list. It should return a dictionary containing the name of the signal, and some parameter values (if different from the default values).
+- **pplist2signal**: the function that will be used to built the signal from the peak list. It should return a dictionary containing the name of the signal, and optionaly some parameter values to be updated based on the peak list (if different from the default values).
 
 - **simulate**: the function that will be used to simulate the signal. It should return the simulated signal given the parameters and chemical shifts.
 
