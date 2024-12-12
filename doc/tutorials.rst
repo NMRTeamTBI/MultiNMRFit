@@ -157,7 +157,7 @@ First select the region that you want to fit (**Select region**). MultiNMRFit wi
 along with the **processed spectra** already analyzed.
 
 Select the spectra you want to fit. By default it shows the complete dataset (here 1-256 as the pseudo2D contains 256 in the example).
-However if you want to analyze only the first ten spectra one can enter '1-10' and multiNMRFit will update the list **spectra to process** automatically. Click the **Fit selected spectra**
+However if you want to analyze only the first ten spectra one can enter '1-10' and MultiNMRFit will update the list **spectra to process** automatically. Click the **Fit selected spectra**
 to run the fitting of the selected spectra. The progress of the fitting will be displayed by a progress bar and once complete a message **All spectra have been fitted** will appear.
 
 .. note:: **Fitting**:  
