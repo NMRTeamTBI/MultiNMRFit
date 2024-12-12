@@ -72,7 +72,7 @@ except Exception:
     pass
 
 options = load_defaults()
-uploaded_file = st.sidebar.file_uploader("Load a processing file.")
+uploaded_file = st.sidebar.file_uploader("Load a processing file.", type='pkl')
 
 if uploaded_file is not None:
 
