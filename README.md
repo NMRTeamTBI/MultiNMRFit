@@ -1,7 +1,7 @@
 # MultiNMRFit
 
 [![Documentation Status](https://readthedocs.org/projects/multinmrfit/badge/?version=latest)](http://multinmrfit.readthedocs.io/?badge=latest)
-[![Python 3.8+](https://img.shields.io/badge/python-%3E%3D3.8-brightgreen)](https://www.python.org/downloads/release/python-380/)
+[![Python 3.8+](https://img.shields.io/badge/python-%3E%3D3.8-blue)](https://www.python.org/downloads/release/python-380/)
 
 ## What is MultiNMRFit?
 
