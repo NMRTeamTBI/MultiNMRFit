@@ -42,8 +42,7 @@ We strongly encourage you to read the :ref:`Tutorials` before using MultiNMRFit.
    :caption: Miscellaneous
 
    faq.rst
-   definitions.rst
-   library_doc.rst
+   library.rst
    license.rst
 
 .. todolist::

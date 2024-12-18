@@ -53,7 +53,7 @@ class Spectrum(object):
         self.window = dataset["window"]
         self.ppm = dataset["ppm"]
         self.ppm_limits = (min(self.ppm), max(self.ppm))
-        self.region = str(round(self.ppm_limits[0], 2)) + " | " + str(round(self.ppm_limits[1], 2))
+        self.region = str(round(self.ppm_limits[0], 3)) + " | " + str(round(self.ppm_limits[1], 3))
         self.intensity = dataset["intensity"]
         self.peakpicking_threshold = None
         self.from_ref = from_ref
@@ -526,6 +526,18 @@ class Spectrum(object):
         self.params['integral'] = [integrals[i] if i != 'full_spectrum' else np.nan for i in self.params['signal_id'].values]
 
         logger.debug("parameters\n{}".format(self.params))
+
+    def integrate_full_spectrum(self) -> float:
+        """Integrate full spectrum.
+
+        Returns:
+            float: area of the full spectrum.
+        """
+
+        # integrate full spectrum
+        integral = np.trapz(y=self.intensity, x=self.ppm)
+
+        return integral
 
     def plot(self, exp: bool = True, ini: bool = False, fit: bool = False, colored_area: bool = False, pp: pd.DataFrame = None, threshold: float = None) -> go.Figure:
         """Plot experimental and simulated (from initial values and best fit) spectra and peak picking results.

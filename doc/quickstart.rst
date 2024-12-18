@@ -84,3 +84,5 @@ scripts:
 .. code-block:: python
 
   import multinmrfit
+
+.. seealso::  Have a look at our :ref:`API <Library documentation>` if you are interested in this feature.

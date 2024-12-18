@@ -150,4 +150,5 @@ if process is not None and len(spectra_list):
 
         st.success("All spectra have been fitted.")
 
-        process.save_process_to_file()
+        with st.spinner('Saving process file...'):
+            process.save_process_to_file()

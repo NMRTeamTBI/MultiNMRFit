@@ -33,8 +33,8 @@ else:
     # set default parameters
     session.set_widget_defaults(
         reference_spectrum=process.current_spectrum.rowno,
-        spectrum_limit_min=round(max([process.current_spectrum.ppm_limits[0], process.ppm_full.min()]), 2),
-        spectrum_limit_max=round(min([process.current_spectrum.ppm_limits[1], process.ppm_full.max()]), 2)
+        spectrum_limit_min=round(max([process.current_spectrum.ppm_limits[0], process.ppm_full.min()]), 3),
+        spectrum_limit_max=round(min([process.current_spectrum.ppm_limits[1], process.ppm_full.max()]), 3)
     )
 
     # add widgets
@@ -50,7 +50,7 @@ else:
         )
 
     with col2:
-        cur_lim = str(round(session.widget_space["spectrum_limit_min"], 2)) + " | " + str(round(session.widget_space["spectrum_limit_max"], 2))
+        cur_lim = str(round(session.widget_space["spectrum_limit_min"], 3)) + " | " + str(round(session.widget_space["spectrum_limit_max"], 3))
         regs = ["Add new region"] + process.regions(reference_spectrum)
         idx = regs.index(cur_lim) if cur_lim in regs else 0
 
@@ -75,8 +75,8 @@ else:
         val_min, val_max = process.results[reference_spectrum][region].ppm_limits
         disabled = True
     except:
-        val_min = round(process.current_spectrum.ppm_limits[0], 2)
-        val_max = round(process.current_spectrum.ppm_limits[1], 2)
+        val_min = round(process.current_spectrum.ppm_limits[0], 3)
+        val_max = round(process.current_spectrum.ppm_limits[1], 3)
         disabled = False
 
     col1, col2 = st.columns(2)
@@ -84,26 +84,28 @@ else:
         spec_lim_max = st.number_input(
             label="Spectral limits (max)",
             key="spectrum_limit_max",
-            value=round(val_max, 2),
-            min_value=round(process.ppm_full.min(), 2),
-            max_value=round(process.ppm_full.max(), 2),
-            disabled=disabled
+            value=round(val_max, 3),
+            min_value=round(process.ppm_full.min(), 3),
+            max_value=round(process.ppm_full.max(), 3),
+            disabled=disabled,
+            format="%.3f"
         )
 
     with col2:
         spec_lim_min = st.number_input(
             label="Spectral limits (min)",
             key="spectrum_limit_min",
-            value=round(val_min, 2),
-            min_value=round(process.ppm_full.min(), 2),
-            max_value=round(process.ppm_full.max(), 2),
-            disabled=disabled
+            value=round(val_min, 3),
+            min_value=round(process.ppm_full.min(), 3),
+            max_value=round(process.ppm_full.max(), 3),
+            disabled=disabled,
+            format="%.3f"
         )
 
     session.register_widgets({
         "reference_spectrum": reference_spectrum,
-        "spectrum_limit_max": round(spec_lim_max, 2),
-        "spectrum_limit_min": round(spec_lim_min, 2),
+        "spectrum_limit_max": round(spec_lim_max, 3),
+        "spectrum_limit_min": round(spec_lim_min, 3),
     })
 
     # update reference spectrum when widgets' values are changed
@@ -113,8 +115,8 @@ else:
             st.error("Error: ppm max must be higher than ppm min.")
             cur_lim = None
         else:
-            cur_lim = str(round(spec_lim_min, 2)) + " | " + str(round(spec_lim_max, 2))
-            process.set_current_spectrum(session.widget_space["reference_spectrum"], window=(round(spec_lim_min, 2), round(spec_lim_max, 2)))
+            cur_lim = str(round(spec_lim_min, 3)) + " | " + str(round(spec_lim_max, 3))
+            process.set_current_spectrum(session.widget_space["reference_spectrum"], window=(round(spec_lim_min, 3), round(spec_lim_max, 3)))
 
     with st.container(border=True):
 
@@ -160,7 +162,8 @@ else:
                     chem_shift = st.number_input(
                         label="Chemical shift",
                         min_value=spec_lim_min,
-                        max_value=spec_lim_max
+                        max_value=spec_lim_max,
+                        format="%.3f"
                     )
                     name = st.text_input(
                         label="Signal name"
@@ -268,7 +271,7 @@ else:
                         method = "differential_evolution" if use_DE else "L-BFGS-B"
                         process.current_spectrum.fit(method=method)
 
-                # show last fit
+                # show spectrum
                 if process.current_spectrum.fit_results is not None:
 
                     # plot fit results
@@ -276,12 +279,11 @@ else:
                     fig.update_layout(autosize=False, width=800, height=600)
                     fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15))
                     st.plotly_chart(fig, theme=None)
-
-                    # save as pickle file
-                    process.save_process_to_file()
                     st.success("Spectrum has been fitted.")
+
                 else:
-                    # plot fit results
+
+                    # plot without the fit
                     fig = process.current_spectrum.plot(ini=True, fit=False)
                     fig.update_layout(autosize=False, width=800, height=600)
                     fig.update_layout(legend=dict(yanchor="top", xanchor="right", y=1.15))
@@ -299,3 +301,7 @@ else:
 
         if save:
             st.success("Region saved")
+            # save as pickle file
+            with st.spinner('Saving process file...'):
+                process.save_process_to_file()
+

@@ -142,7 +142,7 @@ class Process(object):
             window (tuple, optional): lower and upper bounds of the window of interest (in ppm) or full spectrum if None. Defaults to None.
         """
 
-        region = str(round(window[0], 2)) + " | " + str(round(window[1], 2))
+        region = str(round(window[0], 3)) + " | " + str(round(window[1], 3))
 
         if self.results.get(rowno, {}).get(region, None) is None:
 
@@ -482,32 +482,28 @@ class Process(object):
         consolidated_results = []
         for spec in self.results.keys():
             for reg in self.results[spec].keys():
-                # all params except integral
-                for i in range(len(self.results[spec][reg].params)):
-                    tmp = [
-                        spec,
-                        reg,
-                        self.results[spec][reg].params.iloc[i].loc['signal_id'],
-                        self.results[spec][reg].params.iloc[i].loc['model'],
-                        self.results[spec][reg].params.iloc[i].loc['par'],
-                        self.results[spec][reg].params.iloc[i].loc['opt'] if 'opt' in self.results[spec][reg].params.columns else None,
-                        self.results[spec][reg].params.iloc[i].loc['opt_sd'] if 'opt' in self.results[spec][reg].params.columns else None,
-                    ]
-                    consolidated_results.append(tmp)
+                if 'opt' in self.results[spec][reg].params.columns:
+                    # add all params except integral
+                    for i in range(len(self.results[spec][reg].params)):
+                        tmp = [spec, reg]
+                        if self.results[spec][reg].params.iloc[i].loc['signal_id'] == "full_spectrum":
+                            tmp += [reg, None]
+                        else:
+                            tmp += [self.results[spec][reg].params.iloc[i].loc['signal_id'], self.results[spec][reg].params.iloc[i].loc['model']]
+                        tmp += [self.results[spec][reg].params.iloc[i].loc['par'],
+                                self.results[spec][reg].params.iloc[i].loc['opt'],
+                                self.results[spec][reg].params.iloc[i].loc['opt_sd']]
+                        consolidated_results.append(tmp)
+                    # add integral
+                    df_integral = self.results[spec][reg].params.loc[:, ['signal_id', 'model', 'integral']].drop_duplicates()
+                    for i in range(len(df_integral)):
+                        tmp = [spec, reg, df_integral.signal_id.iloc[i], df_integral.model.iloc[i], 'integral', df_integral.integral.iloc[i], None]
+                        consolidated_results.append(tmp)
+                # add integral of full spectrum
+                integral = self.results[spec][reg].integrate_full_spectrum()
+                tmp = [spec, reg, reg, None, 'region_integral', integral, None]
+                consolidated_results.append(tmp)
 
-                # add integral rows
-                df_integral = self.results[spec][reg].params.loc[:, ['signal_id', 'model', 'integral']].drop_duplicates()
-                for i in range(len(df_integral)):
-                    tmp = [
-                        spec,
-                        reg,
-                        df_integral.signal_id.iloc[i],
-                        df_integral.model.iloc[i],
-                        'integral',
-                        df_integral.integral.iloc[i],
-                        0
-                    ]
-                    consolidated_results.append(tmp)
         self.consolidated_results = pd.DataFrame(consolidated_results, columns=['rowno', 'region', 'signal_id', 'model', 'par', 'opt', 'opt_sd'])
         self.consolidated_results.sort_values(by=['rowno'], inplace=True)
 
