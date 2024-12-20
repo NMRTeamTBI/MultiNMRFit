@@ -75,7 +75,7 @@ Load a processing file
 ================================================================================
 
 Current status of the process is continuously saved in a pickle file containing the entire process that has been perfomed. 
-The pickle file can be loaded using the drag-and-drop menu available in side bar of the Inputs & Outputs page. 
+The pickle file can be reloaded using the drag-and-drop menu available in side bar of the Inputs & Outputs page. 
 
 .. _Process ref. spectrum:
 
@@ -84,7 +84,7 @@ Fit a spectrum
 ********************************************************************************
 
 Once the data are correctly loaded the second page of the interface becomes available and 
-allows use to fit one or several signals contained in a specific region of a given spectrum:
+allows users to fit one or several signals contained in a specific region of a given spectrum:
 
 .. image:: _static/Set_ref_processing.jpg
   :scale: 60%
@@ -92,39 +92,43 @@ allows use to fit one or several signals contained in a specific region of a giv
 The top part of this page automatically performs peak picking on the reference spectrum within the region displayed in the plot:
 
         * **Select spectrum**: Select one the spectrum of the list. 
-        * **Select region to (re)process**: Multiple independent regions can be processed. Here, it will give you the choice of all regions already processed.  
-        * **Spectral limits (max)**: Maximum of the spectral window (default is the maximum of the ppm scale)
-        * **Spectral limits (min)**: Minimum of the spectral window (default is the min of the ppm scale)
+        * **Select region to (re)process**: Multiple independent regions can be processed. Here, it will give you the possibility to display regions already processed or to define a new region to process.  
+        * **Spectral limits (max)**: Maximal chemical shift of the spectral region (default is the maximum of the ppm scale)
+        * **Spectral limits (min)**: Minimal chemical shift of the spectral region (default is the min of the ppm scale)
 
 .. note:: **spectral limits**:  
         A region should be at least 0.025 ppm wide.
 
 You can adjust the **Peak picking threshold** to detect the peaks of interest on the displayed spectrum. 
 
-While adjusting this threshold the software will automatically display a dataframe **Peak list** with the detected peaks in the region (marked with a yellow triangle on the spectrum).
-The peaks are displayed in the ascending order (e.g. from right to left on the spectrum). You can also add peaks mannually by entering their chemical shifts and click on "Add peak".
+While adjusting this threshold the software will automatically display a dataframe **Peak list** with the 
+detected peaks in the region (marked with a yellow triangle on the spectrum).
+The peaks are displayed in the ascending order (e.g. from right to left on the spectrum). You can 
+also add peaks mannually by entering their chemical shifts and click on "Add peak".
 
-You can now proceed with the clustering steps that consists in grouping peaks of a given signal. For this purpose, fill the **cluster ID** column of the **Peak list**. Peaks that belongs to the same multiplets 
+You can now proceed with the clustering steps that consists in grouping peaks into a signal. For this purpose, 
+fill the **cluster ID** column of the **Peak list**. Peaks that belongs to the same multiplets 
 must have the same names.
 
-.. note:: **cluster ID**: Cluter IDs can be anything (numbers, strings, etc).
+.. note:: **cluster ID**: Signal IDs can be anything (numbers, strings, etc).
 
 Once clustering has been performed, click **Assign peaks** to move towards the model construction step:
 
 .. image:: _static/model_construction.jpg
   :scale: 60%
 
-For each cluster MultiNMRFit will provide a list of all signal models that correspond 
-to a signal containing the corresponding number of peaks. You can also choose to add an offset, which corresponds to a first-order 
+For each signal, MultiNMRFit will provide a list of all signal models that correspond 
+to can be used (i.e. all signal models containing the corresponding number of peaks). You 
+can also choose to add an offset, which corresponds to a first-order 
 phase correction on the selected window. Once this step is done, you can click on **Build model** 
 to automatically create the spectrum model and display the table of initial parameters.
 
 .. image:: _static/fitting_parameters.jpg
   :scale: 60%
 
-Intitial values are calculated based on [i] the results of the peak picking (intensities and peak position) [ii] the default parameters of the each model
-(look at :doc:`models.rst` for more details on the default parameters). If no changes are required press the **Fit spectrum** button to proceed with the minimization
-of the reference spectrum. 
+Initial values are calculated based on [i] the results of the peak picking (intensities and peak position) [ii] the default parameters of the each model
+(look at :doc:`models.rst` for more details on the default parameters). If no changes are required press the **Fit spectrum** button to fit 
+the spectrum. 
 
 .. note:: **Parameters**:  
         All parameters are shown in **ppm** units.
@@ -148,7 +152,7 @@ To add another region, go to the top of page and select **add new region** in th
 Batch analysis
 ********************************************************************************
 
-This page contains the wrapper that allows you to fit several spectra in batch based on an already processed spectrum (used as reference). 
+This page contains the wrapper that enables fitting several spectra in batch based on an already processed spectrum (used as reference). 
 
 .. image:: _static/fit_from_reference.jpg
   :scale: 60%
@@ -171,7 +175,7 @@ to run the fitting of the selected spectra. The progress of the fitting will be 
 Results visualisation and export
 ********************************************************************************
 
-This page provides several visualization options of the results. On top, you can inspect all fitted regions and spectra. 
+This page enables visualizing the processing results in interactive plots. On top, you can inspect all fitted regions and spectra. 
 If multiple signals were fitted on the same region, you can observe each one by clicking on the different 
 signal IDs in the figure caption.
 
@@ -190,8 +194,8 @@ Users can select the spectrum and the region to display.
 Parameters visualisation
 ================================================================================
 
-For the corresponding spectra shown above users can find the table of paramters. 
-A particular attention must me given to the **opt** that contains the estimated values.  
+For the corresponding spectra shown above users can find the table of parameters. 
+A particular attention must me given to the **opt** column that contains the values estimated from the best fit.  
 
 .. image:: _static/visu_parameters.jpg
   :scale: 60%
