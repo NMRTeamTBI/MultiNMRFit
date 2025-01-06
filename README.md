@@ -9,7 +9,7 @@ MultiNMRFit is a scientific tool designed to extract quantitative information (c
 
 It is one of the routine tools that we use for NMR studies of metabolic systems at the [NMR](https://www.toulouse-biotechnology-institute.fr/en/poles/equipe-rmn-2/) and [MetaSys](https://www.toulouse-biotechnology-institute.fr/en/poles/equipe-metasys/) teams of the [Toulouse Biotechnology Institute](http://www.toulouse-biotechnology-institute.fr/en/).
 
-The code is open-source, and available under a GPLv3 license. Additional information will be available in an upcoming [publication](https://doi.org/xxx.xxx).
+The code is open-source, and available under a GPLv3 license. Additional information can be found in [MultiNMRFit publication](https://doi.org/10.1101/2024.12.19.629408).
 
 Detailed documentation can be found online at Read the Docs ([https://multinmrfit.readthedocs.io/](https://multinmrfit.readthedocs.io/)).
 
@@ -76,7 +76,7 @@ in the command above. You will need a recent latex installation.
 
 ## How to cite
 
-In preparation, 2024, [doi: xxx.xxxx](https://doi.org/xxx.xxxx)
+MultiNMRFit: A software to fit 1D and pseudo-2D NMR spectra. Pierre Millard, Loïc Le Grégam, Svetlana Dubiley, Thomas Gosselin-Monplaisir, Guy Lippens, Cyril Charlier, bioRxiv preprint, 2024, [doi: 10.1101/2024.12.19.629408](https://doi.org/10.1101/2024.12.19.629408).
 
 ## Authors
 
