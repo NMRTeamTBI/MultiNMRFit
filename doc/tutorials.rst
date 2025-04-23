@@ -23,8 +23,8 @@ MultiNMRFit requires that the main spectrum processing steps (baseline correctio
 MultiNMRFit can load 1D NMR data provided in the following formats:
 
         * **Pseudo2D**: pseudo2D experiment (Bruker format only),
-        * **list of 1Ds**: 1Ds spectra acquired independently (Bruker format only), 
-        * **txt data**: data from a text tabulated file (:file:'.txt' extension) with the following structure:
+        * **list of 1Ds**: 1Ds spectra acquired independently (Bruker format only),
+        * **txt data**: data from a tabulated text file (:file:`.txt` extension) with the following structure:
 
 +-------+-------+-------+-------+
 |  ppm  |   0   |  ...  |    n  |
@@ -40,12 +40,12 @@ MultiNMRFit can load 1D NMR data provided in the following formats:
 |  12   |   3e4 |   ... | 7.85e3|
 +-------+-------+-------+-------+
 
-The column **ppm** is mandatory and contains the ppm scale, columns named **0** to **n** correspond to each individual spectra.
+The column **ppm** is mandatory and contains the ppm scale, columns named **0** to **n** correspond to each individual spectra and contain the intensities.
 
 
 .. note:: **list of 1Ds**: The list of  experiments should be provided as e.g.
 
-        * 1,8,109 : for non-consecutive spectra (here spectra 1,8,109)
+        * 1,8,109 : for non-consecutive spectra (here spectra 1, 8, and 109)
         * 1-5 : for sequential spectra (here spectra 1,2,3,4,5)
         * 1-5,109 : a mix of both formats for incomplete series (here spectra 1,2,3,4,5,109) 
 
