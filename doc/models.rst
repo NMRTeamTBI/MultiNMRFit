@@ -27,7 +27,7 @@ User-made models
 Overview
 --------
 
-multiNMRFit is designed to be extensible. Users can create their own signal models and add them to the list of available models.
+multiNMRFit is designed to be easily extended with new signal models. Users can create their own signal models and add them to the list of available models.
 
 This section explains how to write a model and how to implement it
 on your multiNMRFit instance. All models follow the same 
