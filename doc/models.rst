@@ -7,12 +7,8 @@ Models
 Models shipped with multiNMRFit
 ******************************
 
-Signal models for some typical multiplets (singlet, doublet, triplet, quadruplet and doublet of doublet) are included 
-in multiNMRFit, and users can also build their own models.
-
-.. note:: We would be happy to broaden the types of models shipped with multiNMRFit. If you have developed a new model, it might be 
-          usefull and valuable to the NMR community! Please, keep in touch with us to discuss and see if we can include your 
-          model in the built-in models shipped with MultiNMRFit! :)
+Signal models for some typical multiplets (mixed Gaussian-Lorentzian models of singlet, doublet, triplet, quadruplet and doublet of doublet) are included 
+in multiNMRFit.
 
 The models used in MultiNMRFit can be found in the models folder, which is located in the multinmrfit package. To 
 find the path to the multinmrfit package, you can use the following command in a Python console:
@@ -23,7 +19,7 @@ find the path to the multinmrfit package, you can use the following command in a
     print(multinmrfit.__path__)
 
 All models follow the same 
-format. Have a look to `model_singlet.py <https://github.com/NMRTeamTBI/MultiNMRFit/blob/master/multinmrfit/models/model_singlet.py/>`_ as a template.
+format. Have a look to `model_singlet.py <https://github.com/NMRTeamTBI/MultiNMRFit/blob/master/multinmrfit/models/model_singlet.py/>`_ for a detailed example.
 
 User-made models
 *****************
@@ -34,7 +30,9 @@ Overview
 multiNMRFit is designed to be extensible. Users can create their own signal models and add them to the list of available models.
 
 This section explains how to write a model and how to implement it
-on your multiNMRFit instance.
+on your multiNMRFit instance. All models follow the same 
+format, have a look to `model_singlet.py <https://github.com/NMRTeamTBI/MultiNMRFit/blob/master/multinmrfit/models/model_singlet.py/>`_ as an example.
+
 
 Build a template
 ----------------
@@ -264,7 +262,14 @@ Include the model in multiNMRFit
 To test the integration of the model into the GUI, copy the :file:`.py` file
 in the folder :file:`models` of multiNMRFit directory.
 
-You can now launch multiNMRFit's GUI and use your model to fit spectra. In case of errors, 
+To find the path to the multinmrfit package, you can use the following command in a Python console:
+
+.. code-block:: python
+
+    import multinmrfit
+    print(multinmrfit.__path__)
+
+Once you have included your model, you can start multiNMRFit's GUI and use your model to fit a spectra. In case of errors, 
 have a look to the error message and correct the code.
 
 .. note:: We would be happy to broaden the types of models shipped with multiNMRFit. If you have developed a new model, it might be 
