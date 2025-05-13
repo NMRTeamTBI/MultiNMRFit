@@ -155,10 +155,13 @@ For instance, in the case of a mixed Gaussian-Lorentzian doublet model, the sign
                                    'relative': [False, True, True, True, False]}
 
         def pplist2signal(self, peak_list):
+            # Estimate the chemical shift of the center of the doublet as the mean of chemical shift between the two peaks
             detected_peak_position = np.mean(peak_list.ppm.values)
+            # Estimate the intensity of the doublet as the intensity of the first peak
             detected_peak_intensity = peak_list.intensity.values[0]
+            # Estimate the coupling constant as the absolute difference between the two peaks
             detected_coupling_constant = np.abs(max(peak_list.ppm.values)-min(peak_list.ppm.values))
-
+            # Build the signal dictionary with the parameters and bounds
             signal = {
                 "model": self.name,
                 'par': {'x0': {'ini': detected_peak_position, 'lb': detected_peak_position-1, 'ub': detected_peak_position+1},
@@ -214,8 +217,10 @@ Finally, the last method to implement is the :samp:`simulate` method. This metho
 
         @staticmethod
         def simulate(params, ppm):
+            # Peak #1, at chemical shift x0 - J/2
             peak_1 = params[4] * params[2] / (1 + ((ppm - params[0] - (params[1]/2))/params[3])**2) + (1-params[4]) * \
                 params[2]*np.exp(-(ppm - params[0] - (params[1]/2))**2/(2*params[3]**2))
+            # Peak #2, at chemical shift x0 + J/2
             peak_2 = params[4] * params[2] / (1 + ((ppm - params[0] + (params[1]/2))/params[3])**2) + (1-params[4]) * \
                 params[2]*np.exp(-(ppm - params[0] + (params[1]/2))**2/(2*params[3]**2))
 
