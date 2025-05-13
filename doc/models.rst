@@ -88,6 +88,7 @@ This method should include the following attributes:
   - **description**: a short description of the model.
   - **peak_number**: the number of peaks in the model. This is used to determine how many peaks are contained in the signal.
   - **default_params**: a dictionary containing the default parameters for the model. The keys should be the names of the parameters, and the values should be their default values. The parameters are defined as follows:
+  
     - **model**: name of the model
     - **par**: name of the parameters
     - **ini**: default value of the parameter
