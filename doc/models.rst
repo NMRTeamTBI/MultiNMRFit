@@ -42,7 +42,7 @@ Base Class and that handles all the heavy-lifting for implementation. A simple s
 users to use their model in multiNMRFit.
 
 The model must be a class located in a dedicated module. Start by opening a text file
-using your IDE (Integrated Development Environment), and enter the following structure in the file::
+using your IDE (Integrated Development Environment), and enter the following structure in the file:
 
 .. code-block:: python
 
