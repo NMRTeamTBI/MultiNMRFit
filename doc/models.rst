@@ -84,18 +84,18 @@ The first attribute to add in your model's :samp:`__init__` method is the model 
 
 This method should include the following attributes:
 
-  - **name**: the name of the model. It should be unique and descriptive.
-  - **description**: a short description of the model.
-  - **peak_number**: the number of peaks in the model. This is used to determine how many peaks are contained in the signal.
-  - **default_params**: a dictionary containing the default parameters for the model. The keys should be the names of the parameters, and the values should be their default values. The parameters are defined as follows:
-  
-    - **model**: name of the model
-    - **par**: name of the parameters
-    - **ini**: default value of the parameter
-    - **lb**: lower bound of the parameter
-    - **ub**: upper bound of the parameter
-    - **shift_allowed**: window of allowed shift for the parameter in comparison to the previous spectrum used as reference. This is used to dynamically adapt the bounds from a spectrum to the next one during the fitting process in batch.
-    - **relative**: boolean indicating if the shift allowed is expressed as a relative or absolute value. If True, the shift is relative to the parameter value. If False, the shift is defined as absolute value.
+- **name**: the name of the model. It should be unique and descriptive.
+- **description**: a short description of the model.
+- **peak_number**: the number of peaks in the model. This is used to determine how many peaks are contained in the signal.
+- **default_params**: a dictionary containing the default parameters for the model. The keys should be the names of the parameters, and the values should be their default values. The parameters are defined as follows:
+
+  - **model**: name of the model
+  - **par**: name of the parameters
+  - **ini**: default value of the parameter
+  - **lb**: lower bound of the parameter
+  - **ub**: upper bound of the parameter
+  - **shift_allowed**: window of allowed shift for the parameter in comparison to the previous spectrum used as reference. This is used to dynamically adapt the bounds from a spectrum to the next one during the fitting process in batch.
+  - **relative**: boolean indicating if the shift allowed is expressed as a relative or absolute value. If True, the shift is relative to the parameter value. If False, the shift is defined as absolute value.
 
 For instance, in the case of a mixed Gaussian-Lorentzian doublet model, the default parameters are:
 
@@ -130,8 +130,8 @@ For instance, in the case of a mixed Gaussian-Lorentzian doublet model, the defa
 
 The second method to implement is the :samp:`pplist2signal` method. This method is used to convert a peak list into a signal. It should return a dictionary containing the name of the signal, and optionaly some parameter values to be updated based on the peak list (if different from the default values). The dictionary should contain the following keys:
 
-  - **model**: name of the signal model
-  - **par**: dictionary containing the parameters of the signal. The keys should be the names of the parameters, and the values should be a dictionary containing their values and lower and upper bounds.
+- **model**: name of the signal model
+- **par**: dictionary containing the parameters of the signal. The keys should be the names of the parameters, and the values should be a dictionary containing their values and lower and upper bounds.
 
 For instance, in the case of a mixed Gaussian-Lorentzian doublet model, the signal is built as follows:
 
