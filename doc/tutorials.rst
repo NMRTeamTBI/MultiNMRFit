@@ -12,19 +12,19 @@ This tutorial will guide you through the different pages of MultiNMRFit.
 .. _Inputs & Outputs:
 
 ********************************************************************************
-Input data
+1. Load spectra
 ********************************************************************************
 
 ..  _`Data type`:
 
-Data type
+Format of input data
 ================================================================================
 MultiNMRFit requires that the main spectrum processing steps (baseline correction, phasing, ...) have been performed beforehand.
 MultiNMRFit can load 1D NMR data provided in the following formats:
 
         * **Pseudo2D**: pseudo2D experiment (Bruker format only),
-        * **list of 1Ds**: 1Ds spectra acquired independently (Bruker format only), 
-        * **txt data**: data from a text tabulated file (:file:'.txt' extension) with the following structure:
+        * **list of 1Ds**: 1Ds spectra acquired independently (Bruker format only),
+        * **txt data**: data from a tabulated text file (:file:`.txt` extension) with the following structure:
 
 +-------+-------+-------+-------+
 |  ppm  |   0   |  ...  |    n  |
@@ -40,12 +40,12 @@ MultiNMRFit can load 1D NMR data provided in the following formats:
 |  12   |   3e4 |   ... | 7.85e3|
 +-------+-------+-------+-------+
 
-The column **ppm** is mandatory and contains the ppm scale, columns named **0** to **n** correspond to each individual spectra.
+The column **ppm** is mandatory and contains the ppm scale, columns named **0** to **n** correspond to each individual spectra and contain the intensities.
 
 
 .. note:: **list of 1Ds**: The list of  experiments should be provided as e.g.
 
-        * 1,8,109 : for non-consecutive spectra (here spectra 1,8,109)
+        * 1,8,109 : for non-consecutive spectra (here spectra 1, 8, and 109)
         * 1-5 : for sequential spectra (here spectra 1,2,3,4,5)
         * 1-5,109 : a mix of both formats for incomplete series (here spectra 1,2,3,4,5,109) 
 
@@ -80,7 +80,7 @@ The pickle file can be reloaded using the drag-and-drop menu available in side b
 .. _Process ref. spectrum:
 
 ********************************************************************************
-Fit a spectrum
+2. Fit a spectrum
 ********************************************************************************
 
 Once the data are correctly loaded the second page of the interface becomes available and 
@@ -149,7 +149,7 @@ To add another region, go to the top of page and select **add new region** in th
 .. _Fit from reference:
 
 ********************************************************************************
-Batch analysis
+3. Batch analysis
 ********************************************************************************
 
 This page contains the wrapper that enables fitting several spectra in batch based on an already processed spectrum (used as reference). 
@@ -172,7 +172,7 @@ to run the fitting of the selected spectra. The progress of the fitting will be 
 .. _Results visualisation:
 
 ********************************************************************************
-Results visualisation and export
+4. Results visualisation and export
 ********************************************************************************
 
 This page enables visualizing the processing results in interactive plots. On top, you can inspect all fitted regions and spectra. 
