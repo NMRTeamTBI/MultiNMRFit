@@ -9,6 +9,7 @@ import nmrglue as ng
 from scipy.optimize import minimize, differential_evolution
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+#from functools import reduce
 
 import multinmrfit.base.io as io
 
@@ -168,6 +169,16 @@ class Spectrum(object):
         # add subspectrum of each signal
         for model in models.values():
             simulated_spectrum += model.simulate([params[i] for i in model._par_idx], ppm)
+
+        # ALTERNATIVE SIMULATION METHOD
+        # (same timing as the implemented method, just keep it here because it might be usefull somehow in the future)
+
+        # simulate individual signals and add them together
+        #simulated_spectrum = reduce(np.add, [model.simulate([params[i] for i in model._par_idx], ppm) for model in models.values()])
+
+        # add offset if required
+        #if offset:
+        #    simulated_spectrum += params[-1]
 
         return simulated_spectrum
 
@@ -488,7 +499,7 @@ class Spectrum(object):
                 args=(self._simulate, self.models, self.ppm, data_scaled, self.offset),
                 method="L-BFGS-B",
                 bounds=bounds,
-                options={'maxcor': 40, 'maxls': 40, 'disp': 1}
+                options={'maxcor': 40, 'maxls': 40}
             )
 
 
@@ -500,7 +511,7 @@ class Spectrum(object):
                 args=(self._simulate, self.models, self.ppm, data_scaled, self.offset),
                 method="L-BFGS-B",
                 bounds=bounds,
-                options={'maxcor': 40, 'maxls': 40, 'disp': 1}
+                options={'maxcor': 40, 'maxls': 40}
             )
 
         else:
