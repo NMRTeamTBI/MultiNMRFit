@@ -178,7 +178,7 @@ class Spectrum(object):
         # (same timing as the implemented method, just keep it here because it might be usefull somehow in the future)
 
         # simulate individual signals and add them together
-        #simulated_spectrum = reduce(np.add, [model.simulate([params[i] for i in model._par_idx], ppm) for model in models.values()])
+        #simulated_spectrum = reduce(np.add, [model.simulate([params[i] for i in model._par_idx], ppm)  for model in models.values()])
 
         # add offset if required
         #if offset:

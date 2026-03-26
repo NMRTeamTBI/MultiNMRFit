@@ -7,6 +7,7 @@ import pandas as pd  # Importing the pandas library for data manipulation
 # this code maintains compatibility
 np.trapezoid = getattr(np, "trapezoid", np.trapz)
 
+
 class Model(object):
     """
     A base class for models.
