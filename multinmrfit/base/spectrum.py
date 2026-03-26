@@ -17,6 +17,10 @@ import multinmrfit.base.io as io
 # create logger
 logger = logging.getLogger(__name__)
 
+# np.trapz deprecated in numpy 2.4.0, use np.trapezoid
+# this code maintains compatibility
+np.trapezoid = getattr(np, "trapezoid", np.trapz)
+
 
 class Spectrum(object):
     """This class is responsible for most of multinmrfit heavy work:
@@ -174,7 +178,7 @@ class Spectrum(object):
         # (same timing as the implemented method, just keep it here because it might be usefull somehow in the future)
 
         # simulate individual signals and add them together
-        #simulated_spectrum = reduce(np.add, [model.simulate([params[i] for i in model._par_idx], ppm) for model in models.values()])
+        #simulated_spectrum = reduce(np.add, [model.simulate([params[i] for i in model._par_idx], ppm)  for model in models.values()])
 
         # add offset if required
         #if offset:
@@ -546,7 +550,7 @@ class Spectrum(object):
         """
 
         # integrate full spectrum
-        integral = np.trapz(y=self.intensity, x=self.ppm)
+        integral = np.trapezoid(y=self.intensity, x=self.ppm)
 
         return integral
 

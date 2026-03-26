@@ -3,6 +3,10 @@ from __future__ import annotations  # Importing annotations from future versions
 import numpy as np  # Importing the numpy library for numerical operations
 import pandas as pd  # Importing the pandas library for data manipulation
 
+# np.trapz deprecated in numpy 2.4.0, use np.trapezoid
+# this code maintains compatibility
+np.trapezoid = getattr(np, "trapezoid", np.trapz)
+
 
 class Model(object):
     """
@@ -79,5 +83,5 @@ class Model(object):
             float: The calculated integral.
         """
         sim_spectra = self.simulate(params, ppm)
-        integral = np.trapz(y=sim_spectra, x=ppm)
+        integral = np.trapezoid(y=sim_spectra, x=ppm)
         return integral
